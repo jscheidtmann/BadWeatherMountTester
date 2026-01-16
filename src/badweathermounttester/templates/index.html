@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="{{ get_locale() }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ _('Bad Weather Mount Tester') }}</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
+            background-color: #1a1a2e;
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #00d4ff;
+        }
+
+        .card {
+            background-color: #16213e;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            margin-bottom: 15px;
+            color: #00d4ff;
+            font-size: 1.2em;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #aaa;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 4px;
+            background-color: #0f0f23;
+            color: #eee;
+            font-size: 16px;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #00d4ff;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #00d4ff;
+            color: #000;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #00a8cc;
+        }
+
+        .btn:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: #444;
+            color: #eee;
+        }
+
+        .btn-secondary:hover {
+            background-color: #555;
+        }
+
+        .status {
+            text-align: center;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .status.connected {
+            background-color: #1b4332;
+            color: #95d5b2;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        .step {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            background-color: #0f0f23;
+            margin: 0 5px;
+            border-radius: 4px;
+            color: #666;
+        }
+
+        .step.active {
+            background-color: #00d4ff;
+            color: #000;
+        }
+
+        .step.completed {
+            background-color: #1b4332;
+            color: #95d5b2;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{{ _('Bad Weather Mount Tester') }}</h1>
+
+        <div class="status connected">
+            {{ _('Connected to Simulator') }}
+        </div>
+
+        <div class="step-indicator">
+            <div class="step active" id="step-1">1. {{ _('Configure') }}</div>
+            <div class="step" id="step-2">2. {{ _('Align') }}</div>
+            <div class="step" id="step-3">3. {{ _('Calibrate') }}</div>
+            <div class="step" id="step-4">4. {{ _('Measure') }}</div>
+        </div>
+
+        <div class="card" id="config-card">
+            <h2>{{ _('Mount Configuration') }}</h2>
+            <div class="form-group">
+                <label for="latitude">{{ _('Latitude (degrees)') }}</label>
+                <input type="number" id="latitude" step="0.1" value="0">
+            </div>
+            <div class="form-group">
+                <label for="focal-length">{{ _('Guide Scope Focal Length (mm)') }}</label>
+                <input type="number" id="focal-length" step="1" value="200">
+            </div>
+            <div class="form-group">
+                <label for="distance">{{ _('Distance to Screen (m)') }}</label>
+                <input type="number" id="distance" step="0.1" value="5">
+            </div>
+            <div class="form-group">
+                <label for="period">{{ _('Mount Main Period (seconds)') }}</label>
+                <input type="number" id="period" step="1" value="480">
+            </div>
+        </div>
+
+        <div class="card" id="info-card">
+            <h2>{{ _('Calculated Values') }}</h2>
+            <p>{{ _('Effective focal length for PHD2:') }} <strong id="effective-focal">--</strong> mm</p>
+            <p>{{ _('Expected measurement duration:') }} <strong id="duration">--</strong> {{ _('minutes') }}</p>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-secondary" id="btn-back" disabled>{{ _('Back') }}</button>
+            <button class="btn" id="btn-next">{{ _('Next') }}</button>
+        </div>
+    </div>
+
+    <script>
+        // State management
+        let currentStep = 1;
+        let config = {
+            latitude: 0,
+            focal_length_mm: 200,
+            distance_to_screen_m: 5,
+            main_period_seconds: 480
+        };
+
+        // DOM elements
+        const latitudeInput = document.getElementById('latitude');
+        const focalLengthInput = document.getElementById('focal-length');
+        const distanceInput = document.getElementById('distance');
+        const periodInput = document.getElementById('period');
+        const effectiveFocalSpan = document.getElementById('effective-focal');
+        const durationSpan = document.getElementById('duration');
+        const btnBack = document.getElementById('btn-back');
+        const btnNext = document.getElementById('btn-next');
+
+        // Load initial config from server
+        async function loadConfig() {
+            try {
+                const response = await fetch('/api/config');
+                const data = await response.json();
+                config = data.mount;
+                updateInputs();
+                updateCalculations();
+            } catch (error) {
+                console.error('Failed to load config:', error);
+            }
+        }
+
+        function updateInputs() {
+            latitudeInput.value = config.latitude;
+            focalLengthInput.value = config.focal_length_mm;
+            distanceInput.value = config.distance_to_screen_m;
+            periodInput.value = config.main_period_seconds;
+        }
+
+        function updateCalculations() {
+            // Calculate effective focal length
+            // When not focused at infinity, effective FL = actual FL * distance / (distance - FL)
+            const fl = config.focal_length_mm / 1000; // Convert to meters
+            const dist = config.distance_to_screen_m;
+            const effectiveFL = (config.focal_length_mm * dist) / (dist - fl);
+            effectiveFocalSpan.textContent = effectiveFL.toFixed(1);
+
+            // Duration is based on mount period
+            const durationMinutes = config.main_period_seconds / 60;
+            durationSpan.textContent = durationMinutes.toFixed(1);
+        }
+
+        async function saveConfig() {
+            config.latitude = parseFloat(latitudeInput.value);
+            config.focal_length_mm = parseFloat(focalLengthInput.value);
+            config.distance_to_screen_m = parseFloat(distanceInput.value);
+            config.main_period_seconds = parseFloat(periodInput.value);
+
+            try {
+                await fetch('/api/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mount: config })
+                });
+                updateCalculations();
+            } catch (error) {
+                console.error('Failed to save config:', error);
+            }
+        }
+
+        // Event listeners
+        [latitudeInput, focalLengthInput, distanceInput, periodInput].forEach(input => {
+            input.addEventListener('change', saveConfig);
+        });
+
+        btnNext.addEventListener('click', async () => {
+            await saveConfig();
+            if (currentStep < 4) {
+                document.getElementById(`step-${currentStep}`).classList.remove('active');
+                document.getElementById(`step-${currentStep}`).classList.add('completed');
+                currentStep++;
+                document.getElementById(`step-${currentStep}`).classList.add('active');
+                btnBack.disabled = false;
+
+                // Notify server of mode change
+                await fetch('/api/mode', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mode: currentStep })
+                });
+            }
+        });
+
+        btnBack.addEventListener('click', async () => {
+            if (currentStep > 1) {
+                document.getElementById(`step-${currentStep}`).classList.remove('active');
+                currentStep--;
+                document.getElementById(`step-${currentStep}`).classList.remove('completed');
+                document.getElementById(`step-${currentStep}`).classList.add('active');
+                if (currentStep === 1) {
+                    btnBack.disabled = true;
+                }
+
+                // Notify server of mode change
+                await fetch('/api/mode', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mode: currentStep })
+                });
+            }
+        });
+
+        // Initialize
+        loadConfig();
+    </script>
+</body>
+</html>

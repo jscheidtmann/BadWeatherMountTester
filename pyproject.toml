@@ -1,0 +1,69 @@
+[project]
+name = "badweathermounttester"
+version = "0.1.0"
+description = "Test telescope mount periodic error indoors using a simulated star on a monitor"
+readme = "README.md"
+license = "GPL-3.0-or-later"
+requires-python = ">=3.10"
+authors = [
+    { name = "Jens Scheidtmann" }
+]
+keywords = ["astronomy", "telescope", "mount", "periodic error", "guiding", "PHD2"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: X11 Applications",
+    "Environment :: Win32 (MS Windows)",
+    "Environment :: MacOS X",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Astronomy",
+]
+dependencies = [
+    "pygame>=2.5.0",
+    "flask>=3.0.0",
+    "flask-babel>=4.0.0",
+    "Pillow>=10.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "ruff>=0.1.0",
+    "babel>=2.14.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/jscheidtmann/BadWeatherMountTester"
+Repository = "https://github.com/jscheidtmann/BadWeatherMountTester"
+Issues = "https://github.com/jscheidtmann/BadWeatherMountTester/issues"
+
+[project.scripts]
+bwmt = "badweathermounttester.app:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/badweathermounttester"]
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "ruff>=0.1.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
