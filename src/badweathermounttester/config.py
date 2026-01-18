@@ -1,9 +1,10 @@
 """Configuration handling for Bad Weather Mount Tester."""
 
 from dataclasses import dataclass, field
-from typing import Optional
 import json
 from pathlib import Path
+
+import yaml
 
 
 @dataclass
@@ -23,6 +24,7 @@ class DisplayConfig:
     fullscreen: bool = True
     screen_width: int = 1920
     screen_height: int = 1080
+    screen_width_mm: float = 527.0  # Physical screen width in mm (default: 24" monitor)
     star_size: int = 5
     star_brightness: int = 255
 
@@ -36,16 +38,30 @@ class ServerConfig:
 
 
 @dataclass
+class CameraConfig:
+    """Configuration for the guiding camera."""
+
+    pixel_size_um: float = 3.75  # Pixel size in micrometers
+    width_px: int = 1280  # Sensor width in pixels
+    height_px: int = 960  # Sensor height in pixels
+
+
+# Default path for setup configuration
+DEFAULT_SETUP_PATH = Path("setup.yml")
+
+
+@dataclass
 class AppConfig:
     """Main application configuration."""
 
     mount: MountConfig = field(default_factory=MountConfig)
     display: DisplayConfig = field(default_factory=DisplayConfig)
     server: ServerConfig = field(default_factory=ServerConfig)
+    camera: CameraConfig = field(default_factory=CameraConfig)
 
-    def save(self, path: Path) -> None:
-        """Save configuration to a JSON file."""
-        data = {
+    def to_dict(self) -> dict:
+        """Convert configuration to a dictionary."""
+        return {
             "mount": {
                 "latitude": self.mount.latitude,
                 "focal_length_mm": self.mount.focal_length_mm,
@@ -56,6 +72,7 @@ class AppConfig:
                 "fullscreen": self.display.fullscreen,
                 "screen_width": self.display.screen_width,
                 "screen_height": self.display.screen_height,
+                "screen_width_mm": self.display.screen_width_mm,
                 "star_size": self.display.star_size,
                 "star_brightness": self.display.star_brightness,
             },
@@ -63,18 +80,24 @@ class AppConfig:
                 "host": self.server.host,
                 "port": self.server.port,
             },
+            "camera": {
+                "pixel_size_um": self.camera.pixel_size_um,
+                "width_px": self.camera.width_px,
+                "height_px": self.camera.height_px,
+            },
         }
-        path.write_text(json.dumps(data, indent=2))
+
+    def save(self, path: Path) -> None:
+        """Save configuration to a JSON file."""
+        path.write_text(json.dumps(self.to_dict(), indent=2))
+
+    def save_yaml(self, path: Path = DEFAULT_SETUP_PATH) -> None:
+        """Save configuration to a YAML file."""
+        path.write_text(yaml.safe_dump(self.to_dict(), default_flow_style=False, sort_keys=False))
 
     @classmethod
-    def load(cls, path: Path) -> "AppConfig":
-        """Load configuration from a JSON file."""
-        if not path.exists():
-            return cls()
-
-        data = json.loads(path.read_text())
-        config = cls()
-
+    def _apply_dict(cls, config: "AppConfig", data: dict) -> None:
+        """Apply dictionary values to a config object."""
         if "mount" in data:
             for key, value in data["mount"].items():
                 if hasattr(config.mount, key):
@@ -90,4 +113,32 @@ class AppConfig:
                 if hasattr(config.server, key):
                     setattr(config.server, key, value)
 
+        if "camera" in data:
+            for key, value in data["camera"].items():
+                if hasattr(config.camera, key):
+                    setattr(config.camera, key, value)
+
+    @classmethod
+    def load(cls, path: Path) -> "AppConfig":
+        """Load configuration from a JSON file."""
+        if not path.exists():
+            return cls()
+
+        data = json.loads(path.read_text())
+        config = cls()
+        cls._apply_dict(config, data)
+        return config
+
+    @classmethod
+    def load_yaml(cls, path: Path = DEFAULT_SETUP_PATH) -> "AppConfig":
+        """Load configuration from a YAML file."""
+        if not path.exists():
+            return cls()
+
+        data = yaml.safe_load(path.read_text())
+        if data is None:
+            return cls()
+
+        config = cls()
+        cls._apply_dict(config, data)
         return config

@@ -1,0 +1,19 @@
+mount:
+  latitude: 51.0
+  focal_length_mm: 420.0
+  distance_to_screen_m: 3.5
+  main_period_seconds: 480.0
+display:
+  fullscreen: false
+  screen_width: 1920
+  screen_height: 1080
+  screen_width_mm: 520.0
+  star_size: 5
+  star_brightness: 255
+server:
+  host: 0.0.0.0
+  port: 5000
+camera:
+  pixel_size_um: 3.75
+  width_px: 1280
+  height_px: 960

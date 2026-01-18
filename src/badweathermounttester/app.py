@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 from badweathermounttester import __version__
-from badweathermounttester.config import AppConfig
+from badweathermounttester.config import AppConfig, DEFAULT_SETUP_PATH
 from badweathermounttester.display import SimulatorDisplay, DisplayMode
 from badweathermounttester.server import WebServer
 
@@ -13,10 +13,11 @@ from badweathermounttester.server import WebServer
 class Application:
     """Main BWMT application that coordinates display and web server."""
 
-    def __init__(self, config: AppConfig):
+    def __init__(self, config: AppConfig, setup_path: Path = DEFAULT_SETUP_PATH):
         self.config = config
+        self.setup_path = setup_path
         self.display = SimulatorDisplay(config.display)
-        self.server = WebServer(config)
+        self.server = WebServer(config, setup_path)
 
         # Set up callbacks
         self.server.on_connect(self._on_client_connect)
@@ -79,7 +80,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--config",
         type=Path,
-        help="Path to configuration file",
+        help="Path to configuration file (JSON)",
+    )
+    parser.add_argument(
+        "--setup",
+        type=Path,
+        default=DEFAULT_SETUP_PATH,
+        help="Path to setup file (YAML, default: setup.yml)",
     )
     parser.add_argument(
         "--port",
@@ -100,8 +107,11 @@ def main() -> int:
     args = parse_args()
 
     # Load or create configuration
+    # Priority: --config (JSON) > --setup (YAML) > defaults
     if args.config and args.config.exists():
         config = AppConfig.load(args.config)
+    elif args.setup.exists():
+        config = AppConfig.load_yaml(args.setup)
     else:
         config = AppConfig()
 
@@ -112,7 +122,7 @@ def main() -> int:
         config.display.fullscreen = False
 
     # Run the application
-    app = Application(config)
+    app = Application(config, args.setup)
     return app.run()
 
 

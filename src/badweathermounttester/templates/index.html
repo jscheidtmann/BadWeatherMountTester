@@ -16,51 +16,58 @@
             background-color: #1a1a2e;
             color: #eee;
             min-height: 100vh;
-            padding: 20px;
+            padding: 10px 15px;
+            font-size: 17px;
         }
 
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
         }
 
         h1 {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 10px;
             color: #00d4ff;
+            font-size: 1.4em;
         }
 
         .card {
             background-color: #16213e;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 10px;
         }
 
         .card h2 {
-            margin-bottom: 15px;
+            margin-bottom: 8px;
             color: #00d4ff;
-            font-size: 1.2em;
+            font-size: 1em;
         }
 
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 8px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 2px;
             color: #aaa;
+            font-size: 0.85em;
         }
 
         .form-group input {
             width: 100%;
-            padding: 10px;
+            padding: 6px 8px;
             border: 1px solid #333;
             border-radius: 4px;
             background-color: #0f0f23;
             color: #eee;
-            font-size: 16px;
+            font-size: 17px;
         }
 
         .form-group input:focus {
@@ -70,12 +77,12 @@
 
         .btn {
             display: inline-block;
-            padding: 12px 24px;
+            padding: 8px 16px;
             background-color: #00d4ff;
             color: #000;
             border: none;
             border-radius: 4px;
-            font-size: 16px;
+            font-size: 17px;
             cursor: pointer;
             transition: background-color 0.2s;
         }
@@ -100,9 +107,10 @@
 
         .status {
             text-align: center;
-            padding: 10px;
+            padding: 6px;
             border-radius: 4px;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
+            font-size: 0.9em;
         }
 
         .status.connected {
@@ -113,17 +121,18 @@
         .step-indicator {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 30px;
+            margin-bottom: 12px;
         }
 
         .step {
             flex: 1;
             text-align: center;
-            padding: 10px;
+            padding: 6px 4px;
             background-color: #0f0f23;
-            margin: 0 5px;
+            margin: 0 3px;
             border-radius: 4px;
             color: #666;
+            font-size: 0.85em;
         }
 
         .step.active {
@@ -139,7 +148,92 @@
         .actions {
             display: flex;
             justify-content: space-between;
-            margin-top: 20px;
+            margin-top: 10px;
+        }
+
+        .config-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .config-row .card {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .calc-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px 16px;
+        }
+
+        .calc-grid p {
+            margin: 0;
+            font-size: 0.9em;
+        }
+
+        .screen-calc {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #333;
+        }
+
+        .screen-calc p {
+            margin: 0 0 2px 0;
+            font-size: 0.85em;
+            color: #aaa;
+        }
+
+        .screen-calc p:last-child {
+            margin-bottom: 0;
+        }
+
+        .instructions-card {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: #000;
+            border: 2px solid #fbbf24;
+            padding: 10px 14px;
+        }
+
+        .instructions-card h2 {
+            color: #000;
+            font-size: 0.95em;
+            margin-bottom: 4px;
+        }
+
+        .instructions-card p {
+            margin: 0 0 6px 0;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .instructions-card ol {
+            margin: 0 0 6px 0;
+            padding-left: 20px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .instructions-card li {
+            margin-bottom: 2px;
+        }
+
+        .instructions-card li:last-child {
+            margin-bottom: 0;
+        }
+
+        .instructions-card > *:last-child {
+            margin-bottom: 0;
+        }
+
+        @media (max-width: 600px) {
+            .config-row {
+                flex-direction: column;
+            }
+            .config-row .card {
+                margin-bottom: 10px;
+            }
         }
     </style>
 </head>
@@ -158,30 +252,84 @@
             <div class="step" id="step-4">4. {{ _('Measure') }}</div>
         </div>
 
-        <div class="card" id="config-card">
-            <h2>{{ _('Mount Configuration') }}</h2>
-            <div class="form-group">
-                <label for="latitude">{{ _('Latitude (degrees)') }}</label>
-                <input type="number" id="latitude" step="0.1" value="0">
+        <div class="config-row">
+            <div class="card" id="config-card">
+                <h2>{{ _('Mount Configuration') }}</h2>
+                <div class="form-group">
+                    <label for="latitude">{{ _('Latitude (degrees)') }}</label>
+                    <input type="number" id="latitude" step="0.1" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="focal-length">{{ _('Guide Scope Focal Length (mm)') }}</label>
+                    <input type="number" id="focal-length" step="1" value="200">
+                </div>
+                <div class="form-group">
+                    <label for="distance">{{ _('Distance to Screen (m)') }}</label>
+                    <input type="number" id="distance" step="0.1" value="5">
+                </div>
+                <div class="form-group">
+                    <label for="period">{{ _('Mount Main Period (seconds)') }}</label>
+                    <input type="number" id="period" step="1" value="480">
+                </div>
             </div>
-            <div class="form-group">
-                <label for="focal-length">{{ _('Guide Scope Focal Length (mm)') }}</label>
-                <input type="number" id="focal-length" step="1" value="200">
+
+            <div class="card" id="camera-card">
+                <h2>{{ _('Guiding Camera') }}</h2>
+                <div class="form-group">
+                    <label for="pixel-size">{{ _('Pixel Size (micrometer)') }}</label>
+                    <input type="number" id="pixel-size" step="0.01" value="3.75">
+                </div>
+                <div class="form-group">
+                    <label for="camera-width">{{ _('Width (pixels)') }}</label>
+                    <input type="number" id="camera-width" step="1" value="1280">
+                </div>
+                <div class="form-group">
+                    <label for="camera-height">{{ _('Height (pixels)') }}</label>
+                    <input type="number" id="camera-height" step="1" value="960">
+                </div>
+                <div class="screen-calc">
+                    <p>{{ _('Resolution:') }}</p>
+                    <p><strong id="camera-resolution-arcsec">--</strong> arcsec/px</p>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="distance">{{ _('Distance to Screen (m)') }}</label>
-                <input type="number" id="distance" step="0.1" value="5">
-            </div>
-            <div class="form-group">
-                <label for="period">{{ _('Mount Main Period (seconds)') }}</label>
-                <input type="number" id="period" step="1" value="480">
+
+            <div class="card" id="screen-card">
+                <h2>{{ _('Screen') }}</h2>
+                <div class="form-group">
+                    <label for="screen-width-mm">{{ _('Screen Width (mm)') }}</label>
+                    <input type="number" id="screen-width-mm" step="1" value="527">
+                </div>
+                <div class="screen-calc">
+                    <p>{{ _('Pixel Pitch:') }}</p>
+                    <p><strong id="pixel-pitch-mm">--</strong> mm/px</p>
+                    <p><strong id="pixel-pitch-arcsec">--</strong> arcsec/px</p>
+                </div>
             </div>
         </div>
 
         <div class="card" id="info-card">
             <h2>{{ _('Calculated Values') }}</h2>
-            <p>{{ _('Effective focal length for PHD2:') }} <strong id="effective-focal">--</strong> mm</p>
-            <p>{{ _('Expected measurement duration:') }} <strong id="duration">--</strong> {{ _('minutes') }}</p>
+            <div class="calc-grid">
+                <p>{{ _('Effective FL for PHD2:') }} <strong id="effective-focal">--</strong> mm</p>
+                <p>{{ _('Measurement duration:') }} <strong id="duration">--</strong> {{ _('minutes') }}</p>
+                <p>{{ _('Binning:') }} <strong id="binning">--</strong>x</p>
+                <p>{{ _('Area on Simulator:') }} <strong id="area-width">--</strong> x <strong id="area-height">--</strong> mm</p>
+            </div>
+        </div>
+
+        <div class="card instructions-card">
+            <h2>{{ _('Instructions') }}</h2>
+            <p>{{ _('Fill in the values above, then set up PHD2 as follows:') }}</p>
+            <ol>
+                
+                <li>{{ _('Create a new guiding profile in PHD2 with the Effective FL and Binning values as listed above.') }}</li>
+                <li>{{ _('Disable multi-star guiding (we use one simulated star).') }}</li>
+                <li>{{ _('Start looping in PHD2.') }}</li>
+                <li>{{ _('From the Tools menu, enable the cross in the camera display.') }}</li>
+                <li>{{ _('Point the mount at the simulator display, focus and locate the cross, by following the arrows') }}</li>
+                <li>{{ _('While on the way orient the simulator display such, that you\'re roughly in focus all over the simulator display') }}</li>
+            </ol>
+            <p>{{ _('Then press "Next" to start aligning the mount.') }}</p>
         </div>
 
         <div class="actions">
@@ -193,29 +341,73 @@
     <script>
         // State management
         let currentStep = 1;
-        let config = {
+        let mountConfig = {
             latitude: 0,
             focal_length_mm: 200,
             distance_to_screen_m: 5,
             main_period_seconds: 480
         };
+        let cameraConfig = {
+            pixel_size_um: 3.75,
+            width_px: 1280,
+            height_px: 960
+        };
+        let displayConfig = {
+            screen_width_mm: 527
+        };
 
-        // DOM elements
+        // Debounce timers for each field
+        const debounceTimers = {};
+        const DEBOUNCE_DELAY = 300; // milliseconds
+
+        // DOM elements - Mount
         const latitudeInput = document.getElementById('latitude');
         const focalLengthInput = document.getElementById('focal-length');
         const distanceInput = document.getElementById('distance');
         const periodInput = document.getElementById('period');
+
+        // DOM elements - Camera
+        const pixelSizeInput = document.getElementById('pixel-size');
+        const cameraWidthInput = document.getElementById('camera-width');
+        const cameraHeightInput = document.getElementById('camera-height');
+
+        // DOM elements - Camera calculated
+        const cameraResolutionArcsecSpan = document.getElementById('camera-resolution-arcsec');
+
+        // DOM elements - Screen
+        const screenWidthMmInput = document.getElementById('screen-width-mm');
+        const pixelPitchMmSpan = document.getElementById('pixel-pitch-mm');
+        const pixelPitchArcsecSpan = document.getElementById('pixel-pitch-arcsec');
+
+        // DOM elements - Calculated values
         const effectiveFocalSpan = document.getElementById('effective-focal');
         const durationSpan = document.getElementById('duration');
+        const binningSpan = document.getElementById('binning');
+        const areaWidthSpan = document.getElementById('area-width');
+        const areaHeightSpan = document.getElementById('area-height');
         const btnBack = document.getElementById('btn-back');
         const btnNext = document.getElementById('btn-next');
+
+        // Field mapping: input element id -> {section, apiField}
+        const fieldMapping = {
+            'latitude': { section: 'mount', apiField: 'latitude' },
+            'focal-length': { section: 'mount', apiField: 'focal_length_mm' },
+            'distance': { section: 'mount', apiField: 'distance_to_screen_m' },
+            'period': { section: 'mount', apiField: 'main_period_seconds' },
+            'pixel-size': { section: 'camera', apiField: 'pixel_size_um' },
+            'camera-width': { section: 'camera', apiField: 'width_px' },
+            'camera-height': { section: 'camera', apiField: 'height_px' },
+            'screen-width-mm': { section: 'display', apiField: 'screen_width_mm' }
+        };
 
         // Load initial config from server
         async function loadConfig() {
             try {
                 const response = await fetch('/api/config');
                 const data = await response.json();
-                config = data.mount;
+                mountConfig = data.mount;
+                cameraConfig = data.camera;
+                displayConfig = data.display;
                 updateInputs();
                 updateCalculations();
             } catch (error) {
@@ -224,50 +416,200 @@
         }
 
         function updateInputs() {
-            latitudeInput.value = config.latitude;
-            focalLengthInput.value = config.focal_length_mm;
-            distanceInput.value = config.distance_to_screen_m;
-            periodInput.value = config.main_period_seconds;
+            latitudeInput.value = mountConfig.latitude;
+            focalLengthInput.value = mountConfig.focal_length_mm;
+            distanceInput.value = mountConfig.distance_to_screen_m;
+            periodInput.value = mountConfig.main_period_seconds;
+
+            pixelSizeInput.value = cameraConfig.pixel_size_um;
+            cameraWidthInput.value = cameraConfig.width_px;
+            cameraHeightInput.value = cameraConfig.height_px;
+
+            screenWidthMmInput.value = displayConfig.screen_width_mm;
         }
 
         function updateCalculations() {
             // Calculate effective focal length
-            // When not focused at infinity, effective FL = actual FL * distance / (distance - FL)
-            const fl = config.focal_length_mm / 1000; // Convert to meters
-            const dist = config.distance_to_screen_m;
-            const effectiveFL = (config.focal_length_mm * dist) / (dist - fl);
-            effectiveFocalSpan.textContent = effectiveFL.toFixed(1);
+            const fl = mountConfig.focal_length_mm / 1000; // Convert to meters
+            const dist = mountConfig.distance_to_screen_m;
+            let effectiveFL = 0;
+
+            if (dist > fl && dist > 0 && mountConfig.focal_length_mm > 0) {
+                effectiveFL = (mountConfig.focal_length_mm * dist) / (dist - fl);
+                effectiveFocalSpan.textContent = effectiveFL.toFixed(1);
+            } else {
+                effectiveFocalSpan.textContent = '--';
+            }
 
             // Duration is based on mount period
-            const durationMinutes = config.main_period_seconds / 60;
-            durationSpan.textContent = durationMinutes.toFixed(1);
-        }
+            if (mountConfig.main_period_seconds > 0) {
+                const durationMinutes = mountConfig.main_period_seconds / 60;
+                durationSpan.textContent = durationMinutes.toFixed(1);
+            } else {
+                durationSpan.textContent = '--';
+            }
 
-        async function saveConfig() {
-            config.latitude = parseFloat(latitudeInput.value);
-            config.focal_length_mm = parseFloat(focalLengthInput.value);
-            config.distance_to_screen_m = parseFloat(distanceInput.value);
-            config.main_period_seconds = parseFloat(periodInput.value);
+            // Camera resolution in arcsec/pixel
+            if (effectiveFL > 0 && cameraConfig.pixel_size_um > 0) {
+                const cameraResolutionArcsec = 206.265 * cameraConfig.pixel_size_um / effectiveFL;
+                cameraResolutionArcsecSpan.textContent = cameraResolutionArcsec.toFixed(2);
+            } else {
+                cameraResolutionArcsecSpan.textContent = '--';
+            }
 
-            try {
-                await fetch('/api/config', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ mount: config })
-                });
-                updateCalculations();
-            } catch (error) {
-                console.error('Failed to save config:', error);
+            // Screen pixel pitch calculations
+            const screenWidthMm = displayConfig.screen_width_mm;
+            const screenWidthPx = displayConfig.screen_width;
+
+            if (screenWidthMm > 0 && screenWidthPx > 0) {
+                // Pixel pitch in mm/pixel
+                const pixelPitchMm = screenWidthMm / screenWidthPx;
+                pixelPitchMmSpan.textContent = pixelPitchMm.toFixed(3);
+
+                // Pixel pitch in arcsec/pixel (angular size as seen from mount)
+                if (dist > 0) {
+                    // angle = size / distance, convert to arcsec (* 206265)
+                    const pixelPitchArcsec = (pixelPitchMm / (dist * 1000)) * 206265;
+                    pixelPitchArcsecSpan.textContent = pixelPitchArcsec.toFixed(2);
+                } else {
+                    pixelPitchArcsecSpan.textContent = '--';
+                }
+            } else {
+                pixelPitchMmSpan.textContent = '--';
+                pixelPitchArcsecSpan.textContent = '--';
+            }
+
+            // Camera and display dependent calculations
+            if (effectiveFL > 0 && cameraConfig.pixel_size_um > 0 && dist > 0 && screenWidthPx > 0) {
+                // Binning: 1 camera pixel should match ~1 simulator pixel
+                // Camera pixel projected onto screen = (pixel_size_um * dist) / effective_fl mm
+                // Screen pixel size = screen_width_mm / screen_width_px mm
+                const cameraPixelOnScreen = (cameraConfig.pixel_size_um * dist) / effectiveFL;
+                const screenPixelSize = screenWidthMm / screenWidthPx;
+                const recommendedBinning = Math.max(1, Math.round(screenPixelSize / cameraPixelOnScreen));
+                binningSpan.textContent = recommendedBinning;
+
+                // Area on simulator (physical size in mm)
+                const sensorWidthMm = (cameraConfig.width_px * cameraConfig.pixel_size_um) / 1000;
+                const sensorHeightMm = (cameraConfig.height_px * cameraConfig.pixel_size_um) / 1000;
+                const areaWidthMm = (sensorWidthMm * dist * 1000) / effectiveFL;
+                const areaHeightMm = (sensorHeightMm * dist * 1000) / effectiveFL;
+                areaWidthSpan.textContent = areaWidthMm.toFixed(1);
+                areaHeightSpan.textContent = areaHeightMm.toFixed(1);
+            } else {
+                binningSpan.textContent = '--';
+                areaWidthSpan.textContent = '--';
+                areaHeightSpan.textContent = '--';
             }
         }
 
-        // Event listeners
-        [latitudeInput, focalLengthInput, distanceInput, periodInput].forEach(input => {
-            input.addEventListener('change', saveConfig);
+        // Update calculated values from server response
+        function applyCalculatedValues(calculated) {
+            if (calculated.effective_focal_length !== undefined) {
+                effectiveFocalSpan.textContent = calculated.effective_focal_length || '--';
+            }
+            if (calculated.duration_minutes !== undefined) {
+                durationSpan.textContent = calculated.duration_minutes || '--';
+            }
+            if (calculated.camera_resolution_arcsec !== undefined) {
+                cameraResolutionArcsecSpan.textContent = calculated.camera_resolution_arcsec || '--';
+            }
+            if (calculated.recommended_binning !== undefined) {
+                binningSpan.textContent = calculated.recommended_binning || '--';
+            }
+            if (calculated.area_width_mm !== undefined && calculated.area_height_mm !== undefined) {
+                areaWidthSpan.textContent = calculated.area_width_mm || '--';
+                areaHeightSpan.textContent = calculated.area_height_mm || '--';
+            }
+            if (calculated.pixel_pitch_mm !== undefined) {
+                pixelPitchMmSpan.textContent = calculated.pixel_pitch_mm || '--';
+            }
+            if (calculated.pixel_pitch_arcsec !== undefined) {
+                pixelPitchArcsecSpan.textContent = calculated.pixel_pitch_arcsec || '--';
+            }
+        }
+
+        // Update local config from input values and recalculate
+        function updateLocalConfig() {
+            const lat = parseFloat(latitudeInput.value);
+            const fl = parseFloat(focalLengthInput.value);
+            const dist = parseFloat(distanceInput.value);
+            const period = parseFloat(periodInput.value);
+
+            if (!isNaN(lat)) mountConfig.latitude = lat;
+            if (!isNaN(fl) && fl > 0) mountConfig.focal_length_mm = fl;
+            if (!isNaN(dist) && dist > 0) mountConfig.distance_to_screen_m = dist;
+            if (!isNaN(period) && period > 0) mountConfig.main_period_seconds = period;
+
+            const pixelSize = parseFloat(pixelSizeInput.value);
+            const camWidth = parseInt(cameraWidthInput.value);
+            const camHeight = parseInt(cameraHeightInput.value);
+
+            if (!isNaN(pixelSize) && pixelSize > 0) cameraConfig.pixel_size_um = pixelSize;
+            if (!isNaN(camWidth) && camWidth > 0) cameraConfig.width_px = camWidth;
+            if (!isNaN(camHeight) && camHeight > 0) cameraConfig.height_px = camHeight;
+
+            const screenWidthMm = parseFloat(screenWidthMmInput.value);
+            if (!isNaN(screenWidthMm) && screenWidthMm > 0) displayConfig.screen_width_mm = screenWidthMm;
+
+            updateCalculations();
+        }
+
+        // Save a single field to the server with debouncing
+        function saveField(inputElement) {
+            const fieldId = inputElement.id;
+            const mapping = fieldMapping[fieldId];
+            if (!mapping) return;
+
+            const { section, apiField } = mapping;
+            const value = parseFloat(inputElement.value);
+
+            // Clear existing timer for this field
+            if (debounceTimers[fieldId]) {
+                clearTimeout(debounceTimers[fieldId]);
+            }
+
+            // Validate the value
+            if (isNaN(value)) {
+                return;
+            }
+
+            // For non-latitude fields, require positive values
+            if (apiField !== 'latitude' && value <= 0) {
+                return;
+            }
+
+            // Debounce the server save
+            debounceTimers[fieldId] = setTimeout(async () => {
+                try {
+                    const response = await fetch(`/api/config/${section}/${apiField}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ value: value })
+                    });
+                    const data = await response.json();
+
+                    if (data.status === 'ok' && data.calculated) {
+                        applyCalculatedValues(data.calculated);
+                    }
+                } catch (error) {
+                    console.error('Failed to save field:', error);
+                }
+            }, DEBOUNCE_DELAY);
+        }
+
+        // Event listeners - update on input for immediate feedback
+        const allInputs = [latitudeInput, focalLengthInput, distanceInput, periodInput,
+                          pixelSizeInput, cameraWidthInput, cameraHeightInput,
+                          screenWidthMmInput];
+        allInputs.forEach(input => {
+            input.addEventListener('input', () => {
+                updateLocalConfig();
+                saveField(input);
+            });
         });
 
         btnNext.addEventListener('click', async () => {
-            await saveConfig();
             if (currentStep < 4) {
                 document.getElementById(`step-${currentStep}`).classList.remove('active');
                 document.getElementById(`step-${currentStep}`).classList.add('completed');
