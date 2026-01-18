@@ -180,6 +180,26 @@ class SimulatorDisplay:
         pygame.draw.line(self.screen, color, (int(tip_x), int(tip_y)), (int(wing1_x), int(wing1_y)), 1)
         pygame.draw.line(self.screen, color, (int(tip_x), int(tip_y)), (int(wing2_x), int(wing2_y)), 1)
 
+    def _draw_crosshair(self, x: int, y: int, size: int = 5, color: Tuple[int, int, int] = (255, 0, 0)) -> None:
+        """Draw a crosshair at (x, y). size if half-length of crosshair lines."""
+        if not self.screen:
+            return
+
+        pygame.draw.line(
+            self.screen,
+            color,
+            (x - size, y),
+            (x + size, y),
+            1,
+        )
+        pygame.draw.line(
+            self.screen,
+            color,
+            (x, y - size),
+            (x, y + size),
+            1,
+        )
+
     def _render_locator(self) -> None:
         """Render the locator screen with arrows pointing to target."""
         if not self.screen:
@@ -191,6 +211,8 @@ class SimulatorDisplay:
         # Target: leftmost column, 1/3 from bottom (= 2/3 from top)
         target_x = 10
         target_y = int(height * 2 / 3)
+
+        self._draw_crosshair(target_x, target_y)
 
         # Draw arrows on a 20px grid
         grid_spacing = 20
