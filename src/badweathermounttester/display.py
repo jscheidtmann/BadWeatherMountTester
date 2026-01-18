@@ -6,6 +6,8 @@ This module handles the pygame-based display that shows:
 - The simulated star for guiding
 """
 
+import math
+
 import pygame
 from enum import Enum, auto
 from dataclasses import dataclass
@@ -139,43 +141,65 @@ class SimulatorDisplay:
         )
         self.screen.blit(instructions, instr_rect)
 
+    def _draw_arrow(self, x: int, y: int, target_x: int, target_y: int,
+                     size: int = 10, color: Tuple[int, int, int] = (255, 255, 255)) -> None:
+        """Draw a small arrow at (x, y) pointing toward (target_x, target_y)."""
+        if not self.screen:
+            return
+
+        dx = target_x - x
+        dy = target_y - y
+        dist = math.sqrt(dx * dx + dy * dy)
+        if dist < 1:
+            return
+
+        # Normalize direction
+        dx /= dist
+        dy /= dist
+
+        # Arrow tip is at (x, y), base is behind it
+        tip_x = x + dx * (size // 2)
+        tip_y = y + dy * (size // 2)
+        base_x = x - dx * (size // 2)
+        base_y = y - dy * (size // 2)
+
+        # Perpendicular for arrow wings
+        perp_x = -dy
+        perp_y = dx
+        wing_size = size // 3
+
+        # Draw arrow line
+        pygame.draw.line(self.screen, color, (int(base_x), int(base_y)), (int(tip_x), int(tip_y)), 1)
+
+        # Draw arrow head wings
+        wing1_x = tip_x - dx * wing_size + perp_x * wing_size
+        wing1_y = tip_y - dy * wing_size + perp_y * wing_size
+        wing2_x = tip_x - dx * wing_size - perp_x * wing_size
+        wing2_y = tip_y - dy * wing_size - perp_y * wing_size
+
+        pygame.draw.line(self.screen, color, (int(tip_x), int(tip_y)), (int(wing1_x), int(wing1_y)), 1)
+        pygame.draw.line(self.screen, color, (int(tip_x), int(tip_y)), (int(wing2_x), int(wing2_y)), 1)
+
     def _render_locator(self) -> None:
-        """Render the locator screen with crosshairs and grid."""
+        """Render the locator screen with arrows pointing to target."""
         if not self.screen:
             return
 
         width = self.config.screen_width
         height = self.config.screen_height
-        center_x = width // 2
-        center_y = height // 2
 
-        # Draw grid
-        grid_color = (50, 50, 50)
-        for x in range(0, width, 100):
-            pygame.draw.line(self.screen, grid_color, (x, 0), (x, height))
-        for y in range(0, height, 100):
-            pygame.draw.line(self.screen, grid_color, (0, y), (width, y))
+        # Target: leftmost column, 1/3 from bottom (= 2/3 from top)
+        target_x = 10
+        target_y = int(height * 2 / 3)
 
-        # Draw center crosshair
-        crosshair_color = (255, 0, 0)
-        pygame.draw.line(self.screen, crosshair_color, (center_x - 50, center_y), (center_x + 50, center_y), 2)
-        pygame.draw.line(self.screen, crosshair_color, (center_x, center_y - 50), (center_x, center_y + 50), 2)
+        # Draw arrows on a 20px grid
+        grid_spacing = 20
+        arrow_size = 10
+        arrow_color = (255, 255, 255)
 
-        # Draw corner markers
-        marker_color = (0, 255, 0)
-        marker_size = 30
-        # Top-left
-        pygame.draw.line(self.screen, marker_color, (0, 0), (marker_size, 0), 2)
-        pygame.draw.line(self.screen, marker_color, (0, 0), (0, marker_size), 2)
-        # Top-right
-        pygame.draw.line(self.screen, marker_color, (width - marker_size, 0), (width, 0), 2)
-        pygame.draw.line(self.screen, marker_color, (width - 1, 0), (width - 1, marker_size), 2)
-        # Bottom-left
-        pygame.draw.line(self.screen, marker_color, (0, height - 1), (marker_size, height - 1), 2)
-        pygame.draw.line(self.screen, marker_color, (0, height - marker_size), (0, height), 2)
-        # Bottom-right
-        pygame.draw.line(self.screen, marker_color, (width - marker_size, height - 1), (width, height - 1), 2)
-        pygame.draw.line(self.screen, marker_color, (width - 1, height - marker_size), (width - 1, height), 2)
+        for x in range(grid_spacing, width, grid_spacing):
+            for y in range(grid_spacing, height, grid_spacing):
+                self._draw_arrow(x, y, target_x, target_y, arrow_size, arrow_color)
 
     def _render_calibration(self) -> None:
         """Render the calibration screen with arrows pointing to corners."""

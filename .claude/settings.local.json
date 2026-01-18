@@ -3,7 +3,10 @@
     "allow": [
       "Bash(while read f)",
       "Bash(do echo \"$f\")",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(uv run pytest:*)",
+      "Bash(.venv/bin/python -m pytest:*)",
+      "Bash(python3 -m pytest:*)"
     ]
   }
 }
