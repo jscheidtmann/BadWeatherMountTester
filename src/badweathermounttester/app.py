@@ -22,6 +22,7 @@ class Application:
         # Set up callbacks
         self.server.on_connect(self._on_client_connect)
         self.server.on_config_update(self._on_config_update)
+        self.server.on_mode_change(self._on_mode_change)
 
     def _on_client_connect(self) -> None:
         """Handle client connection."""
@@ -30,6 +31,22 @@ class Application:
     def _on_config_update(self, config: AppConfig) -> None:
         """Handle configuration update."""
         self.config = config
+
+    def _on_mode_change(self, mode: int) -> None:
+        """Handle UI mode change from web interface."""
+        # Map UI step numbers to display modes
+        # Step 1: Configure -> LOCATOR
+        # Step 2: Align -> ALIGN (horizontal lines)
+        # Step 3: Calibrate -> CALIBRATION
+        # Step 4: Measure -> SIMULATION
+        mode_map = {
+            1: DisplayMode.LOCATOR,
+            2: DisplayMode.ALIGN,
+            3: DisplayMode.CALIBRATION,
+            4: DisplayMode.SIMULATION,
+        }
+        if mode in mode_map:
+            self.display.set_mode(mode_map[mode])
 
     def run(self) -> int:
         """Run the application. Returns exit code."""

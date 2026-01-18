@@ -9,8 +9,8 @@ from pathlib import Path
 from threading import Thread
 from typing import Optional, Callable
 
-from flask import Flask, render_template, jsonify, request, g
-from flask_babel import Babel, gettext as _
+from flask import Flask, render_template, jsonify, request  # , g
+from flask_babel import Babel  # , gettext as _
 
 from badweathermounttester.config import AppConfig, DEFAULT_SETUP_PATH
 
@@ -47,6 +47,7 @@ class WebServer:
         self._server_thread: Optional[Thread] = None
         self._on_connect_callback: Optional[Callable[[], None]] = None
         self._on_config_update_callback: Optional[Callable[[AppConfig], None]] = None
+        self._on_mode_change_callback: Optional[Callable[[int], None]] = None
 
     def _setup_routes(self) -> None:
         """Set up Flask routes."""
@@ -273,8 +274,12 @@ class WebServer:
             data = request.get_json()
             if not data or "mode" not in data:
                 return jsonify({"error": "Mode not specified"}), 400
-            # Mode changes will be handled by the main app
-            return jsonify({"status": "ok", "mode": data["mode"]})
+
+            mode = int(data["mode"])
+            if self._on_mode_change_callback:
+                self._on_mode_change_callback(mode)
+
+            return jsonify({"status": "ok", "mode": mode})
 
         @self.app.route("/api/calibration/click", methods=["POST"])
         def calibration_click():
@@ -291,6 +296,10 @@ class WebServer:
     def on_config_update(self, callback: Callable[[AppConfig], None]) -> None:
         """Set callback for when configuration is updated."""
         self._on_config_update_callback = callback
+
+    def on_mode_change(self, callback: Callable[[int], None]) -> None:
+        """Set callback for when the UI mode changes."""
+        self._on_mode_change_callback = callback
 
     def get_network_address(self) -> str:
         """Get the network address for clients to connect to."""

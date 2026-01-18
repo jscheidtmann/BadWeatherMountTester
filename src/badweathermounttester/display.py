@@ -21,6 +21,7 @@ class DisplayMode(Enum):
 
     WAITING = auto()
     LOCATOR = auto()
+    ALIGN = auto()  # Horizontal lines for alignment
     CALIBRATION = auto()
     SIMULATION = auto()
 
@@ -98,6 +99,8 @@ class SimulatorDisplay:
             self._render_waiting()
         elif self.mode == DisplayMode.LOCATOR:
             self._render_locator()
+        elif self.mode == DisplayMode.ALIGN:
+            self._render_align()
         elif self.mode == DisplayMode.CALIBRATION:
             self._render_calibration()
         elif self.mode == DisplayMode.SIMULATION:
@@ -142,7 +145,7 @@ class SimulatorDisplay:
         self.screen.blit(instructions, instr_rect)
 
     def _draw_arrow(self, x: int, y: int, target_x: int, target_y: int,
-                     size: int = 10, color: Tuple[int, int, int] = (255, 255, 255)) -> None:
+                    size: int = 10, color: Tuple[int, int, int] = (255, 255, 255)) -> None:
         """Draw a small arrow at (x, y) pointing toward (target_x, target_y)."""
         if not self.screen:
             return
@@ -200,10 +203,31 @@ class SimulatorDisplay:
             1,
         )
 
+    def _draw_grid(self, parts: int = 4, color: Tuple[int, int, int] = (0, 0, 255)) -> None:
+        """Draw a grid on the screen."""
+        if not self.screen:
+            return
+
+        width = self.config.screen_width
+        height = self.config.screen_height
+
+        spacing_w = width // parts
+        spacing_h = height // parts
+        for x in range(0, width, spacing_w):
+            pygame.draw.line(self.screen, color, (x, 0), (x, height), 1)
+        for y in range(0, height, spacing_h):
+            pygame.draw.line(self.screen, color, (0, y), (width, y), 1)
+        
+        # Draw lines at the right and bottom edges
+        pygame.draw.line(self.screen, color, (width - 1, 0), (width - 1, height), 1)
+        pygame.draw.line(self.screen, color, (0, height - 1), (width, height - 1), 1)
+
     def _render_locator(self) -> None:
         """Render the locator screen with arrows pointing to target."""
         if not self.screen:
             return
+
+        self._draw_grid()
 
         width = self.config.screen_width
         height = self.config.screen_height
@@ -222,6 +246,54 @@ class SimulatorDisplay:
         for x in range(grid_spacing, width, grid_spacing):
             for y in range(grid_spacing, height, grid_spacing):
                 self._draw_arrow(x, y, target_x, target_y, arrow_size, arrow_color)
+
+    def _render_align(self) -> None:
+        """Render horizontal lines for alignment. Line at crosshair position is red."""
+        if not self.screen:
+            return
+
+        width = self.config.screen_width
+        height = self.config.screen_height
+        line_spacing = 50
+        gray_color = (128, 128, 128)  # 50% gray
+        red_color = (255, 0, 0)
+
+        # Use the same target position as the locator crosshair (1/3 from bottom = 2/3 from top)
+        target_y = int(height * 2 / 3)
+
+        font = pygame.font.Font(None, 24)
+
+        # Draw horizontal lines 50px apart, centered on the target_y position
+        # Lines above the target
+        y = target_y
+        while y >= 0:
+            distance = target_y - y
+            color = red_color if y == target_y else gray_color
+            pygame.draw.line(self.screen, color, (0, y), (width, y), 1)
+
+            # Draw distance labels at both ends
+            label = font.render(str(distance), True, color)
+            # Left side
+            self.screen.blit(label, (5, y - label.get_height() - 2))
+            # Right side
+            self.screen.blit(label, (width - label.get_width() - 5, y - label.get_height() - 2))
+
+            y -= line_spacing
+
+        # Lines below the target (negative distances)
+        y = target_y + line_spacing
+        while y <= height:
+            distance = target_y - y  # Negative for lines below
+            pygame.draw.line(self.screen, gray_color, (0, y), (width, y), 1)
+
+            # Draw distance labels at both ends
+            label = font.render(str(distance), True, gray_color)
+            # Left side
+            self.screen.blit(label, (5, y - label.get_height() - 2))
+            # Right side
+            self.screen.blit(label, (width - label.get_width() - 5, y - label.get_height() - 2))
+
+            y += line_spacing
 
     def _render_calibration(self) -> None:
         """Render the calibration screen with arrows pointing to corners."""

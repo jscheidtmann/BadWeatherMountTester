@@ -227,6 +227,14 @@
             margin-bottom: 0;
         }
 
+        .step-content {
+            display: none;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+
         @media (max-width: 600px) {
             .config-row {
                 flex-direction: column;
@@ -252,84 +260,111 @@
             <div class="step" id="step-4">4. {{ _('Measure') }}</div>
         </div>
 
-        <div class="config-row">
-            <div class="card" id="config-card">
-                <h2>{{ _('Mount Configuration') }}</h2>
-                <div class="form-group">
-                    <label for="latitude">{{ _('Latitude (degrees)') }}</label>
-                    <input type="number" id="latitude" step="0.1" value="0">
+        <!-- Step 1: Configure -->
+        <div class="step-content active" id="step-1-content">
+            <div class="config-row">
+                <div class="card" id="config-card">
+                    <h2>{{ _('Mount Configuration') }}</h2>
+                    <div class="form-group">
+                        <label for="latitude">{{ _('Latitude (degrees)') }}</label>
+                        <input type="number" id="latitude" step="0.1" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="focal-length">{{ _('Guide Scope Focal Length (mm)') }}</label>
+                        <input type="number" id="focal-length" step="1" value="200">
+                    </div>
+                    <div class="form-group">
+                        <label for="distance">{{ _('Distance to Screen (m)') }}</label>
+                        <input type="number" id="distance" step="0.1" value="5">
+                    </div>
+                    <div class="form-group">
+                        <label for="period">{{ _('Mount Main Period (seconds)') }}</label>
+                        <input type="number" id="period" step="1" value="480">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="focal-length">{{ _('Guide Scope Focal Length (mm)') }}</label>
-                    <input type="number" id="focal-length" step="1" value="200">
+
+                <div class="card" id="camera-card">
+                    <h2>{{ _('Guiding Camera') }}</h2>
+                    <div class="form-group">
+                        <label for="pixel-size">{{ _('Pixel Size (micrometer)') }}</label>
+                        <input type="number" id="pixel-size" step="0.01" value="3.75">
+                    </div>
+                    <div class="form-group">
+                        <label for="camera-width">{{ _('Width (pixels)') }}</label>
+                        <input type="number" id="camera-width" step="1" value="1280">
+                    </div>
+                    <div class="form-group">
+                        <label for="camera-height">{{ _('Height (pixels)') }}</label>
+                        <input type="number" id="camera-height" step="1" value="960">
+                    </div>
+                    <div class="screen-calc">
+                        <p>{{ _('Resolution:') }}</p>
+                        <p><strong id="camera-resolution-arcsec">--</strong> arcsec/px</p>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="distance">{{ _('Distance to Screen (m)') }}</label>
-                    <input type="number" id="distance" step="0.1" value="5">
-                </div>
-                <div class="form-group">
-                    <label for="period">{{ _('Mount Main Period (seconds)') }}</label>
-                    <input type="number" id="period" step="1" value="480">
+
+                <div class="card" id="screen-card">
+                    <h2>{{ _('Screen') }}</h2>
+                    <div class="form-group">
+                        <label for="screen-width-mm">{{ _('Screen Width (mm)') }}</label>
+                        <input type="number" id="screen-width-mm" step="1" value="527">
+                    </div>
+                    <div class="screen-calc">
+                        <p>{{ _('Pixel Pitch:') }}</p>
+                        <p><strong id="pixel-pitch-mm">--</strong> mm/px</p>
+                        <p><strong id="pixel-pitch-arcsec">--</strong> arcsec/px</p>
+                    </div>
                 </div>
             </div>
 
-            <div class="card" id="camera-card">
-                <h2>{{ _('Guiding Camera') }}</h2>
-                <div class="form-group">
-                    <label for="pixel-size">{{ _('Pixel Size (micrometer)') }}</label>
-                    <input type="number" id="pixel-size" step="0.01" value="3.75">
-                </div>
-                <div class="form-group">
-                    <label for="camera-width">{{ _('Width (pixels)') }}</label>
-                    <input type="number" id="camera-width" step="1" value="1280">
-                </div>
-                <div class="form-group">
-                    <label for="camera-height">{{ _('Height (pixels)') }}</label>
-                    <input type="number" id="camera-height" step="1" value="960">
-                </div>
-                <div class="screen-calc">
-                    <p>{{ _('Resolution:') }}</p>
-                    <p><strong id="camera-resolution-arcsec">--</strong> arcsec/px</p>
+            <div class="card" id="info-card">
+                <h2>{{ _('Calculated Values') }}</h2>
+                <div class="calc-grid">
+                    <p>{{ _('Effective FL for PHD2:') }} <strong id="effective-focal">--</strong> mm</p>
+                    <p>{{ _('Measurement duration:') }} ~<strong id="duration">--</strong> {{ _('minutes') }}</p>
+                    <p>{{ _('Recommended Binning:') }} <strong id="binning">--</strong>x</p>
+                    <p>{{ _('Area on Simulator:') }} <strong id="area-width">--</strong> x <strong id="area-height">--</strong> mm</p>
                 </div>
             </div>
 
-            <div class="card" id="screen-card">
-                <h2>{{ _('Screen') }}</h2>
-                <div class="form-group">
-                    <label for="screen-width-mm">{{ _('Screen Width (mm)') }}</label>
-                    <input type="number" id="screen-width-mm" step="1" value="527">
-                </div>
-                <div class="screen-calc">
-                    <p>{{ _('Pixel Pitch:') }}</p>
-                    <p><strong id="pixel-pitch-mm">--</strong> mm/px</p>
-                    <p><strong id="pixel-pitch-arcsec">--</strong> arcsec/px</p>
-                </div>
+            <div class="card instructions-card">
+                <h2>{{ _('Instructions') }}</h2>
+                <p>{{ _('Fill in the values above, then set up PHD2 as follows:') }}</p>
+                <ol>
+                    <li>{{ _('Create a new guiding profile in PHD2 with the Effective FL and Binning values as listed above.') }}</li>
+                    <li>{{ _('Disable multi-star guiding (we use one simulated star).') }}</li>
+                    <li>{{ _('Start looping in PHD2.') }}</li>
+                    <li>{{ _('From the Tools menu, enable the cross in the camera display.') }}</li>
+                    <li>{{ _('Point the mount at the simulator display, focus and locate the cross, by following the arrows') }}</li>
+                    <li>{{ _('While on the way orient the simulator display such (grid), that you\'re roughly in focus all over the simulator display') }}</li>
+                </ol>
+                <p>{{ _('Then press "Next" to start aligning the mount.') }}</p>
             </div>
         </div>
 
-        <div class="card" id="info-card">
-            <h2>{{ _('Calculated Values') }}</h2>
-            <div class="calc-grid">
-                <p>{{ _('Effective FL for PHD2:') }} <strong id="effective-focal">--</strong> mm</p>
-                <p>{{ _('Measurement duration:') }} ~<strong id="duration">--</strong> {{ _('minutes') }}</p>
-                <p>{{ _('Recommended Binning:') }} <strong id="binning">--</strong>x</p>
-                <p>{{ _('Area on Simulator:') }} <strong id="area-width">--</strong> x <strong id="area-height">--</strong> mm</p>
+        <!-- Step 2: Align -->
+        <div class="step-content" id="step-2-content">
+            <div class="card instructions-card">
+                <h2>{{ _('Instructions') }}</h2>
+                <p>{{ _('Rotate the mount in Azimuth, so that when going from left-to-right, the red line will be visible when rotating the mount only in RA.') }}</p>
+                <p>{{ _('Press "Next" when aligned, or "Back" to return to configuration.') }}</p>
             </div>
         </div>
 
-        <div class="card instructions-card">
-            <h2>{{ _('Instructions') }}</h2>
-            <p>{{ _('Fill in the values above, then set up PHD2 as follows:') }}</p>
-            <ol>
-                
-                <li>{{ _('Create a new guiding profile in PHD2 with the Effective FL and Binning values as listed above.') }}</li>
-                <li>{{ _('Disable multi-star guiding (we use one simulated star).') }}</li>
-                <li>{{ _('Start looping in PHD2.') }}</li>
-                <li>{{ _('From the Tools menu, enable the cross in the camera display.') }}</li>
-                <li>{{ _('Point the mount at the simulator display, focus and locate the cross, by following the arrows') }}</li>
-                <li>{{ _('While on the way orient the simulator display such, that you\'re roughly in focus all over the simulator display') }}</li>
-            </ol>
-            <p>{{ _('Then press "Next" to start aligning the mount.') }}</p>
+        <!-- Step 3: Calibrate -->
+        <div class="step-content" id="step-3-content">
+            <div class="card instructions-card">
+                <h2>{{ _('Instructions') }}</h2>
+                <p>{{ _('Calibration step - coming soon.') }}</p>
+            </div>
+        </div>
+
+        <!-- Step 4: Measure -->
+        <div class="step-content" id="step-4-content">
+            <div class="card instructions-card">
+                <h2>{{ _('Instructions') }}</h2>
+                <p>{{ _('Measurement step - coming soon.') }}</p>
+            </div>
         </div>
 
         <div class="actions">
@@ -613,10 +648,18 @@
 
         btnNext.addEventListener('click', async () => {
             if (currentStep < 4) {
+                // Update step indicator
                 document.getElementById(`step-${currentStep}`).classList.remove('active');
                 document.getElementById(`step-${currentStep}`).classList.add('completed');
+
+                // Hide current step content
+                document.getElementById(`step-${currentStep}-content`).classList.remove('active');
+
                 currentStep++;
+
+                // Show new step content
                 document.getElementById(`step-${currentStep}`).classList.add('active');
+                document.getElementById(`step-${currentStep}-content`).classList.add('active');
                 btnBack.disabled = false;
 
                 // Notify server of mode change
@@ -630,10 +673,19 @@
 
         btnBack.addEventListener('click', async () => {
             if (currentStep > 1) {
+                // Update step indicator
                 document.getElementById(`step-${currentStep}`).classList.remove('active');
+
+                // Hide current step content
+                document.getElementById(`step-${currentStep}-content`).classList.remove('active');
+
                 currentStep--;
+
+                // Show previous step content
                 document.getElementById(`step-${currentStep}`).classList.remove('completed');
                 document.getElementById(`step-${currentStep}`).classList.add('active');
+                document.getElementById(`step-${currentStep}-content`).classList.add('active');
+
                 if (currentStep === 1) {
                     btnBack.disabled = true;
                 }
@@ -646,6 +698,40 @@
                 });
             }
         });
+
+        // Add click handlers for step indicator tabs
+        for (let stepNum = 1; stepNum <= 4; stepNum++) {
+            const stepElement = document.getElementById(`step-${stepNum}`);
+            stepElement.style.cursor = 'pointer';
+            stepElement.addEventListener('click', async () => {
+                if (stepNum === currentStep) return;
+
+                // Update all step indicators
+                for (let i = 1; i <= 4; i++) {
+                    const el = document.getElementById(`step-${i}`);
+                    el.classList.remove('active', 'completed');
+                    document.getElementById(`step-${i}-content`).classList.remove('active');
+
+                    if (i < stepNum) {
+                        el.classList.add('completed');
+                    } else if (i === stepNum) {
+                        el.classList.add('active');
+                    }
+                }
+
+                // Show new step content
+                document.getElementById(`step-${stepNum}-content`).classList.add('active');
+                currentStep = stepNum;
+                btnBack.disabled = (currentStep === 1);
+
+                // Notify server of mode change
+                await fetch('/api/mode', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mode: currentStep })
+                });
+            });
+        }
 
         // Initialize
         loadConfig();
