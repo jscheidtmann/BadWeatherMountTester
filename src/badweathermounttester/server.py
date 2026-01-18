@@ -116,9 +116,6 @@ class WebServer:
             else:
                 effective_fl = 0
 
-            # Duration in minutes
-            duration_minutes = self.config.mount.main_period_seconds / 60
-
             # Camera resolution in arcsec/pixel
             pixel_size_um = self.config.camera.pixel_size_um
             if effective_fl > 0 and pixel_size_um > 0:
@@ -126,7 +123,7 @@ class WebServer:
             else:
                 camera_resolution_arcsec = 0
 
-            # Binning calculation: 1 camera pixel should match ~1 simulator pixel
+            # Binning calculation: 1 camera pixel should match ~10 simulator pixel
             # Camera pixel projected onto screen = (pixel_size_um * dist) / effective_fl mm
             # Screen pixel size = screen_width_mm / screen_width mm
             # binning = screen_pixel_size / camera_pixel_projected
@@ -137,7 +134,7 @@ class WebServer:
             if effective_fl > 0 and pixel_size_um > 0 and dist > 0 and screen_width_px > 0:
                 camera_pixel_on_screen = (pixel_size_um * dist) / effective_fl  # mm
                 screen_pixel_size = screen_width_mm / screen_width_px  # mm
-                recommended_binning = max(1, round(screen_pixel_size / camera_pixel_on_screen))
+                recommended_binning = max(1, round(screen_pixel_size / 10.0 / camera_pixel_on_screen))
             else:
                 recommended_binning = 1
 
@@ -166,6 +163,9 @@ class WebServer:
             else:
                 pixel_pitch_mm = 0
                 pixel_pitch_arcsec = 0
+
+            # Duration in minutes
+            duration_minutes = pixel_pitch_arcsec * screen_width_px / 15.0 / 60.0  # Assuming 15 arcsec/sec sidereal rate and convert to minutes
 
             return {
                 "effective_focal_length": round(effective_fl, 1),

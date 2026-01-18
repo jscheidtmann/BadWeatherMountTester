@@ -311,8 +311,8 @@
             <h2>{{ _('Calculated Values') }}</h2>
             <div class="calc-grid">
                 <p>{{ _('Effective FL for PHD2:') }} <strong id="effective-focal">--</strong> mm</p>
-                <p>{{ _('Measurement duration:') }} <strong id="duration">--</strong> {{ _('minutes') }}</p>
-                <p>{{ _('Binning:') }} <strong id="binning">--</strong>x</p>
+                <p>{{ _('Measurement duration:') }} ~<strong id="duration">--</strong> {{ _('minutes') }}</p>
+                <p>{{ _('Recommended Binning:') }} <strong id="binning">--</strong>x</p>
                 <p>{{ _('Area on Simulator:') }} <strong id="area-width">--</strong> x <strong id="area-height">--</strong> mm</p>
             </div>
         </div>
@@ -441,14 +441,6 @@
                 effectiveFocalSpan.textContent = '--';
             }
 
-            // Duration is based on mount period
-            if (mountConfig.main_period_seconds > 0) {
-                const durationMinutes = mountConfig.main_period_seconds / 60;
-                durationSpan.textContent = durationMinutes.toFixed(1);
-            } else {
-                durationSpan.textContent = '--';
-            }
-
             // Camera resolution in arcsec/pixel
             if (effectiveFL > 0 && cameraConfig.pixel_size_um > 0) {
                 const cameraResolutionArcsec = 206.265 * cameraConfig.pixel_size_um / effectiveFL;
@@ -479,14 +471,24 @@
                 pixelPitchArcsecSpan.textContent = '--';
             }
 
+            // Duration is based on sidereal rate and pixel pitch
+            if (screenWidthMm > 0 && screenWidthPx > 0 && dist > 0) {
+                const pixelPitchMm = screenWidthMm / screenWidthPx;
+                const pixelPitchArcsec = (pixelPitchMm / (dist * 1000)) * 206265;
+                const durationMinutes = pixelPitchArcsec * screenWidthPx / 15.0 / 60.0; // Assuming 15 arcsec/sec sidereal rate and convert to minutes;
+                durationSpan.textContent = durationMinutes.toFixed(1);
+            } else {
+                durationSpan.textContent = '--';
+            }
+
             // Camera and display dependent calculations
             if (effectiveFL > 0 && cameraConfig.pixel_size_um > 0 && dist > 0 && screenWidthPx > 0) {
-                // Binning: 1 camera pixel should match ~1 simulator pixel
+                // Binning: 10 camera pixel should match ~1 simulator pixel
                 // Camera pixel projected onto screen = (pixel_size_um * dist) / effective_fl mm
                 // Screen pixel size = screen_width_mm / screen_width_px mm
                 const cameraPixelOnScreen = (cameraConfig.pixel_size_um * dist) / effectiveFL;
                 const screenPixelSize = screenWidthMm / screenWidthPx;
-                const recommendedBinning = Math.max(1, Math.round(screenPixelSize / cameraPixelOnScreen));
+                const recommendedBinning = Math.max(1, Math.round(screenPixelSize / 10.0 / cameraPixelOnScreen));
                 binningSpan.textContent = recommendedBinning;
 
                 // Area on simulator (physical size in mm)
