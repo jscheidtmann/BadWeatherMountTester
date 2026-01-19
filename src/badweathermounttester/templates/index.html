@@ -268,18 +268,6 @@
             background-color: #c82333;
         }
 
-        .polynomial-display {
-            text-align: center;
-            padding: 8px 12px;
-            margin-top: 10px;
-            background-color: #1a1a2e;
-            border: 1px solid #333;
-            border-radius: 4px;
-            font-family: monospace;
-            font-size: 0.9em;
-            color: #ff6b6b;
-        }
-
         @media (max-width: 600px) {
             .config-row {
                 flex-direction: column;
@@ -399,18 +387,65 @@
             gap: 12px;
         }
 
-        .btn-large {
-            padding: 12px 24px;
-            font-size: 1.1em;
+        .media-controls {
+            gap: 8px;
         }
 
-        .btn-success {
-            background-color: #4caf50;
+        .btn-media {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 1.4em;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #333;
             color: #fff;
+            border: 2px solid #555;
+            transition: all 0.2s;
         }
 
-        .btn-success:hover {
-            background-color: #45a049;
+        .btn-media:hover {
+            background-color: #444;
+            border-color: #00d4ff;
+        }
+
+        .btn-media:disabled {
+            background-color: #222;
+            color: #555;
+            border-color: #333;
+            cursor: not-allowed;
+        }
+
+        .btn-media.btn-play {
+            width: 60px;
+            height: 60px;
+            font-size: 1.6em;
+            background-color: #00d4ff;
+            color: #000;
+            border-color: #00d4ff;
+        }
+
+        .btn-media.btn-play:hover {
+            background-color: #00a8cc;
+            border-color: #00a8cc;
+        }
+
+        .btn-media.btn-play.playing {
+            background-color: #ff9800;
+            border-color: #ff9800;
+        }
+
+        .btn-media.btn-play.playing:hover {
+            background-color: #f57c00;
+            border-color: #f57c00;
+        }
+
+        .btn-media.btn-play:disabled {
+            background-color: #555;
+            color: #888;
+            border-color: #555;
         }
     </style>
 </head>
@@ -583,16 +618,14 @@
                     <p>{{ _('Elapsed:') }} <strong id="elapsed-time">0:00</strong> | {{ _('Total:') }} <strong id="total-time">--:--</strong></p>
                 </div>
 
-                <div class="simulation-buttons">
-                    <button class="btn btn-large" id="btn-start-sim">{{ _('Start Simulation') }}</button>
-                    <button class="btn btn-secondary btn-large" id="btn-stop-sim" disabled>{{ _('Pause') }}</button>
-                    <button class="btn btn-secondary btn-large" id="btn-reset-sim">{{ _('Reset') }}</button>
+                <div class="simulation-buttons media-controls">
+                    <button class="btn btn-media" id="btn-reset-sim" title="{{ _('Reset to start') }}">⏮</button>
+                    <button class="btn btn-media" id="btn-skip-back" title="{{ _('Skip back 10s') }}">⏪</button>
+                    <button class="btn btn-media btn-play" id="btn-play-pause" title="{{ _('Play/Pause') }}">▶</button>
+                    <button class="btn btn-media" id="btn-skip-forward" title="{{ _('Skip forward 10s') }}">⏩</button>
+                    <button class="btn btn-media" id="btn-stop-sim" title="{{ _('Stop') }}">⏹</button>
                 </div>
             </div>
-        </div>
-
-        <div class="polynomial-display" id="polynomial-display" style="display: none;">
-            <span id="polynomial-formula"></span>
         </div>
 
         <div class="actions">
@@ -905,8 +938,6 @@
                 // Load calibration points when entering step 3
                 if (currentStep === 3) {
                     loadCalibrationPoints();
-                } else {
-                    updatePolynomialDisplay();  // Hide polynomial when leaving step 3
                 }
             }
         });
@@ -940,8 +971,6 @@
                 // Load calibration points when returning to step 3
                 if (currentStep === 3) {
                     loadCalibrationPoints();
-                } else {
-                    updatePolynomialDisplay();  // Hide polynomial when leaving step 3
                 }
             }
         });
@@ -981,8 +1010,6 @@
                 // Load calibration points when entering step 3
                 if (stepNum === 3) {
                     loadCalibrationPoints();
-                } else {
-                    updatePolynomialDisplay();  // Hide polynomial when leaving step 3
                 }
             });
         }
@@ -1000,33 +1027,6 @@
         let hoverDebounceTimer = null;
         const HOVER_DEBOUNCE_MS = 50;
         let selectedPointIndex = -1;  // -1 means no selection
-        let polynomialCoeffs = null;  // [a, b, c, d] for ax³+bx²+cx+d
-
-        const polynomialDisplay = document.getElementById('polynomial-display');
-        const polynomialFormula = document.getElementById('polynomial-formula');
-
-        // Format a number for display in polynomial
-        function formatCoeff(val, isFirst) {
-            const absVal = Math.abs(val);
-            const sign = val >= 0 ? '+' : '-';
-            const formatted = absVal.toExponential(3);
-            if (isFirst) {
-                return val >= 0 ? formatted : '-' + formatted;
-            }
-            return ` ${sign} ${formatted}`;
-        }
-
-        // Update polynomial display
-        function updatePolynomialDisplay() {
-            if (polynomialCoeffs && currentStep === 3) {
-                const [a, b, c, d] = polynomialCoeffs;
-                const formula = `y = ${formatCoeff(a, true)}x³${formatCoeff(b, false)}x²${formatCoeff(c, false)}x${formatCoeff(d, false)}`;
-                polynomialFormula.textContent = formula;
-                polynomialDisplay.style.display = 'block';
-            } else {
-                polynomialDisplay.style.display = 'none';
-            }
-        }
 
         // Initialize canvas with screen aspect ratio
         function initCalibrationCanvas() {
@@ -1070,32 +1070,6 @@
                 ctx.beginPath();
                 ctx.moveTo(0, y);
                 ctx.lineTo(width, y);
-                ctx.stroke();
-            }
-
-            // Draw polynomial fit curve (red) if available
-            if (polynomialCoeffs && calibrationPoints.length > 3) {
-                const [a, b, c, d] = polynomialCoeffs;
-                const xCoords = calibrationPoints.map(p => p[0]);
-                const xMin = Math.min(...xCoords);
-                const xMax = Math.max(...xCoords);
-
-                ctx.strokeStyle = '#f00';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                let started = false;
-                for (let screenX = xMin; screenX <= xMax; screenX += 2) {
-                    const screenY = a * screenX**3 + b * screenX**2 + c * screenX + d;
-                    if (screenY >= 0 && screenY <= screenHeight) {
-                        const canvasPoint = screenToCanvas(screenX, screenY);
-                        if (!started) {
-                            ctx.moveTo(canvasPoint.x, canvasPoint.y);
-                            started = true;
-                        } else {
-                            ctx.lineTo(canvasPoint.x, canvasPoint.y);
-                        }
-                    }
-                }
                 ctx.stroke();
             }
 
@@ -1195,12 +1169,10 @@
 
                 if (data.status === 'ok' && data.points) {
                     calibrationPoints = data.points;
-                    polynomialCoeffs = data.polynomial || null;
                     // Auto-select the newly added point
                     selectedPointIndex = calibrationPoints.length - 1;
                     notifySelectedIndex();
                     drawCalibrationCanvas();
-                    updatePolynomialDisplay();
                 }
             } catch (error) {
                 console.error('Failed to record calibration point:', error);
@@ -1217,11 +1189,9 @@
 
                 if (data.status === 'ok') {
                     calibrationPoints = [];
-                    polynomialCoeffs = null;
                     selectedPointIndex = -1;
                     notifySelectedIndex();
                     drawCalibrationCanvas();
-                    updatePolynomialDisplay();
                 }
             } catch (error) {
                 console.error('Failed to reset calibration:', error);
@@ -1240,14 +1210,12 @@
 
                 if (data.status === 'ok') {
                     calibrationPoints = data.points;
-                    polynomialCoeffs = data.polynomial || null;
                     // Adjust selected index if needed
                     if (selectedPointIndex >= calibrationPoints.length) {
                         selectedPointIndex = calibrationPoints.length - 1;
                         notifySelectedIndex();
                     }
                     drawCalibrationCanvas();
-                    updatePolynomialDisplay();
                 }
             } catch (error) {
                 console.error('Failed to delete last point:', error);
@@ -1281,9 +1249,7 @@
 
                 if (data.status === 'ok' && data.points) {
                     calibrationPoints = data.points;
-                    polynomialCoeffs = data.polynomial || null;
                     drawCalibrationCanvas();
-                    updatePolynomialDisplay();
                 }
             } catch (error) {
                 console.error('Failed to move point:', error);
@@ -1371,9 +1337,7 @@
                 const response = await fetch('/api/calibration/points');
                 const data = await response.json();
                 calibrationPoints = data.points || [];
-                polynomialCoeffs = data.polynomial || null;
                 initCalibrationCanvas();
-                updatePolynomialDisplay();
             } catch (error) {
                 console.error('Failed to load calibration points:', error);
                 initCalibrationCanvas();
@@ -1384,9 +1348,11 @@
         loadConfig();
 
         // ===== Simulation Control =====
-        const btnStartSim = document.getElementById('btn-start-sim');
+        const btnPlayPause = document.getElementById('btn-play-pause');
         const btnStopSim = document.getElementById('btn-stop-sim');
         const btnResetSim = document.getElementById('btn-reset-sim');
+        const btnSkipBack = document.getElementById('btn-skip-back');
+        const btnSkipForward = document.getElementById('btn-skip-forward');
         const statusDot = document.getElementById('status-dot');
         const statusText = document.getElementById('status-text');
         const countdownTime = document.getElementById('countdown-time');
@@ -1397,6 +1363,7 @@
 
         let simulationSetup = false;
         let simulationPollingInterval = null;
+        let isPlaying = false;
 
         // Format seconds as M:SS or MM:SS
         function formatTime(seconds) {
@@ -1423,29 +1390,42 @@
                 totalTime.textContent = formatTime(status.total_seconds);
             }
 
+            // Update play/pause button state
+            isPlaying = status.running;
+            if (status.running) {
+                btnPlayPause.textContent = '⏸';
+                btnPlayPause.classList.add('playing');
+            } else {
+                btnPlayPause.textContent = '▶';
+                btnPlayPause.classList.remove('playing');
+            }
+
             // Update status indicator
             statusDot.className = 'status-dot';
             if (status.complete) {
                 statusDot.classList.add('complete');
                 statusText.textContent = 'Complete';
-                btnStartSim.disabled = true;
-                btnStopSim.disabled = true;
+                btnPlayPause.disabled = true;
+                btnSkipForward.disabled = true;
             } else if (status.running) {
                 statusDot.classList.add('running');
                 statusText.textContent = 'Running';
-                btnStartSim.disabled = true;
-                btnStopSim.disabled = false;
+                btnPlayPause.disabled = false;
+                btnSkipForward.disabled = false;
             } else if (status.elapsed_seconds > 0) {
                 statusDot.classList.add('paused');
                 statusText.textContent = 'Paused';
-                btnStartSim.disabled = false;
-                btnStopSim.disabled = true;
+                btnPlayPause.disabled = false;
+                btnSkipForward.disabled = false;
             } else {
                 statusDot.classList.add('ready');
                 statusText.textContent = 'Ready';
-                btnStartSim.disabled = false;
-                btnStopSim.disabled = true;
+                btnPlayPause.disabled = false;
+                btnSkipForward.disabled = false;
             }
+
+            // Disable skip back if at start
+            btnSkipBack.disabled = (status.elapsed_seconds || 0) <= 0;
         }
 
         // Poll simulation status
@@ -1481,39 +1461,48 @@
                     simulationSetup = true;
                     totalTime.textContent = formatTime(data.total_seconds);
                     countdownTime.textContent = formatTime(data.total_seconds);
-                    btnStartSim.disabled = false;
+                    btnPlayPause.disabled = false;
                 } else {
                     console.error('Simulation setup failed:', data.error);
                     statusText.textContent = 'Setup Error';
-                    btnStartSim.disabled = true;
+                    btnPlayPause.disabled = true;
                 }
             } catch (error) {
                 console.error('Failed to setup simulation:', error);
                 statusText.textContent = 'Setup Error';
-                btnStartSim.disabled = true;
+                btnPlayPause.disabled = true;
             }
         }
 
-        // Start simulation
-        btnStartSim.addEventListener('click', async () => {
+        // Play/Pause toggle
+        btnPlayPause.addEventListener('click', async () => {
             try {
-                await fetch('/api/simulation/start', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({})
-                });
-
-                // Start polling for status updates
-                if (!simulationPollingInterval) {
-                    simulationPollingInterval = setInterval(pollSimulationStatus, 500);
+                if (isPlaying) {
+                    // Pause
+                    await fetch('/api/simulation/stop', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({})
+                    });
+                } else {
+                    // Play
+                    await fetch('/api/simulation/start', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({})
+                    });
+                    // Start polling for status updates
+                    if (!simulationPollingInterval) {
+                        simulationPollingInterval = setInterval(pollSimulationStatus, 500);
+                    }
                 }
                 pollSimulationStatus();
             } catch (error) {
-                console.error('Failed to start simulation:', error);
+                console.error('Failed to toggle play/pause:', error);
             }
         });
 
-        // Stop/pause simulation
+        // Stop simulation (pause and reset)
         btnStopSim.addEventListener('click', async () => {
             try {
                 await fetch('/api/simulation/stop', {
@@ -1521,13 +1510,19 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({})
                 });
+                await fetch('/api/simulation/reset', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                await setupSimulation();
                 pollSimulationStatus();
             } catch (error) {
                 console.error('Failed to stop simulation:', error);
             }
         });
 
-        // Reset simulation
+        // Reset to start
         btnResetSim.addEventListener('click', async () => {
             try {
                 await fetch('/api/simulation/reset', {
@@ -1535,12 +1530,38 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({})
                 });
-
-                // Re-setup the simulation
                 await setupSimulation();
                 pollSimulationStatus();
             } catch (error) {
                 console.error('Failed to reset simulation:', error);
+            }
+        });
+
+        // Skip back 10 seconds
+        btnSkipBack.addEventListener('click', async () => {
+            try {
+                await fetch('/api/simulation/skip', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ seconds: -10 })
+                });
+                pollSimulationStatus();
+            } catch (error) {
+                console.error('Failed to skip back:', error);
+            }
+        });
+
+        // Skip forward 10 seconds
+        btnSkipForward.addEventListener('click', async () => {
+            try {
+                await fetch('/api/simulation/skip', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ seconds: 10 })
+                });
+                pollSimulationStatus();
+            } catch (error) {
+                console.error('Failed to skip forward:', error);
             }
         });
 

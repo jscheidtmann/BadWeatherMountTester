@@ -54,6 +54,7 @@ class SimulatorDisplay:
         # Simulation state
         self.simulation_running: bool = False
         self.simulation_start_time: Optional[float] = None
+        self.simulation_elapsed: float = 0.0  # Elapsed time in seconds (stored when paused)
         self.simulation_x_start: int = 0
         self.simulation_x_end: int = 0
         self.simulation_pixels_per_second: float = 1.0  # Will be calculated from sidereal rate
@@ -127,21 +128,52 @@ class SimulatorDisplay:
         self.simulation_pixels_per_second = pixels_per_second
         self.simulation_running = False
         self.simulation_start_time = None
+        self.simulation_elapsed = 0.0
 
     def start_simulation(self) -> None:
         """Start or resume the simulation."""
         if not self.simulation_running:
             self.simulation_running = True
-            self.simulation_start_time = time.time()
+            # Set start_time so that elapsed calculation gives correct value
+            # start_time = now - already_elapsed
+            self.simulation_start_time = time.time() - self.simulation_elapsed
 
     def stop_simulation(self) -> None:
         """Stop/pause the simulation."""
+        if self.simulation_running and self.simulation_start_time is not None:
+            # Store the elapsed time before pausing
+            self.simulation_elapsed = time.time() - self.simulation_start_time
         self.simulation_running = False
 
     def reset_simulation(self) -> None:
         """Reset the simulation to the start."""
         self.simulation_running = False
         self.simulation_start_time = None
+        self.simulation_elapsed = 0.0
+
+    def skip_simulation(self, seconds: float) -> None:
+        """Skip the simulation forward or backward by the given number of seconds."""
+        # Calculate total time for clamping
+        total_distance = self.simulation_x_end - self.simulation_x_start
+        total_time = total_distance / self.simulation_pixels_per_second if self.simulation_pixels_per_second > 0 else 0
+
+        if self.simulation_running and self.simulation_start_time is not None:
+            # Currently running - adjust start time
+            self.simulation_start_time -= seconds
+            # Clamp
+            elapsed = time.time() - self.simulation_start_time
+            if elapsed < 0:
+                self.simulation_start_time = time.time()
+            elif elapsed > total_time:
+                self.simulation_start_time = time.time() - total_time
+        else:
+            # Paused - adjust stored elapsed time
+            self.simulation_elapsed += seconds
+            # Clamp
+            if self.simulation_elapsed < 0:
+                self.simulation_elapsed = 0.0
+            elif self.simulation_elapsed > total_time:
+                self.simulation_elapsed = total_time
 
     def get_simulation_status(self) -> dict:
         """Get current simulation status."""
@@ -159,10 +191,11 @@ class SimulatorDisplay:
         total_distance = self.simulation_x_end - self.simulation_x_start
         total_time = total_distance / self.simulation_pixels_per_second if self.simulation_pixels_per_second > 0 else 0
 
-        if self.simulation_start_time is None:
-            elapsed = 0
-        else:
+        # Get elapsed time: from start_time if running, from stored elapsed if paused
+        if self.simulation_running and self.simulation_start_time is not None:
             elapsed = time.time() - self.simulation_start_time
+        else:
+            elapsed = self.simulation_elapsed
 
         current_x = self.simulation_x_start + int(elapsed * self.simulation_pixels_per_second)
         current_x = min(current_x, self.simulation_x_end)
@@ -177,6 +210,7 @@ class SimulatorDisplay:
 
         if complete:
             self.simulation_running = False
+            self.simulation_elapsed = total_time  # Store final elapsed time
 
         return {
             "running": self.simulation_running,
@@ -486,32 +520,31 @@ class SimulatorDisplay:
         current_x = status["current_x"]
         current_y = status["current_y"]
 
-        # Draw the polynomial curve faintly for reference
-        if self.calibration_polynomial and len(self.calibration_points) > 3:
-            a, b, c, d = self.calibration_polynomial
-            x_coords = [p[0] for p in self.calibration_points]
-            x_min, x_max = min(x_coords), max(x_coords)
-            poly_points = []
-            for x in range(x_min, x_max + 1, 4):
-                y = a * x**3 + b * x**2 + c * x + d
-                if 0 <= y <= height:
-                    poly_points.append((x, int(y)))
-            if len(poly_points) > 1:
-                pygame.draw.lines(self.screen, (40, 40, 40), False, poly_points, 1)
-
-        # Draw the star at current position
+        # Draw the star as a 2D Gaussian distribution
+        # FWHM = 4 pixels, sigma = FWHM / (2 * sqrt(2 * ln(2))) ≈ FWHM / 2.355
         if self.calibration_polynomial and 0 <= current_y <= height:
-            star_color = (
-                self.config.star_brightness,
-                self.config.star_brightness,
-                self.config.star_brightness,
-            )
-            pygame.draw.circle(
-                self.screen,
-                star_color,
-                (current_x, current_y),
-                self.config.star_size,
-            )
+            fwhm = 4.0
+            sigma = fwhm / 2.355
+            max_brightness = self.config.star_brightness
+
+            # Draw pixels in a region around the star (3*sigma is enough to capture most of the light)
+            radius = int(3 * sigma) + 1
+            for dy in range(-radius, radius + 1):
+                for dx in range(-radius, radius + 1):
+                    px = current_x + dx
+                    py = current_y + dy
+
+                    # Skip if outside screen
+                    if px < 0 or px >= width or py < 0 or py >= height:
+                        continue
+
+                    # Calculate Gaussian brightness
+                    dist_sq = dx * dx + dy * dy
+                    brightness = max_brightness * math.exp(-dist_sq / (2 * sigma * sigma))
+
+                    if brightness >= 1:  # Only draw if brightness is visible
+                        gray = int(brightness)
+                        self.screen.set_at((px, py), (gray, gray, gray))
 
         # Draw status info at top
         font = pygame.font.Font(None, 36)

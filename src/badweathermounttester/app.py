@@ -46,6 +46,7 @@ class Application:
         self.server.on_simulation_start(self._on_simulation_start)
         self.server.on_simulation_stop(self._on_simulation_stop)
         self.server.on_simulation_reset(self._on_simulation_reset)
+        self.server.on_simulation_skip(self._on_simulation_skip)
         self.server.set_simulation_status_getter(self._get_simulation_status)
 
     def _on_client_connect(self) -> None:
@@ -140,6 +141,10 @@ class Application:
     def _on_simulation_reset(self) -> None:
         """Handle simulation reset."""
         self.display.reset_simulation()
+
+    def _on_simulation_skip(self, seconds: float) -> None:
+        """Handle simulation skip."""
+        self.display.skip_simulation(seconds)
 
     def _get_simulation_status(self) -> dict:
         """Get current simulation status from display."""

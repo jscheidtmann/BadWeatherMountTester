@@ -69,6 +69,7 @@ class WebServer:
         self._on_simulation_start_callback: Optional[Callable[[], None]] = None
         self._on_simulation_stop_callback: Optional[Callable[[], None]] = None
         self._on_simulation_reset_callback: Optional[Callable[[], None]] = None
+        self._on_simulation_skip_callback: Optional[Callable[[float], None]] = None
         self._get_simulation_status_callback: Optional[Callable[[], dict]] = None
 
     def _setup_routes(self) -> None:
@@ -500,6 +501,18 @@ class WebServer:
                 self._on_simulation_reset_callback()
             return jsonify({"status": "ok"})
 
+        @self.app.route("/api/simulation/skip", methods=["POST"])
+        def simulation_skip():
+            """Skip forward or backward by a number of seconds."""
+            data = request.get_json()
+            if not data or "seconds" not in data:
+                return jsonify({"error": "Seconds not specified"}), 400
+
+            seconds = float(data["seconds"])
+            if self._on_simulation_skip_callback:
+                self._on_simulation_skip_callback(seconds)
+            return jsonify({"status": "ok", "skipped_seconds": seconds})
+
         @self.app.route("/api/simulation/status", methods=["GET"])
         def simulation_status():
             """Get current simulation status."""
@@ -553,6 +566,10 @@ class WebServer:
     def on_simulation_reset(self, callback: Callable[[], None]) -> None:
         """Set callback for simulation reset."""
         self._on_simulation_reset_callback = callback
+
+    def on_simulation_skip(self, callback: Callable[[float], None]) -> None:
+        """Set callback for simulation skip (seconds to skip, positive or negative)."""
+        self._on_simulation_skip_callback = callback
 
     def set_simulation_status_getter(self, callback: Callable[[], dict]) -> None:
         """Set callback to get simulation status."""
