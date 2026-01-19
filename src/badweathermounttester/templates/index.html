@@ -235,6 +235,64 @@
             display: block;
         }
 
+        .calibration-canvas-container {
+            background-color: #000;
+            border: 2px solid #333;
+            border-radius: 4px;
+            margin: 10px 0;
+            cursor: crosshair;
+            position: relative;
+        }
+
+        #calibration-canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+
+        .calibration-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+        }
+
+        .calibration-info span {
+            font-size: 0.9em;
+            color: #aaa;
+        }
+
+        .calibration-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-small {
+            padding: 4px 10px;
+            font-size: 14px;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: #fff;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        .polynomial-display {
+            text-align: center;
+            padding: 8px 12px;
+            margin-top: 10px;
+            background-color: #1a1a2e;
+            border: 1px solid #333;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9em;
+            color: #ff6b6b;
+        }
+
         @media (max-width: 600px) {
             .config-row {
                 flex-direction: column;
@@ -355,7 +413,29 @@
         <div class="step-content" id="step-3-content">
             <div class="card instructions-card">
                 <h2>{{ _('Instructions') }}</h2>
-                <p>{{ _('Calibration step - coming soon.') }}</p>
+                <ol>
+                    <li>{{ _('Look at PHD2 to see where the white crosshair appears on the simulator screen.') }}</li>
+                    <li>{{ _('Click on the preview below at that location to record a point.') }}</li>
+                    <li>{{ _('Fine-tune the point position using keyboard: Arrow keys or S/E/D/F (left/up/down/right).') }}</li>
+                    <li>{{ _('Move the mount in RA a few pixels, then repeat steps 1-3.') }}</li>
+                    <li>{{ _('Continue until you have traced across the entire screen.') }}</li>
+                </ol>
+                <p><strong>{{ _('Keyboard:') }}</strong> {{ _('Arrows/S/E/D/F = move 1px | Q/PgUp = previous point | A/PgDn = next point') }}</p>
+                <p>{{ _('The selected point is shown in yellow. New points are auto-selected.') }}</p>
+            </div>
+
+            <div class="card">
+                <h2>{{ _('Calibration Preview') }}</h2>
+                <div class="calibration-canvas-container" id="calibration-canvas-container">
+                    <canvas id="calibration-canvas"></canvas>
+                </div>
+                <div class="calibration-info">
+                    <span>{{ _('Points collected:') }} <strong id="point-count">0</strong></span>
+                    <div class="calibration-buttons">
+                        <button class="btn btn-danger btn-small" id="btn-reset-calibration">{{ _('Reset') }}</button>
+                        <button class="btn btn-secondary btn-small" id="btn-delete-last">{{ _('Delete Last') }}</button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -365,6 +445,10 @@
                 <h2>{{ _('Instructions') }}</h2>
                 <p>{{ _('Measurement step - coming soon.') }}</p>
             </div>
+        </div>
+
+        <div class="polynomial-display" id="polynomial-display" style="display: none;">
+            <span id="polynomial-formula"></span>
         </div>
 
         <div class="actions">
@@ -388,7 +472,9 @@
             height_px: 960
         };
         let displayConfig = {
-            screen_width_mm: 527
+            screen_width_mm: 527,
+            screen_width: 1920,
+            screen_height: 1080
         };
 
         // Debounce timers for each field
@@ -442,7 +528,10 @@
                 const data = await response.json();
                 mountConfig = data.mount;
                 cameraConfig = data.camera;
-                displayConfig = data.display;
+                displayConfig = {
+                    ...displayConfig,
+                    ...data.display
+                };
                 updateInputs();
                 updateCalculations();
             } catch (error) {
@@ -668,6 +757,13 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ mode: currentStep })
                 });
+
+                // Load calibration points when entering step 3
+                if (currentStep === 3) {
+                    loadCalibrationPoints();
+                } else {
+                    updatePolynomialDisplay();  // Hide polynomial when leaving step 3
+                }
             }
         });
 
@@ -696,6 +792,13 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ mode: currentStep })
                 });
+
+                // Load calibration points when returning to step 3
+                if (currentStep === 3) {
+                    loadCalibrationPoints();
+                } else {
+                    updatePolynomialDisplay();  // Hide polynomial when leaving step 3
+                }
             }
         });
 
@@ -730,7 +833,407 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ mode: currentStep })
                 });
+
+                // Load calibration points when entering step 3
+                if (stepNum === 3) {
+                    loadCalibrationPoints();
+                } else {
+                    updatePolynomialDisplay();  // Hide polynomial when leaving step 3
+                }
             });
+        }
+
+        // ===== Calibration Canvas =====
+        const calibrationCanvas = document.getElementById('calibration-canvas');
+        const calibrationCtx = calibrationCanvas.getContext('2d');
+        const pointCountSpan = document.getElementById('point-count');
+        const btnResetCalibration = document.getElementById('btn-reset-calibration');
+        const btnDeleteLast = document.getElementById('btn-delete-last');
+
+        let calibrationPoints = [];
+        let screenWidth = 1920;  // Will be updated from config
+        let screenHeight = 1080;
+        let hoverDebounceTimer = null;
+        const HOVER_DEBOUNCE_MS = 50;
+        let selectedPointIndex = -1;  // -1 means no selection
+        let polynomialCoeffs = null;  // [a, b, c, d] for ax³+bx²+cx+d
+
+        const polynomialDisplay = document.getElementById('polynomial-display');
+        const polynomialFormula = document.getElementById('polynomial-formula');
+
+        // Format a number for display in polynomial
+        function formatCoeff(val, isFirst) {
+            const absVal = Math.abs(val);
+            const sign = val >= 0 ? '+' : '-';
+            const formatted = absVal.toExponential(3);
+            if (isFirst) {
+                return val >= 0 ? formatted : '-' + formatted;
+            }
+            return ` ${sign} ${formatted}`;
+        }
+
+        // Update polynomial display
+        function updatePolynomialDisplay() {
+            if (polynomialCoeffs && currentStep === 3) {
+                const [a, b, c, d] = polynomialCoeffs;
+                const formula = `y = ${formatCoeff(a, true)}x³${formatCoeff(b, false)}x²${formatCoeff(c, false)}x${formatCoeff(d, false)}`;
+                polynomialFormula.textContent = formula;
+                polynomialDisplay.style.display = 'block';
+            } else {
+                polynomialDisplay.style.display = 'none';
+            }
+        }
+
+        // Initialize canvas with screen aspect ratio
+        function initCalibrationCanvas() {
+            // Get screen dimensions from display config (set during loadConfig)
+            screenWidth = displayConfig.screen_width || 1920;
+            screenHeight = displayConfig.screen_height || 1080;
+
+            // Set canvas size maintaining aspect ratio
+            const container = document.getElementById('calibration-canvas-container');
+            const containerWidth = container.clientWidth - 4;  // Account for border
+            const aspectRatio = screenHeight / screenWidth;
+            const canvasHeight = containerWidth * aspectRatio;
+
+            calibrationCanvas.width = containerWidth;
+            calibrationCanvas.height = canvasHeight;
+
+            drawCalibrationCanvas();
+        }
+
+        // Draw the calibration canvas
+        function drawCalibrationCanvas() {
+            const ctx = calibrationCtx;
+            const width = calibrationCanvas.width;
+            const height = calibrationCanvas.height;
+
+            // Clear canvas with black background
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, width, height);
+
+            // Draw grid (same as simulator)
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            const gridParts = 4;
+            for (let i = 1; i < gridParts; i++) {
+                const x = (width / gridParts) * i;
+                const y = (height / gridParts) * i;
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, height);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+                ctx.stroke();
+            }
+
+            // Draw polynomial fit curve (red) if available
+            if (polynomialCoeffs && calibrationPoints.length > 3) {
+                const [a, b, c, d] = polynomialCoeffs;
+                const xCoords = calibrationPoints.map(p => p[0]);
+                const xMin = Math.min(...xCoords);
+                const xMax = Math.max(...xCoords);
+
+                ctx.strokeStyle = '#f00';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                let started = false;
+                for (let screenX = xMin; screenX <= xMax; screenX += 2) {
+                    const screenY = a * screenX**3 + b * screenX**2 + c * screenX + d;
+                    if (screenY >= 0 && screenY <= screenHeight) {
+                        const canvasPoint = screenToCanvas(screenX, screenY);
+                        if (!started) {
+                            ctx.moveTo(canvasPoint.x, canvasPoint.y);
+                            started = true;
+                        } else {
+                            ctx.lineTo(canvasPoint.x, canvasPoint.y);
+                        }
+                    }
+                }
+                ctx.stroke();
+            }
+
+            // Draw connecting line between points (orange)
+            if (calibrationPoints.length > 1) {
+                ctx.strokeStyle = '#ffa500';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                const firstPoint = screenToCanvas(calibrationPoints[0][0], calibrationPoints[0][1]);
+                ctx.moveTo(firstPoint.x, firstPoint.y);
+                for (let i = 1; i < calibrationPoints.length; i++) {
+                    const point = screenToCanvas(calibrationPoints[i][0], calibrationPoints[i][1]);
+                    ctx.lineTo(point.x, point.y);
+                }
+                ctx.stroke();
+            }
+
+            // Draw calibration points (crosshairs - green for normal, yellow for selected)
+            calibrationPoints.forEach((point, index) => {
+                const canvasPoint = screenToCanvas(point[0], point[1]);
+                const isSelected = (index === selectedPointIndex);
+                const color = isSelected ? '#ff0' : '#0f0';
+                const crossSize = isSelected ? 10 : 6;
+
+                // Draw crosshair
+                ctx.strokeStyle = color;
+                ctx.lineWidth = isSelected ? 2 : 1;
+                ctx.beginPath();
+                ctx.moveTo(canvasPoint.x - crossSize, canvasPoint.y);
+                ctx.lineTo(canvasPoint.x + crossSize, canvasPoint.y);
+                ctx.moveTo(canvasPoint.x, canvasPoint.y - crossSize);
+                ctx.lineTo(canvasPoint.x, canvasPoint.y + crossSize);
+                ctx.stroke();
+
+                // Draw point number
+                ctx.fillStyle = color;
+                ctx.font = isSelected ? 'bold 14px sans-serif' : '12px sans-serif';
+                ctx.fillText((index + 1).toString(), canvasPoint.x + 8, canvasPoint.y - 6);
+            });
+
+            // Update point count
+            pointCountSpan.textContent = calibrationPoints.length;
+        }
+
+        // Convert screen coordinates to canvas coordinates
+        function screenToCanvas(screenX, screenY) {
+            return {
+                x: (screenX / screenWidth) * calibrationCanvas.width,
+                y: (screenY / screenHeight) * calibrationCanvas.height
+            };
+        }
+
+        // Convert canvas coordinates to screen coordinates
+        function canvasToScreen(canvasX, canvasY) {
+            return {
+                x: Math.round((canvasX / calibrationCanvas.width) * screenWidth),
+                y: Math.round((canvasY / calibrationCanvas.height) * screenHeight)
+            };
+        }
+
+        // Handle mouse move on canvas (debounced)
+        calibrationCanvas.addEventListener('mousemove', (e) => {
+            if (currentStep !== 3) return;
+
+            if (hoverDebounceTimer) clearTimeout(hoverDebounceTimer);
+
+            hoverDebounceTimer = setTimeout(() => {
+                const rect = calibrationCanvas.getBoundingClientRect();
+                const canvasX = e.clientX - rect.left;
+                const canvasY = e.clientY - rect.top;
+                const screenCoords = canvasToScreen(canvasX, canvasY);
+
+                fetch('/api/calibration/hover', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ x: screenCoords.x, y: screenCoords.y })
+                });
+            }, HOVER_DEBOUNCE_MS);
+        });
+
+        // Handle click on canvas
+        calibrationCanvas.addEventListener('click', async (e) => {
+            if (currentStep !== 3) return;
+
+            const rect = calibrationCanvas.getBoundingClientRect();
+            const canvasX = e.clientX - rect.left;
+            const canvasY = e.clientY - rect.top;
+            const screenCoords = canvasToScreen(canvasX, canvasY);
+
+            try {
+                const response = await fetch('/api/calibration/click', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ x: screenCoords.x, y: screenCoords.y })
+                });
+                const data = await response.json();
+
+                if (data.status === 'ok' && data.points) {
+                    calibrationPoints = data.points;
+                    polynomialCoeffs = data.polynomial || null;
+                    // Auto-select the newly added point
+                    selectedPointIndex = calibrationPoints.length - 1;
+                    notifySelectedIndex();
+                    drawCalibrationCanvas();
+                    updatePolynomialDisplay();
+                }
+            } catch (error) {
+                console.error('Failed to record calibration point:', error);
+            }
+        });
+
+        // Handle reset button
+        btnResetCalibration.addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/calibration/reset', {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+
+                if (data.status === 'ok') {
+                    calibrationPoints = [];
+                    polynomialCoeffs = null;
+                    selectedPointIndex = -1;
+                    notifySelectedIndex();
+                    drawCalibrationCanvas();
+                    updatePolynomialDisplay();
+                }
+            } catch (error) {
+                console.error('Failed to reset calibration:', error);
+            }
+        });
+
+        // Handle delete last button
+        btnDeleteLast.addEventListener('click', async () => {
+            if (calibrationPoints.length === 0) return;
+
+            try {
+                const response = await fetch('/api/calibration/last', {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+
+                if (data.status === 'ok') {
+                    calibrationPoints = data.points;
+                    polynomialCoeffs = data.polynomial || null;
+                    // Adjust selected index if needed
+                    if (selectedPointIndex >= calibrationPoints.length) {
+                        selectedPointIndex = calibrationPoints.length - 1;
+                        notifySelectedIndex();
+                    }
+                    drawCalibrationCanvas();
+                    updatePolynomialDisplay();
+                }
+            } catch (error) {
+                console.error('Failed to delete last point:', error);
+            }
+        });
+
+        // Notify server of selected index change
+        async function notifySelectedIndex() {
+            try {
+                await fetch('/api/calibration/select', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ index: selectedPointIndex })
+                });
+            } catch (error) {
+                console.error('Failed to update selected index:', error);
+            }
+        }
+
+        // Move selected point by dx, dy
+        async function moveSelectedPoint(dx, dy) {
+            if (selectedPointIndex < 0 || selectedPointIndex >= calibrationPoints.length) return;
+
+            try {
+                const response = await fetch(`/api/calibration/point/${selectedPointIndex}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ dx, dy })
+                });
+                const data = await response.json();
+
+                if (data.status === 'ok' && data.points) {
+                    calibrationPoints = data.points;
+                    polynomialCoeffs = data.polynomial || null;
+                    drawCalibrationCanvas();
+                    updatePolynomialDisplay();
+                }
+            } catch (error) {
+                console.error('Failed to move point:', error);
+            }
+        }
+
+        // Select previous point (with wrap around)
+        function selectPreviousPoint() {
+            if (calibrationPoints.length === 0) return;
+            if (selectedPointIndex <= 0) {
+                selectedPointIndex = calibrationPoints.length - 1;
+            } else {
+                selectedPointIndex--;
+            }
+            notifySelectedIndex();
+            drawCalibrationCanvas();
+        }
+
+        // Select next point (with wrap around)
+        function selectNextPoint() {
+            if (calibrationPoints.length === 0) return;
+            if (selectedPointIndex < 0 || selectedPointIndex >= calibrationPoints.length - 1) {
+                selectedPointIndex = 0;
+            } else {
+                selectedPointIndex++;
+            }
+            notifySelectedIndex();
+            drawCalibrationCanvas();
+        }
+
+        // Keyboard handler for point manipulation
+        document.addEventListener('keydown', (e) => {
+            // Only handle keys when on calibration step
+            if (currentStep !== 3) return;
+
+            // Don't handle if focus is on an input element
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+            let handled = false;
+
+            switch (e.key) {
+                // Movement keys: s=left, f=right, e=up, d=down (and arrow keys)
+                case 's':
+                case 'ArrowLeft':
+                    moveSelectedPoint(-1, 0);
+                    handled = true;
+                    break;
+                case 'f':
+                case 'ArrowRight':
+                    moveSelectedPoint(1, 0);
+                    handled = true;
+                    break;
+                case 'e':
+                case 'ArrowUp':
+                    moveSelectedPoint(0, -1);
+                    handled = true;
+                    break;
+                case 'd':
+                case 'ArrowDown':
+                    moveSelectedPoint(0, 1);
+                    handled = true;
+                    break;
+
+                // Selection keys: q/PageUp=previous, a/PageDown=next
+                case 'q':
+                case 'PageUp':
+                    selectPreviousPoint();
+                    handled = true;
+                    break;
+                case 'a':
+                case 'PageDown':
+                    selectNextPoint();
+                    handled = true;
+                    break;
+            }
+
+            if (handled) {
+                e.preventDefault();
+            }
+        });
+
+        // Load existing calibration points
+        async function loadCalibrationPoints() {
+            try {
+                const response = await fetch('/api/calibration/points');
+                const data = await response.json();
+                calibrationPoints = data.points || [];
+                polynomialCoeffs = data.polynomial || null;
+                initCalibrationCanvas();
+                updatePolynomialDisplay();
+            } catch (error) {
+                console.error('Failed to load calibration points:', error);
+                initCalibrationCanvas();
+            }
         }
 
         // Initialize

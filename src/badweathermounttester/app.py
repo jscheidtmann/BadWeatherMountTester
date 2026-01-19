@@ -3,11 +3,27 @@
 import argparse
 import sys
 from pathlib import Path
+from typing import Optional, List
+
+import numpy as np
 
 from badweathermounttester import __version__
 from badweathermounttester.config import AppConfig, DEFAULT_SETUP_PATH
 from badweathermounttester.display import SimulatorDisplay, DisplayMode
 from badweathermounttester.server import WebServer
+
+
+def fit_polynomial(points: List, degree: int = 3) -> Optional[List[float]]:
+    """Fit a polynomial to the calibration points."""
+    if len(points) <= degree:
+        return None
+    x = np.array([p[0] for p in points], dtype=float)
+    y = np.array([p[1] for p in points], dtype=float)
+    try:
+        coeffs = np.polyfit(x, y, degree)
+        return [float(c) for c in coeffs]
+    except (np.linalg.LinAlgError, ValueError):
+        return None
 
 
 class Application:
@@ -23,6 +39,9 @@ class Application:
         self.server.on_connect(self._on_client_connect)
         self.server.on_config_update(self._on_config_update)
         self.server.on_mode_change(self._on_mode_change)
+        self.server.on_calibration_hover(self._on_calibration_hover)
+        self.server.on_calibration_click(self._on_calibration_click)
+        self.server.on_calibration_select(self._on_calibration_select)
 
     def _on_client_connect(self) -> None:
         """Handle client connection."""
@@ -47,6 +66,48 @@ class Application:
         }
         if mode in mode_map:
             self.display.set_mode(mode_map[mode])
+
+            # When entering calibration mode, initialize points from config
+            if mode == 3:
+                points = [(p[0], p[1]) for p in self.config.calibration.points]
+                self.display.set_calibration_points(points)
+
+    def _on_calibration_hover(self, x: int, y: int) -> None:
+        """Handle calibration hover position change."""
+        self.display.set_calibration_hover(x, y)
+
+    def _update_calibration_polynomial(self) -> None:
+        """Recompute and update the polynomial fit for calibration points."""
+        poly = fit_polynomial(self.display.calibration_points)
+        self.display.set_calibration_polynomial(poly)
+
+    def _on_calibration_click(self, x: int, y: int) -> None:
+        """Handle calibration point click."""
+        if x == -1 and y == -1:
+            # Reset signal
+            self.display.clear_calibration_points()
+        elif x == -2 and y == -2:
+            # Delete last signal
+            if self.display.calibration_points:
+                self.display.calibration_points.pop()
+                # Adjust selected index if needed
+                if self.display.calibration_selected_index >= len(self.display.calibration_points):
+                    self.display.calibration_selected_index = len(self.display.calibration_points) - 1
+            self._update_calibration_polynomial()
+        elif x == -3:
+            # Point update signal - y contains the index, reload points from config
+            index = y
+            if 0 <= index < len(self.config.calibration.points):
+                point = self.config.calibration.points[index]
+                self.display.update_calibration_point(index, point[0], point[1])
+            self._update_calibration_polynomial()
+        else:
+            self.display.add_calibration_point(x, y)
+            self._update_calibration_polynomial()
+
+    def _on_calibration_select(self, index: int) -> None:
+        """Handle calibration point selection."""
+        self.display.set_calibration_selected_index(index)
 
     def run(self) -> int:
         """Run the application. Returns exit code."""

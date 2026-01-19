@@ -46,6 +46,14 @@ class CameraConfig:
     height_px: int = 960  # Sensor height in pixels
 
 
+@dataclass
+class CalibrationConfig:
+    """Configuration for the calibration trace line."""
+
+    points: list = field(default_factory=list)  # List of [x, y] pairs
+    is_complete: bool = False
+
+
 # Default path for setup configuration
 DEFAULT_SETUP_PATH = Path("setup.yml")
 
@@ -58,6 +66,7 @@ class AppConfig:
     display: DisplayConfig = field(default_factory=DisplayConfig)
     server: ServerConfig = field(default_factory=ServerConfig)
     camera: CameraConfig = field(default_factory=CameraConfig)
+    calibration: CalibrationConfig = field(default_factory=CalibrationConfig)
 
     def to_dict(self) -> dict:
         """Convert configuration to a dictionary."""
@@ -84,6 +93,10 @@ class AppConfig:
                 "pixel_size_um": self.camera.pixel_size_um,
                 "width_px": self.camera.width_px,
                 "height_px": self.camera.height_px,
+            },
+            "calibration": {
+                "points": self.calibration.points,
+                "is_complete": self.calibration.is_complete,
             },
         }
 
@@ -117,6 +130,11 @@ class AppConfig:
             for key, value in data["camera"].items():
                 if hasattr(config.camera, key):
                     setattr(config.camera, key, value)
+
+        if "calibration" in data:
+            for key, value in data["calibration"].items():
+                if hasattr(config.calibration, key):
+                    setattr(config.calibration, key, value)
 
     @classmethod
     def load(cls, path: Path) -> "AppConfig":

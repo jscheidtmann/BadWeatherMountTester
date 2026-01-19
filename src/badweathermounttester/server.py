@@ -7,12 +7,26 @@ the Astro Computer to configure and control the simulator.
 import socket
 from pathlib import Path
 from threading import Thread
-from typing import Optional, Callable
+from typing import Optional, Callable, List
 
+import numpy as np
 from flask import Flask, render_template, jsonify, request  # , g
 from flask_babel import Babel  # , gettext as _
 
 from badweathermounttester.config import AppConfig, DEFAULT_SETUP_PATH
+
+
+def fit_polynomial(points: List[List[int]], degree: int = 3) -> Optional[List[float]]:
+    """Fit a polynomial to the calibration points. Returns coefficients [a, b, c, d] for ax³+bx²+cx+d."""
+    if len(points) <= degree:
+        return None
+    x = np.array([p[0] for p in points], dtype=float)
+    y = np.array([p[1] for p in points], dtype=float)
+    try:
+        coeffs = np.polyfit(x, y, degree)
+        return [float(c) for c in coeffs]
+    except (np.linalg.LinAlgError, ValueError):
+        return None
 
 
 def get_locale():
@@ -48,6 +62,9 @@ class WebServer:
         self._on_connect_callback: Optional[Callable[[], None]] = None
         self._on_config_update_callback: Optional[Callable[[AppConfig], None]] = None
         self._on_mode_change_callback: Optional[Callable[[int], None]] = None
+        self._on_calibration_hover_callback: Optional[Callable[[int, int], None]] = None
+        self._on_calibration_click_callback: Optional[Callable[[int, int], None]] = None
+        self._on_calibration_select_callback: Optional[Callable[[int], None]] = None
 
     def _setup_routes(self) -> None:
         """Set up Flask routes."""
@@ -281,13 +298,142 @@ class WebServer:
 
             return jsonify({"status": "ok", "mode": mode})
 
-        @self.app.route("/api/calibration/click", methods=["POST"])
-        def calibration_click():
+        @self.app.route("/api/calibration/hover", methods=["POST"])
+        def calibration_hover():
+            """Update the hover crosshair position for calibration."""
             data = request.get_json()
             if not data or "x" not in data or "y" not in data:
                 return jsonify({"error": "Coordinates not provided"}), 400
-            # Calibration clicks will be handled by the main app
-            return jsonify({"status": "ok", "x": data["x"], "y": data["y"]})
+
+            x = int(data["x"])
+            y = int(data["y"])
+
+            if self._on_calibration_hover_callback:
+                self._on_calibration_hover_callback(x, y)
+
+            return jsonify({"status": "ok", "x": x, "y": y})
+
+        @self.app.route("/api/calibration/click", methods=["POST"])
+        def calibration_click():
+            """Record a calibration point."""
+            data = request.get_json()
+            if not data or "x" not in data or "y" not in data:
+                return jsonify({"error": "Coordinates not provided"}), 400
+
+            x = int(data["x"])
+            y = int(data["y"])
+
+            # Store the point in config
+            self.config.calibration.points.append([x, y])
+            self.config.save_yaml(self.setup_path)
+
+            if self._on_calibration_click_callback:
+                self._on_calibration_click_callback(x, y)
+
+            # Compute polynomial fit if enough points
+            poly_coeffs = fit_polynomial(self.config.calibration.points)
+
+            return jsonify({
+                "status": "ok",
+                "x": x,
+                "y": y,
+                "points": self.config.calibration.points,
+                "count": len(self.config.calibration.points),
+                "polynomial": poly_coeffs,
+            })
+
+        @self.app.route("/api/calibration/points", methods=["GET"])
+        def get_calibration_points():
+            """Get all calibration points."""
+            poly_coeffs = fit_polynomial(self.config.calibration.points)
+            return jsonify({
+                "points": self.config.calibration.points,
+                "count": len(self.config.calibration.points),
+                "is_complete": self.config.calibration.is_complete,
+                "polynomial": poly_coeffs,
+            })
+
+        @self.app.route("/api/calibration/reset", methods=["DELETE"])
+        def reset_calibration():
+            """Clear all calibration points."""
+            self.config.calibration.points = []
+            self.config.calibration.is_complete = False
+            self.config.save_yaml(self.setup_path)
+
+            if self._on_calibration_click_callback:
+                # Notify that calibration was reset by calling with special values
+                self._on_calibration_click_callback(-1, -1)
+
+            return jsonify({"status": "ok", "points": [], "count": 0})
+
+        @self.app.route("/api/calibration/last", methods=["DELETE"])
+        def delete_last_calibration_point():
+            """Delete the last calibration point."""
+            if self.config.calibration.points:
+                self.config.calibration.points.pop()
+                self.config.save_yaml(self.setup_path)
+
+                if self._on_calibration_click_callback:
+                    # Notify with special value to indicate deletion
+                    self._on_calibration_click_callback(-2, -2)
+
+            poly_coeffs = fit_polynomial(self.config.calibration.points)
+            return jsonify({
+                "status": "ok",
+                "points": self.config.calibration.points,
+                "count": len(self.config.calibration.points),
+                "polynomial": poly_coeffs,
+            })
+
+        @self.app.route("/api/calibration/point/<int:index>", methods=["PATCH"])
+        def update_calibration_point(index: int):
+            """Update a specific calibration point's position."""
+            data = request.get_json()
+            if not data:
+                return jsonify({"error": "No data provided"}), 400
+
+            if index < 0 or index >= len(self.config.calibration.points):
+                return jsonify({"error": "Invalid point index"}), 400
+
+            # Handle relative movement (dx, dy) or absolute position (x, y)
+            if "dx" in data or "dy" in data:
+                dx = int(data.get("dx", 0))
+                dy = int(data.get("dy", 0))
+                self.config.calibration.points[index][0] += dx
+                self.config.calibration.points[index][1] += dy
+            elif "x" in data and "y" in data:
+                self.config.calibration.points[index] = [int(data["x"]), int(data["y"])]
+            else:
+                return jsonify({"error": "Must provide dx/dy or x/y"}), 400
+
+            self.config.save_yaml(self.setup_path)
+
+            # Notify with the updated point coordinates
+            if self._on_calibration_click_callback:
+                self._on_calibration_click_callback(-3, index)  # -3 signals point update
+
+            poly_coeffs = fit_polynomial(self.config.calibration.points)
+            return jsonify({
+                "status": "ok",
+                "index": index,
+                "point": self.config.calibration.points[index],
+                "points": self.config.calibration.points,
+                "polynomial": poly_coeffs,
+            })
+
+        @self.app.route("/api/calibration/select", methods=["POST"])
+        def select_calibration_point():
+            """Set the selected calibration point index."""
+            data = request.get_json()
+            if data is None or "index" not in data:
+                return jsonify({"error": "Index not provided"}), 400
+
+            index = int(data["index"])
+
+            if self._on_calibration_select_callback:
+                self._on_calibration_select_callback(index)
+
+            return jsonify({"status": "ok", "index": index})
 
     def on_connect(self, callback: Callable[[], None]) -> None:
         """Set callback for when a client connects."""
@@ -300,6 +446,18 @@ class WebServer:
     def on_mode_change(self, callback: Callable[[int], None]) -> None:
         """Set callback for when the UI mode changes."""
         self._on_mode_change_callback = callback
+
+    def on_calibration_hover(self, callback: Callable[[int, int], None]) -> None:
+        """Set callback for when the calibration hover position changes."""
+        self._on_calibration_hover_callback = callback
+
+    def on_calibration_click(self, callback: Callable[[int, int], None]) -> None:
+        """Set callback for when a calibration point is clicked."""
+        self._on_calibration_click_callback = callback
+
+    def on_calibration_select(self, callback: Callable[[int], None]) -> None:
+        """Set callback for when a calibration point is selected."""
+        self._on_calibration_select_callback = callback
 
     def get_network_address(self) -> str:
         """Get the network address for clients to connect to."""

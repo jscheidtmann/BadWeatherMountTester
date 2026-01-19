@@ -17,3 +17,24 @@ camera:
   pixel_size_um: 2.4
   width_px: 3072
   height_px: 2048
+calibration:
+  points:
+  - - 74
+    - 795
+  - - 249
+    - 582
+  - - 393
+    - 434
+  - - 844
+    - 533
+  - - 1160
+    - 429
+  - - 1481
+    - 381
+  - - 1600
+    - 485
+  - - 1799
+    - 766
+  - - 1866
+    - 861
+  is_complete: false
