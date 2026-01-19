@@ -7,7 +7,7 @@ the Astro Computer to configure and control the simulator.
 import socket
 from pathlib import Path
 from threading import Thread
-from typing import Optional, Callable, List
+from typing import Optional, Callable, List, Dict
 
 import numpy as np
 from flask import Flask, render_template, jsonify, request  # , g
@@ -16,16 +16,105 @@ from flask_babel import Babel  # , gettext as _
 from badweathermounttester.config import AppConfig, DEFAULT_SETUP_PATH
 
 
-def fit_polynomial(points: List[List[int]], degree: int = 3) -> Optional[List[float]]:
-    """Fit a polynomial to the calibration points. Returns coefficients [a, b, c, d] for ax³+bx²+cx+d."""
-    if len(points) <= degree:
+def fit_ellipse(points: List[List[int]]) -> Optional[Dict]:
+    """
+    Fit an ellipse to the calibration points using least squares.
+
+    Returns a dict with:
+    - center_x, center_y: center of ellipse in pixels
+    - semi_major: semi-major axis in pixels
+    - semi_minor: semi-minor axis in pixels
+    - angle: rotation angle in radians (from x-axis)
+    - coeffs: [A, B, C, D, E, F] for general conic Ax²+Bxy+Cy²+Dx+Ey+F=0
+    """
+    if len(points) < 5:
         return None
+
     x = np.array([p[0] for p in points], dtype=float)
     y = np.array([p[1] for p in points], dtype=float)
+
     try:
-        coeffs = np.polyfit(x, y, degree)
-        return [float(c) for c in coeffs]
-    except (np.linalg.LinAlgError, ValueError):
+        # Build design matrix for general conic: Ax² + Bxy + Cy² + Dx + Ey + F = 0
+        # We use the constraint that it's an ellipse by using the direct least squares method
+        D1 = np.vstack([x*x, x*y, y*y]).T
+        D2 = np.vstack([x, y, np.ones_like(x)]).T
+
+        S1 = D1.T @ D1
+        S2 = D1.T @ D2
+        S3 = D2.T @ D2
+
+        # Constraint matrix for ellipse: 4AC - B² > 0
+        C1 = np.array([[0, 0, 2], [0, -1, 0], [2, 0, 0]], dtype=float)
+
+        # Solve the generalized eigenvalue problem
+        S3_inv = np.linalg.inv(S3)
+        M = np.linalg.inv(C1) @ (S1 - S2 @ S3_inv @ S2.T)
+
+        eigenvalues, eigenvectors = np.linalg.eig(M)
+
+        # Find the eigenvector corresponding to the positive eigenvalue
+        # that satisfies the ellipse constraint
+        cond = 4 * eigenvectors[0, :] * eigenvectors[2, :] - eigenvectors[1, :] ** 2
+        valid_idx = np.where(cond > 0)[0]
+
+        if len(valid_idx) == 0:
+            return None
+
+        # Take the one with smallest positive eigenvalue
+        idx = valid_idx[np.argmin(np.abs(eigenvalues[valid_idx]))]
+        a1 = eigenvectors[:, idx]
+        a2 = -S3_inv @ S2.T @ a1
+
+        # Coefficients [A, B, C, D, E, F]
+        A, B, C = a1
+        D, E, F = a2
+
+        # Convert to geometric parameters
+        # Center: solve dF/dx = 0, dF/dy = 0
+        # 2Ax + By + D = 0
+        # Bx + 2Cy + E = 0
+        denom = 4 * A * C - B * B
+        if abs(denom) < 1e-10:
+            return None
+
+        center_x = (B * E - 2 * C * D) / denom
+        center_y = (B * D - 2 * A * E) / denom
+
+        # Calculate semi-axes and rotation angle
+        # Using formulas from conic section theory
+        num = 2 * (A * E * E + C * D * D - B * D * E + (B * B - 4 * A * C) * F)
+        term1 = A + C
+        term2 = np.sqrt((A - C) ** 2 + B ** 2)
+
+        denom_a = (B * B - 4 * A * C) * (term2 - (A + C))
+        denom_b = (B * B - 4 * A * C) * (-term2 - (A + C))
+
+        if denom_a == 0 or denom_b == 0 or num / denom_a < 0 or num / denom_b < 0:
+            return None
+
+        semi_major = np.sqrt(num / denom_a)
+        semi_minor = np.sqrt(num / denom_b)
+
+        # Ensure semi_major >= semi_minor
+        if semi_minor > semi_major:
+            semi_major, semi_minor = semi_minor, semi_major
+
+        # Rotation angle
+        if abs(B) < 1e-10:
+            angle = 0 if A < C else np.pi / 2
+        else:
+            angle = np.arctan2(C - A - term2, B)
+
+        return {
+            "center_x": float(center_x),
+            "center_y": float(center_y),
+            "semi_major": float(semi_major),
+            "semi_minor": float(semi_minor),
+            "angle": float(angle),
+            "coeffs": [float(A), float(B), float(C), float(D), float(E), float(F)],
+        }
+
+    except (np.linalg.LinAlgError, ValueError, ZeroDivisionError):
         return None
 
 
@@ -336,8 +425,8 @@ class WebServer:
             if self._on_calibration_click_callback:
                 self._on_calibration_click_callback(x, y)
 
-            # Compute polynomial fit if enough points
-            poly_coeffs = fit_polynomial(self.config.calibration.points)
+            # Compute ellipse fit if enough points
+            ellipse_params = fit_ellipse(self.config.calibration.points)
 
             return jsonify({
                 "status": "ok",
@@ -345,18 +434,18 @@ class WebServer:
                 "y": y,
                 "points": self.config.calibration.points,
                 "count": len(self.config.calibration.points),
-                "polynomial": poly_coeffs,
+                "ellipse": ellipse_params,
             })
 
         @self.app.route("/api/calibration/points", methods=["GET"])
         def get_calibration_points():
             """Get all calibration points."""
-            poly_coeffs = fit_polynomial(self.config.calibration.points)
+            ellipse_params = fit_ellipse(self.config.calibration.points)
             return jsonify({
                 "points": self.config.calibration.points,
                 "count": len(self.config.calibration.points),
                 "is_complete": self.config.calibration.is_complete,
-                "polynomial": poly_coeffs,
+                "ellipse": ellipse_params,
             })
 
         @self.app.route("/api/calibration/reset", methods=["DELETE"])
@@ -383,12 +472,12 @@ class WebServer:
                     # Notify with special value to indicate deletion
                     self._on_calibration_click_callback(-2, -2)
 
-            poly_coeffs = fit_polynomial(self.config.calibration.points)
+            ellipse_params = fit_ellipse(self.config.calibration.points)
             return jsonify({
                 "status": "ok",
                 "points": self.config.calibration.points,
                 "count": len(self.config.calibration.points),
-                "polynomial": poly_coeffs,
+                "ellipse": ellipse_params,
             })
 
         @self.app.route("/api/calibration/point/<int:index>", methods=["PATCH"])
@@ -418,13 +507,13 @@ class WebServer:
             if self._on_calibration_click_callback:
                 self._on_calibration_click_callback(-3, index)  # -3 signals point update
 
-            poly_coeffs = fit_polynomial(self.config.calibration.points)
+            ellipse_params = fit_ellipse(self.config.calibration.points)
             return jsonify({
                 "status": "ok",
                 "index": index,
                 "point": self.config.calibration.points[index],
                 "points": self.config.calibration.points,
-                "polynomial": poly_coeffs,
+                "ellipse": ellipse_params,
             })
 
         @self.app.route("/api/calibration/select", methods=["POST"])

@@ -254,6 +254,40 @@
             gap: 8px;
         }
 
+        .ellipse-params {
+            margin-top: 15px;
+            padding: 12px;
+            background-color: #1a1a2e;
+            border: 1px solid #333;
+            border-radius: 4px;
+        }
+
+        .ellipse-params h3 {
+            margin: 0 0 10px 0;
+            font-size: 1em;
+            color: #00d4ff;
+        }
+
+        .params-table {
+            width: 100%;
+            font-size: 0.9em;
+        }
+
+        .params-table td {
+            padding: 4px 8px;
+        }
+
+        .params-table td:nth-child(odd) {
+            color: #aaa;
+            text-align: right;
+            width: 25%;
+        }
+
+        .params-table td:nth-child(even) {
+            color: #fff;
+            width: 25%;
+        }
+
         .btn-small {
             padding: 4px 10px;
             font-size: 14px;
@@ -577,6 +611,23 @@
                         <button class="btn btn-danger btn-small" id="btn-reset-calibration">{{ _('Reset') }}</button>
                         <button class="btn btn-secondary btn-small" id="btn-delete-last">{{ _('Delete Last') }}</button>
                     </div>
+                </div>
+                <div class="ellipse-params" id="ellipse-params" style="display: none;">
+                    <h3>{{ _('Fitted Ellipse') }}</h3>
+                    <table class="params-table">
+                        <tr>
+                            <td>{{ _('Center X:') }}</td>
+                            <td><strong id="ellipse-center-x">--</strong> m</td>
+                            <td>{{ _('Axis a:') }}</td>
+                            <td><strong id="ellipse-semi-major">--</strong> m</td>
+                        </tr>
+                        <tr>
+                            <td>{{ _('Center Y:') }}</td>
+                            <td><strong id="ellipse-center-y">--</strong> m</td>
+                            <td>{{ _('Axis b:') }}</td>
+                            <td><strong id="ellipse-semi-minor">--</strong> m</td>
+                        </tr>
+                    </table>
                 </div>
             </div>
         </div>
@@ -938,6 +989,8 @@
                 // Load calibration points when entering step 3
                 if (currentStep === 3) {
                     loadCalibrationPoints();
+                } else {
+                    updateEllipseDisplay();  // Hide when leaving step 3
                 }
             }
         });
@@ -971,6 +1024,8 @@
                 // Load calibration points when returning to step 3
                 if (currentStep === 3) {
                     loadCalibrationPoints();
+                } else {
+                    updateEllipseDisplay();  // Hide when leaving step 3
                 }
             }
         });
@@ -1010,6 +1065,8 @@
                 // Load calibration points when entering step 3
                 if (stepNum === 3) {
                     loadCalibrationPoints();
+                } else {
+                    updateEllipseDisplay();  // Hide when leaving step 3
                 }
             });
         }
@@ -1027,6 +1084,35 @@
         let hoverDebounceTimer = null;
         const HOVER_DEBOUNCE_MS = 50;
         let selectedPointIndex = -1;  // -1 means no selection
+        let ellipseParams = null;  // Ellipse fit parameters
+
+        // Ellipse display elements
+        const ellipseParamsDiv = document.getElementById('ellipse-params');
+        const ellipseCenterX = document.getElementById('ellipse-center-x');
+        const ellipseCenterY = document.getElementById('ellipse-center-y');
+        const ellipseSemiMajor = document.getElementById('ellipse-semi-major');
+        const ellipseSemiMinor = document.getElementById('ellipse-semi-minor');
+
+        // Convert pixels to meters
+        function pixelsToMeters(pixels) {
+            const screenWidthMm = displayConfig.screen_width_mm || 344;
+            const screenWidthPx = displayConfig.screen_width || 1920;
+            const pixelPitchMm = screenWidthMm / screenWidthPx;
+            return (pixels * pixelPitchMm) / 1000;  // mm to m
+        }
+
+        // Update ellipse parameters display
+        function updateEllipseDisplay() {
+            if (ellipseParams && currentStep === 3) {
+                ellipseParamsDiv.style.display = 'block';
+                ellipseCenterX.textContent = pixelsToMeters(ellipseParams.center_x).toFixed(4);
+                ellipseCenterY.textContent = pixelsToMeters(ellipseParams.center_y).toFixed(4);
+                ellipseSemiMajor.textContent = pixelsToMeters(ellipseParams.semi_major).toFixed(4);
+                ellipseSemiMinor.textContent = pixelsToMeters(ellipseParams.semi_minor).toFixed(4);
+            } else {
+                ellipseParamsDiv.style.display = 'none';
+            }
+        }
 
         // Initialize canvas with screen aspect ratio
         function initCalibrationCanvas() {
@@ -1169,10 +1255,12 @@
 
                 if (data.status === 'ok' && data.points) {
                     calibrationPoints = data.points;
+                    ellipseParams = data.ellipse || null;
                     // Auto-select the newly added point
                     selectedPointIndex = calibrationPoints.length - 1;
                     notifySelectedIndex();
                     drawCalibrationCanvas();
+                    updateEllipseDisplay();
                 }
             } catch (error) {
                 console.error('Failed to record calibration point:', error);
@@ -1189,9 +1277,11 @@
 
                 if (data.status === 'ok') {
                     calibrationPoints = [];
+                    ellipseParams = null;
                     selectedPointIndex = -1;
                     notifySelectedIndex();
                     drawCalibrationCanvas();
+                    updateEllipseDisplay();
                 }
             } catch (error) {
                 console.error('Failed to reset calibration:', error);
@@ -1210,12 +1300,14 @@
 
                 if (data.status === 'ok') {
                     calibrationPoints = data.points;
+                    ellipseParams = data.ellipse || null;
                     // Adjust selected index if needed
                     if (selectedPointIndex >= calibrationPoints.length) {
                         selectedPointIndex = calibrationPoints.length - 1;
                         notifySelectedIndex();
                     }
                     drawCalibrationCanvas();
+                    updateEllipseDisplay();
                 }
             } catch (error) {
                 console.error('Failed to delete last point:', error);
@@ -1249,7 +1341,9 @@
 
                 if (data.status === 'ok' && data.points) {
                     calibrationPoints = data.points;
+                    ellipseParams = data.ellipse || null;
                     drawCalibrationCanvas();
+                    updateEllipseDisplay();
                 }
             } catch (error) {
                 console.error('Failed to move point:', error);
@@ -1337,7 +1431,9 @@
                 const response = await fetch('/api/calibration/points');
                 const data = await response.json();
                 calibrationPoints = data.points || [];
+                ellipseParams = data.ellipse || null;
                 initCalibrationCanvas();
+                updateEllipseDisplay();
             } catch (error) {
                 console.error('Failed to load calibration points:', error);
                 initCalibrationCanvas();

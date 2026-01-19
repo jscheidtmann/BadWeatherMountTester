@@ -3,27 +3,11 @@
 import argparse
 import sys
 from pathlib import Path
-from typing import Optional, List
-
-import numpy as np
 
 from badweathermounttester import __version__
 from badweathermounttester.config import AppConfig, DEFAULT_SETUP_PATH
 from badweathermounttester.display import SimulatorDisplay, DisplayMode
-from badweathermounttester.server import WebServer
-
-
-def fit_polynomial(points: List, degree: int = 3) -> Optional[List[float]]:
-    """Fit a polynomial to the calibration points."""
-    if len(points) <= degree:
-        return None
-    x = np.array([p[0] for p in points], dtype=float)
-    y = np.array([p[1] for p in points], dtype=float)
-    try:
-        coeffs = np.polyfit(x, y, degree)
-        return [float(c) for c in coeffs]
-    except (np.linalg.LinAlgError, ValueError):
-        return None
+from badweathermounttester.server import WebServer, fit_ellipse
 
 
 class Application:
@@ -77,23 +61,23 @@ class Application:
             if mode == 3:
                 points = [(p[0], p[1]) for p in self.config.calibration.points]
                 self.display.set_calibration_points(points)
-                self._update_calibration_polynomial()
+                self._update_calibration_ellipse()
 
-            # When entering simulation mode, initialize calibration points and polynomial
+            # When entering simulation mode, initialize calibration points and ellipse
             if mode == 4:
                 points = [(p[0], p[1]) for p in self.config.calibration.points]
                 self.display.set_calibration_points(points)
-                poly = fit_polynomial(self.config.calibration.points)
-                self.display.set_calibration_polynomial(poly)
+                ellipse = fit_ellipse(self.config.calibration.points)
+                self.display.set_calibration_ellipse(ellipse)
 
     def _on_calibration_hover(self, x: int, y: int) -> None:
         """Handle calibration hover position change."""
         self.display.set_calibration_hover(x, y)
 
-    def _update_calibration_polynomial(self) -> None:
-        """Recompute and update the polynomial fit for calibration points."""
-        poly = fit_polynomial(self.display.calibration_points)
-        self.display.set_calibration_polynomial(poly)
+    def _update_calibration_ellipse(self) -> None:
+        """Recompute and update the ellipse fit for calibration points."""
+        ellipse = fit_ellipse(self.display.calibration_points)
+        self.display.set_calibration_ellipse(ellipse)
 
     def _on_calibration_click(self, x: int, y: int) -> None:
         """Handle calibration point click."""
@@ -107,17 +91,17 @@ class Application:
                 # Adjust selected index if needed
                 if self.display.calibration_selected_index >= len(self.display.calibration_points):
                     self.display.calibration_selected_index = len(self.display.calibration_points) - 1
-            self._update_calibration_polynomial()
+            self._update_calibration_ellipse()
         elif x == -3:
             # Point update signal - y contains the index, reload points from config
             index = y
             if 0 <= index < len(self.config.calibration.points):
                 point = self.config.calibration.points[index]
                 self.display.update_calibration_point(index, point[0], point[1])
-            self._update_calibration_polynomial()
+            self._update_calibration_ellipse()
         else:
             self.display.add_calibration_point(x, y)
-            self._update_calibration_polynomial()
+            self._update_calibration_ellipse()
 
     def _on_calibration_select(self, index: int) -> None:
         """Handle calibration point selection."""
@@ -125,9 +109,9 @@ class Application:
 
     def _on_simulation_setup(self, x_start: int, x_end: int, pixels_per_second: float) -> None:
         """Handle simulation setup."""
-        # Make sure polynomial is set from calibration points
-        poly = fit_polynomial(self.config.calibration.points)
-        self.display.set_calibration_polynomial(poly)
+        # Make sure ellipse is set from calibration points
+        ellipse = fit_ellipse(self.config.calibration.points)
+        self.display.set_calibration_ellipse(ellipse)
         self.display.setup_simulation(x_start, x_end, pixels_per_second)
 
     def _on_simulation_start(self) -> None:

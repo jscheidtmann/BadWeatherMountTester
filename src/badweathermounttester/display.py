@@ -12,7 +12,7 @@ import time
 import pygame
 from enum import Enum, auto
 from dataclasses import dataclass
-from typing import Optional, Tuple, List
+from typing import Optional, Tuple, List, Dict
 
 from badweathermounttester.config import DisplayConfig
 
@@ -50,7 +50,7 @@ class SimulatorDisplay:
         self.calibration_hover_position: Optional[Tuple[int, int]] = None
         self.calibration_points: List[Tuple[int, int]] = []
         self.calibration_selected_index: int = -1  # -1 means no selection
-        self.calibration_polynomial: Optional[List[float]] = None  # Coefficients [a, b, c, d] for ax³+bx²+cx+d
+        self.calibration_ellipse: Optional[Dict] = None  # Ellipse parameters dict
         # Simulation state
         self.simulation_running: bool = False
         self.simulation_start_time: Optional[float] = None
@@ -106,15 +106,15 @@ class SimulatorDisplay:
         self.calibration_points = []
         self.calibration_hover_position = None
         self.calibration_selected_index = -1
-        self.calibration_polynomial = None
+        self.calibration_ellipse = None
 
     def set_calibration_selected_index(self, index: int) -> None:
         """Set the selected calibration point index."""
         self.calibration_selected_index = index
 
-    def set_calibration_polynomial(self, coeffs: Optional[List[float]]) -> None:
-        """Set the polynomial coefficients for the fitted curve."""
-        self.calibration_polynomial = coeffs
+    def set_calibration_ellipse(self, ellipse: Optional[Dict]) -> None:
+        """Set the ellipse parameters for the fitted curve."""
+        self.calibration_ellipse = ellipse
 
     def update_calibration_point(self, index: int, x: int, y: int) -> None:
         """Update a specific calibration point's position."""
@@ -175,9 +175,55 @@ class SimulatorDisplay:
             elif self.simulation_elapsed > total_time:
                 self.simulation_elapsed = total_time
 
+    def _ellipse_y_from_x(self, x: float, use_upper_arc: Optional[bool] = None) -> Optional[float]:
+        """Calculate y coordinate on ellipse for given x using the conic equation.
+
+        The ellipse is defined by: Ax² + Bxy + Cy² + Dx + Ey + F = 0
+        Solving for y: Cy² + (Bx + E)y + (Ax² + Dx + F) = 0
+
+        Args:
+            x: The x coordinate
+            use_upper_arc: If True, use upper arc (smaller y). If False, use lower arc.
+                          If None, determine from calibration points.
+        """
+        if not self.calibration_ellipse or "coeffs" not in self.calibration_ellipse:
+            return None
+
+        A, B, C, D, E, F = self.calibration_ellipse["coeffs"]
+        center_y = self.calibration_ellipse.get("center_y", 0)
+
+        # Quadratic coefficients for y
+        qa = C
+        qb = B * x + E
+        qc = A * x * x + D * x + F
+
+        discriminant = qb * qb - 4 * qa * qc
+
+        if discriminant < 0 or abs(qa) < 1e-10:
+            return None
+
+        sqrt_disc = math.sqrt(discriminant)
+        y1 = (-qb + sqrt_disc) / (2 * qa)
+        y2 = (-qb - sqrt_disc) / (2 * qa)
+
+        # Determine which arc to use based on calibration points
+        if use_upper_arc is None:
+            # Check if calibration points are mostly above or below center
+            if self.calibration_points:
+                points_above = sum(1 for p in self.calibration_points if p[1] < center_y)
+                use_upper_arc = points_above > len(self.calibration_points) / 2
+            else:
+                use_upper_arc = True
+
+        # Pick the appropriate arc consistently
+        if use_upper_arc:
+            return min(y1, y2)  # Upper arc = smaller y value
+        else:
+            return max(y1, y2)  # Lower arc = larger y value
+
     def get_simulation_status(self) -> dict:
         """Get current simulation status."""
-        if not self.calibration_polynomial or self.simulation_x_start >= self.simulation_x_end:
+        if not self.calibration_ellipse or self.simulation_x_start >= self.simulation_x_end:
             return {
                 "running": False,
                 "progress": 0,
@@ -200,9 +246,9 @@ class SimulatorDisplay:
         current_x = self.simulation_x_start + int(elapsed * self.simulation_pixels_per_second)
         current_x = min(current_x, self.simulation_x_end)
 
-        # Calculate y from polynomial
-        a, b, c, d = self.calibration_polynomial
-        current_y = int(a * current_x**3 + b * current_x**2 + c * current_x + d)
+        # Calculate y from ellipse
+        y = self._ellipse_y_from_x(current_x)
+        current_y = int(y) if y is not None else int(self.calibration_ellipse.get("center_y", 0))
 
         progress = (current_x - self.simulation_x_start) / total_distance * 100 if total_distance > 0 else 100
         remaining = max(0, total_time - elapsed)
@@ -458,22 +504,21 @@ class SimulatorDisplay:
         selected_color = (255, 255, 0)  # Yellow for selected point
         line_color = (255, 165, 0)  # Orange for connecting line
         hover_color = (255, 255, 255)  # White for hover crosshair
-        poly_color = (255, 0, 0)  # Red for polynomial fit
+        ellipse_color = (255, 0, 0)  # Red for ellipse fit
 
-        # Draw polynomial fit curve if available
-        if self.calibration_polynomial and len(self.calibration_points) > 3:
-            a, b, c, d = self.calibration_polynomial
+        # Draw ellipse fit curve if available
+        if self.calibration_ellipse and len(self.calibration_points) >= 5:
             # Get x range from points
             x_coords = [p[0] for p in self.calibration_points]
             x_min, x_max = min(x_coords), max(x_coords)
             # Draw curve by connecting many points
-            poly_points = []
+            ellipse_points = []
             for x in range(x_min, x_max + 1, 2):  # Step by 2 pixels for performance
-                y = a * x**3 + b * x**2 + c * x + d
-                if 0 <= y <= height:
-                    poly_points.append((x, int(y)))
-            if len(poly_points) > 1:
-                pygame.draw.lines(self.screen, poly_color, False, poly_points, 2)
+                y = self._ellipse_y_from_x(x)
+                if y is not None and 0 <= y <= height:
+                    ellipse_points.append((x, int(y)))
+            if len(ellipse_points) > 1:
+                pygame.draw.lines(self.screen, ellipse_color, False, ellipse_points, 2)
 
         # Draw connecting line between calibration points
         if len(self.calibration_points) > 1:
@@ -508,7 +553,7 @@ class SimulatorDisplay:
         self.screen.blit(instr, instr_rect)
 
     def _render_simulation(self) -> None:
-        """Render the simulated star moving along the polynomial curve."""
+        """Render the simulated star moving along the ellipse curve."""
         if not self.screen:
             return
 
@@ -522,7 +567,7 @@ class SimulatorDisplay:
 
         # Draw the star as a 2D Gaussian distribution
         # FWHM = 4 pixels, sigma = FWHM / (2 * sqrt(2 * ln(2))) ≈ FWHM / 2.355
-        if self.calibration_polynomial and 0 <= current_y <= height:
+        if self.calibration_ellipse and 0 <= current_y <= height:
             fwhm = 4.0
             sigma = fwhm / 2.355
             max_brightness = self.config.star_brightness
