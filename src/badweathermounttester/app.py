@@ -42,6 +42,11 @@ class Application:
         self.server.on_calibration_hover(self._on_calibration_hover)
         self.server.on_calibration_click(self._on_calibration_click)
         self.server.on_calibration_select(self._on_calibration_select)
+        self.server.on_simulation_setup(self._on_simulation_setup)
+        self.server.on_simulation_start(self._on_simulation_start)
+        self.server.on_simulation_stop(self._on_simulation_stop)
+        self.server.on_simulation_reset(self._on_simulation_reset)
+        self.server.set_simulation_status_getter(self._get_simulation_status)
 
     def _on_client_connect(self) -> None:
         """Handle client connection."""
@@ -71,6 +76,14 @@ class Application:
             if mode == 3:
                 points = [(p[0], p[1]) for p in self.config.calibration.points]
                 self.display.set_calibration_points(points)
+                self._update_calibration_polynomial()
+
+            # When entering simulation mode, initialize calibration points and polynomial
+            if mode == 4:
+                points = [(p[0], p[1]) for p in self.config.calibration.points]
+                self.display.set_calibration_points(points)
+                poly = fit_polynomial(self.config.calibration.points)
+                self.display.set_calibration_polynomial(poly)
 
     def _on_calibration_hover(self, x: int, y: int) -> None:
         """Handle calibration hover position change."""
@@ -108,6 +121,29 @@ class Application:
     def _on_calibration_select(self, index: int) -> None:
         """Handle calibration point selection."""
         self.display.set_calibration_selected_index(index)
+
+    def _on_simulation_setup(self, x_start: int, x_end: int, pixels_per_second: float) -> None:
+        """Handle simulation setup."""
+        # Make sure polynomial is set from calibration points
+        poly = fit_polynomial(self.config.calibration.points)
+        self.display.set_calibration_polynomial(poly)
+        self.display.setup_simulation(x_start, x_end, pixels_per_second)
+
+    def _on_simulation_start(self) -> None:
+        """Handle simulation start."""
+        self.display.start_simulation()
+
+    def _on_simulation_stop(self) -> None:
+        """Handle simulation stop."""
+        self.display.stop_simulation()
+
+    def _on_simulation_reset(self) -> None:
+        """Handle simulation reset."""
+        self.display.reset_simulation()
+
+    def _get_simulation_status(self) -> dict:
+        """Get current simulation status from display."""
+        return self.display.get_simulation_status()
 
     def run(self) -> int:
         """Run the application. Returns exit code."""

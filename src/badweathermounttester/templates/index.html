@@ -105,19 +105,6 @@
             background-color: #555;
         }
 
-        .status {
-            text-align: center;
-            padding: 6px;
-            border-radius: 4px;
-            margin-bottom: 10px;
-            font-size: 0.9em;
-        }
-
-        .status.connected {
-            background-color: #1b4332;
-            color: #95d5b2;
-        }
-
         .step-indicator {
             display: flex;
             justify-content: space-between;
@@ -301,15 +288,135 @@
                 margin-bottom: 10px;
             }
         }
+
+        /* Simulation UI Styles */
+        .simulation-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #666;
+        }
+
+        .status-dot.ready {
+            background-color: #666;
+        }
+
+        .status-dot.running {
+            background-color: #4caf50;
+            animation: pulse 1s infinite;
+        }
+
+        .status-dot.paused {
+            background-color: #ff9800;
+        }
+
+        .status-dot.complete {
+            background-color: #2196f3;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .status-text {
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+
+        .countdown {
+            text-align: right;
+        }
+
+        .countdown-label {
+            color: #aaa;
+            font-size: 0.9em;
+        }
+
+        .countdown-time {
+            font-size: 1.8em;
+            font-weight: bold;
+            font-family: monospace;
+            color: #00d4ff;
+        }
+
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 20px;
+            background-color: #0f0f23;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #333;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00d4ff, #4caf50);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-percent {
+            font-size: 1em;
+            font-weight: bold;
+            min-width: 50px;
+            text-align: right;
+        }
+
+        .simulation-info {
+            text-align: center;
+            margin-bottom: 12px;
+            color: #aaa;
+        }
+
+        .simulation-info p {
+            margin: 0;
+        }
+
+        .simulation-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .btn-large {
+            padding: 12px 24px;
+            font-size: 1.1em;
+        }
+
+        .btn-success {
+            background-color: #4caf50;
+            color: #fff;
+        }
+
+        .btn-success:hover {
+            background-color: #45a049;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>{{ _('Bad Weather Mount Tester') }}</h1>
-
-        <div class="status connected">
-            {{ _('Connected to Simulator') }}
-        </div>
 
         <div class="step-indicator">
             <div class="step active" id="step-1">1. {{ _('Configure') }}</div>
@@ -443,7 +550,44 @@
         <div class="step-content" id="step-4-content">
             <div class="card instructions-card">
                 <h2>{{ _('Instructions') }}</h2>
-                <p>{{ _('Measurement step - coming soon.') }}</p>
+                <ol>
+                    <li>{{ _('Move the mount back to the starting position (left side of screen).') }}</li>
+                    <li>{{ _('In PHD2, center the simulated star and start guiding.') }}</li>
+                    <li>{{ _('Press "Start Simulation" below to begin the star movement.') }}</li>
+                    <li>{{ _('Wait until the simulation completes (the star crosses the screen).') }}</li>
+                    <li>{{ _('Stop guiding in PHD2 and analyze the log with PHD2 Log Viewer.') }}</li>
+                </ol>
+            </div>
+
+            <div class="card">
+                <h2>{{ _('Simulation Control') }}</h2>
+                <div class="simulation-status" id="simulation-status">
+                    <div class="status-indicator" id="status-indicator">
+                        <span class="status-dot" id="status-dot"></span>
+                        <span class="status-text" id="status-text">{{ _('Ready') }}</span>
+                    </div>
+                    <div class="countdown" id="countdown">
+                        <span class="countdown-label">{{ _('Remaining:') }}</span>
+                        <span class="countdown-time" id="countdown-time">--:--</span>
+                    </div>
+                </div>
+
+                <div class="progress-container">
+                    <div class="progress-bar" id="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                    <span class="progress-percent" id="progress-percent">0%</span>
+                </div>
+
+                <div class="simulation-info">
+                    <p>{{ _('Elapsed:') }} <strong id="elapsed-time">0:00</strong> | {{ _('Total:') }} <strong id="total-time">--:--</strong></p>
+                </div>
+
+                <div class="simulation-buttons">
+                    <button class="btn btn-large" id="btn-start-sim">{{ _('Start Simulation') }}</button>
+                    <button class="btn btn-secondary btn-large" id="btn-stop-sim" disabled>{{ _('Pause') }}</button>
+                    <button class="btn btn-secondary btn-large" id="btn-reset-sim">{{ _('Reset') }}</button>
+                </div>
             </div>
         </div>
 
@@ -1238,6 +1382,218 @@
 
         // Initialize
         loadConfig();
+
+        // ===== Simulation Control =====
+        const btnStartSim = document.getElementById('btn-start-sim');
+        const btnStopSim = document.getElementById('btn-stop-sim');
+        const btnResetSim = document.getElementById('btn-reset-sim');
+        const statusDot = document.getElementById('status-dot');
+        const statusText = document.getElementById('status-text');
+        const countdownTime = document.getElementById('countdown-time');
+        const progressFill = document.getElementById('progress-fill');
+        const progressPercent = document.getElementById('progress-percent');
+        const elapsedTime = document.getElementById('elapsed-time');
+        const totalTime = document.getElementById('total-time');
+
+        let simulationSetup = false;
+        let simulationPollingInterval = null;
+
+        // Format seconds as M:SS or MM:SS
+        function formatTime(seconds) {
+            if (seconds === undefined || seconds === null || isNaN(seconds)) {
+                return '--:--';
+            }
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Update simulation UI from status
+        function updateSimulationUI(status) {
+            // Update progress bar
+            const progress = status.progress || 0;
+            progressFill.style.width = `${progress}%`;
+            progressPercent.textContent = `${progress.toFixed(1)}%`;
+
+            // Update times
+            elapsedTime.textContent = formatTime(status.elapsed_seconds);
+            countdownTime.textContent = formatTime(status.remaining_seconds);
+
+            if (status.total_seconds !== undefined) {
+                totalTime.textContent = formatTime(status.total_seconds);
+            }
+
+            // Update status indicator
+            statusDot.className = 'status-dot';
+            if (status.complete) {
+                statusDot.classList.add('complete');
+                statusText.textContent = 'Complete';
+                btnStartSim.disabled = true;
+                btnStopSim.disabled = true;
+            } else if (status.running) {
+                statusDot.classList.add('running');
+                statusText.textContent = 'Running';
+                btnStartSim.disabled = true;
+                btnStopSim.disabled = false;
+            } else if (status.elapsed_seconds > 0) {
+                statusDot.classList.add('paused');
+                statusText.textContent = 'Paused';
+                btnStartSim.disabled = false;
+                btnStopSim.disabled = true;
+            } else {
+                statusDot.classList.add('ready');
+                statusText.textContent = 'Ready';
+                btnStartSim.disabled = false;
+                btnStopSim.disabled = true;
+            }
+        }
+
+        // Poll simulation status
+        async function pollSimulationStatus() {
+            if (currentStep !== 4) return;
+
+            try {
+                const response = await fetch('/api/simulation/status');
+                const status = await response.json();
+                updateSimulationUI(status);
+
+                // Stop polling if complete
+                if (status.complete && simulationPollingInterval) {
+                    clearInterval(simulationPollingInterval);
+                    simulationPollingInterval = null;
+                }
+            } catch (error) {
+                console.error('Failed to poll simulation status:', error);
+            }
+        }
+
+        // Setup simulation when entering step 4
+        async function setupSimulation() {
+            try {
+                const response = await fetch('/api/simulation/setup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                const data = await response.json();
+
+                if (data.status === 'ok') {
+                    simulationSetup = true;
+                    totalTime.textContent = formatTime(data.total_seconds);
+                    countdownTime.textContent = formatTime(data.total_seconds);
+                    btnStartSim.disabled = false;
+                } else {
+                    console.error('Simulation setup failed:', data.error);
+                    statusText.textContent = 'Setup Error';
+                    btnStartSim.disabled = true;
+                }
+            } catch (error) {
+                console.error('Failed to setup simulation:', error);
+                statusText.textContent = 'Setup Error';
+                btnStartSim.disabled = true;
+            }
+        }
+
+        // Start simulation
+        btnStartSim.addEventListener('click', async () => {
+            try {
+                await fetch('/api/simulation/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+
+                // Start polling for status updates
+                if (!simulationPollingInterval) {
+                    simulationPollingInterval = setInterval(pollSimulationStatus, 500);
+                }
+                pollSimulationStatus();
+            } catch (error) {
+                console.error('Failed to start simulation:', error);
+            }
+        });
+
+        // Stop/pause simulation
+        btnStopSim.addEventListener('click', async () => {
+            try {
+                await fetch('/api/simulation/stop', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                pollSimulationStatus();
+            } catch (error) {
+                console.error('Failed to stop simulation:', error);
+            }
+        });
+
+        // Reset simulation
+        btnResetSim.addEventListener('click', async () => {
+            try {
+                await fetch('/api/simulation/reset', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+
+                // Re-setup the simulation
+                await setupSimulation();
+                pollSimulationStatus();
+            } catch (error) {
+                console.error('Failed to reset simulation:', error);
+            }
+        });
+
+        // Hook into step navigation to setup simulation when entering step 4
+        const originalStepClickHandlers = [];
+
+        // Modify btnNext click handler to setup simulation when entering step 4
+        const originalBtnNextHandler = btnNext.onclick;
+        btnNext.addEventListener('click', async () => {
+            // Wait a bit for the step to change
+            setTimeout(async () => {
+                if (currentStep === 4) {
+                    await setupSimulation();
+                    pollSimulationStatus();
+                    // Start continuous polling
+                    if (!simulationPollingInterval) {
+                        simulationPollingInterval = setInterval(pollSimulationStatus, 500);
+                    }
+                } else if (simulationPollingInterval) {
+                    clearInterval(simulationPollingInterval);
+                    simulationPollingInterval = null;
+                }
+            }, 100);
+        });
+
+        // Also handle direct tab clicks
+        for (let stepNum = 1; stepNum <= 4; stepNum++) {
+            const stepElement = document.getElementById(`step-${stepNum}`);
+            stepElement.addEventListener('click', async () => {
+                setTimeout(async () => {
+                    if (currentStep === 4) {
+                        await setupSimulation();
+                        pollSimulationStatus();
+                        if (!simulationPollingInterval) {
+                            simulationPollingInterval = setInterval(pollSimulationStatus, 500);
+                        }
+                    } else if (simulationPollingInterval) {
+                        clearInterval(simulationPollingInterval);
+                        simulationPollingInterval = null;
+                    }
+                }, 100);
+            });
+        }
+
+        // Handle btnBack to stop polling when leaving step 4
+        btnBack.addEventListener('click', () => {
+            setTimeout(() => {
+                if (currentStep !== 4 && simulationPollingInterval) {
+                    clearInterval(simulationPollingInterval);
+                    simulationPollingInterval = null;
+                }
+            }, 100);
+        });
     </script>
 </body>
 </html>

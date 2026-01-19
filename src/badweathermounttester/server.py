@@ -65,6 +65,11 @@ class WebServer:
         self._on_calibration_hover_callback: Optional[Callable[[int, int], None]] = None
         self._on_calibration_click_callback: Optional[Callable[[int, int], None]] = None
         self._on_calibration_select_callback: Optional[Callable[[int], None]] = None
+        self._on_simulation_setup_callback: Optional[Callable[[int, int, float], None]] = None
+        self._on_simulation_start_callback: Optional[Callable[[], None]] = None
+        self._on_simulation_stop_callback: Optional[Callable[[], None]] = None
+        self._on_simulation_reset_callback: Optional[Callable[[], None]] = None
+        self._get_simulation_status_callback: Optional[Callable[[], dict]] = None
 
     def _setup_routes(self) -> None:
         """Set up Flask routes."""
@@ -435,6 +440,80 @@ class WebServer:
 
             return jsonify({"status": "ok", "index": index})
 
+        @self.app.route("/api/simulation/setup", methods=["POST"])
+        def simulation_setup():
+            """Set up simulation parameters based on calibration data."""
+            # Get x range from calibration points
+            if len(self.config.calibration.points) < 4:
+                return jsonify({"error": "Not enough calibration points"}), 400
+
+            x_coords = [p[0] for p in self.config.calibration.points]
+            x_start = min(x_coords)
+            x_end = max(x_coords)
+
+            # Calculate pixels per second based on sidereal rate
+            # Sidereal rate is 15 arcsec/second
+            # Pixel pitch in arcsec = (pixel_pitch_mm / distance_m / 1000) * 206265
+            screen_width_mm = self.config.display.screen_width_mm
+            screen_width_px = self.config.display.screen_width
+            distance_m = self.config.mount.distance_to_screen_m
+
+            if screen_width_mm <= 0 or screen_width_px <= 0 or distance_m <= 0:
+                return jsonify({"error": "Invalid display/mount configuration"}), 400
+
+            pixel_pitch_mm = screen_width_mm / screen_width_px
+            pixel_pitch_arcsec = (pixel_pitch_mm / (distance_m * 1000)) * 206265
+            pixels_per_second = 15.0 / pixel_pitch_arcsec  # 15 arcsec/sec sidereal rate
+
+            if self._on_simulation_setup_callback:
+                self._on_simulation_setup_callback(x_start, x_end, pixels_per_second)
+
+            total_distance = x_end - x_start
+            total_time = total_distance / pixels_per_second if pixels_per_second > 0 else 0
+
+            return jsonify({
+                "status": "ok",
+                "x_start": x_start,
+                "x_end": x_end,
+                "pixels_per_second": round(pixels_per_second, 4),
+                "total_seconds": round(total_time, 1),
+            })
+
+        @self.app.route("/api/simulation/start", methods=["POST"])
+        def simulation_start():
+            """Start or resume the simulation."""
+            if self._on_simulation_start_callback:
+                self._on_simulation_start_callback()
+            return jsonify({"status": "ok"})
+
+        @self.app.route("/api/simulation/stop", methods=["POST"])
+        def simulation_stop():
+            """Stop/pause the simulation."""
+            if self._on_simulation_stop_callback:
+                self._on_simulation_stop_callback()
+            return jsonify({"status": "ok"})
+
+        @self.app.route("/api/simulation/reset", methods=["POST"])
+        def simulation_reset():
+            """Reset the simulation to the beginning."""
+            if self._on_simulation_reset_callback:
+                self._on_simulation_reset_callback()
+            return jsonify({"status": "ok"})
+
+        @self.app.route("/api/simulation/status", methods=["GET"])
+        def simulation_status():
+            """Get current simulation status."""
+            if self._get_simulation_status_callback:
+                status = self._get_simulation_status_callback()
+                return jsonify(status)
+            return jsonify({
+                "running": False,
+                "progress": 0,
+                "elapsed_seconds": 0,
+                "remaining_seconds": 0,
+                "complete": False,
+            })
+
     def on_connect(self, callback: Callable[[], None]) -> None:
         """Set callback for when a client connects."""
         self._on_connect_callback = callback
@@ -458,6 +537,26 @@ class WebServer:
     def on_calibration_select(self, callback: Callable[[int], None]) -> None:
         """Set callback for when a calibration point is selected."""
         self._on_calibration_select_callback = callback
+
+    def on_simulation_setup(self, callback: Callable[[int, int, float], None]) -> None:
+        """Set callback for simulation setup (x_start, x_end, pixels_per_second)."""
+        self._on_simulation_setup_callback = callback
+
+    def on_simulation_start(self, callback: Callable[[], None]) -> None:
+        """Set callback for simulation start."""
+        self._on_simulation_start_callback = callback
+
+    def on_simulation_stop(self, callback: Callable[[], None]) -> None:
+        """Set callback for simulation stop."""
+        self._on_simulation_stop_callback = callback
+
+    def on_simulation_reset(self, callback: Callable[[], None]) -> None:
+        """Set callback for simulation reset."""
+        self._on_simulation_reset_callback = callback
+
+    def set_simulation_status_getter(self, callback: Callable[[], dict]) -> None:
+        """Set callback to get simulation status."""
+        self._get_simulation_status_callback = callback
 
     def get_network_address(self) -> str:
         """Get the network address for clients to connect to."""

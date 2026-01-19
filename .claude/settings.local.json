@@ -9,7 +9,8 @@
       "Bash(python3 -m pytest:*)",
       "Bash(uv sync:*)",
       "Bash(python3 -m py_compile:*)",
-      "Bash(python -m py_compile:*)"
+      "Bash(python -m py_compile:*)",
+      "Bash(python -m flake8:*)"
     ]
   }
 }

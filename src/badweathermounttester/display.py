@@ -7,6 +7,7 @@ This module handles the pygame-based display that shows:
 """
 
 import math
+import time
 
 import pygame
 from enum import Enum, auto
@@ -50,6 +51,12 @@ class SimulatorDisplay:
         self.calibration_points: List[Tuple[int, int]] = []
         self.calibration_selected_index: int = -1  # -1 means no selection
         self.calibration_polynomial: Optional[List[float]] = None  # Coefficients [a, b, c, d] for ax³+bx²+cx+d
+        # Simulation state
+        self.simulation_running: bool = False
+        self.simulation_start_time: Optional[float] = None
+        self.simulation_x_start: int = 0
+        self.simulation_x_end: int = 0
+        self.simulation_pixels_per_second: float = 1.0  # Will be calculated from sidereal rate
 
     def init(self) -> None:
         """Initialize pygame and create the display."""
@@ -112,6 +119,75 @@ class SimulatorDisplay:
         """Update a specific calibration point's position."""
         if 0 <= index < len(self.calibration_points):
             self.calibration_points[index] = (x, y)
+
+    def setup_simulation(self, x_start: int, x_end: int, pixels_per_second: float) -> None:
+        """Set up simulation parameters."""
+        self.simulation_x_start = x_start
+        self.simulation_x_end = x_end
+        self.simulation_pixels_per_second = pixels_per_second
+        self.simulation_running = False
+        self.simulation_start_time = None
+
+    def start_simulation(self) -> None:
+        """Start or resume the simulation."""
+        if not self.simulation_running:
+            self.simulation_running = True
+            self.simulation_start_time = time.time()
+
+    def stop_simulation(self) -> None:
+        """Stop/pause the simulation."""
+        self.simulation_running = False
+
+    def reset_simulation(self) -> None:
+        """Reset the simulation to the start."""
+        self.simulation_running = False
+        self.simulation_start_time = None
+
+    def get_simulation_status(self) -> dict:
+        """Get current simulation status."""
+        if not self.calibration_polynomial or self.simulation_x_start >= self.simulation_x_end:
+            return {
+                "running": False,
+                "progress": 0,
+                "elapsed_seconds": 0,
+                "remaining_seconds": 0,
+                "current_x": self.simulation_x_start,
+                "current_y": 0,
+                "complete": False,
+            }
+
+        total_distance = self.simulation_x_end - self.simulation_x_start
+        total_time = total_distance / self.simulation_pixels_per_second if self.simulation_pixels_per_second > 0 else 0
+
+        if self.simulation_start_time is None:
+            elapsed = 0
+        else:
+            elapsed = time.time() - self.simulation_start_time
+
+        current_x = self.simulation_x_start + int(elapsed * self.simulation_pixels_per_second)
+        current_x = min(current_x, self.simulation_x_end)
+
+        # Calculate y from polynomial
+        a, b, c, d = self.calibration_polynomial
+        current_y = int(a * current_x**3 + b * current_x**2 + c * current_x + d)
+
+        progress = (current_x - self.simulation_x_start) / total_distance * 100 if total_distance > 0 else 100
+        remaining = max(0, total_time - elapsed)
+        complete = current_x >= self.simulation_x_end
+
+        if complete:
+            self.simulation_running = False
+
+        return {
+            "running": self.simulation_running,
+            "progress": round(progress, 1),
+            "elapsed_seconds": round(elapsed, 1),
+            "remaining_seconds": round(remaining, 1),
+            "total_seconds": round(total_time, 1),
+            "current_x": current_x,
+            "current_y": current_y,
+            "complete": complete,
+        }
 
     def handle_events(self) -> bool:
         """Process pygame events. Returns False if should quit."""
@@ -398,22 +474,79 @@ class SimulatorDisplay:
         self.screen.blit(instr, instr_rect)
 
     def _render_simulation(self) -> None:
-        """Render the simulated star."""
-        if not self.screen or not self.star_position:
+        """Render the simulated star moving along the polynomial curve."""
+        if not self.screen:
             return
 
-        # Draw the star as a bright circle
-        star_color = (
-            self.config.star_brightness,
-            self.config.star_brightness,
-            self.config.star_brightness,
-        )
-        pygame.draw.circle(
-            self.screen,
-            star_color,
-            (int(self.star_position.x), int(self.star_position.y)),
-            self.config.star_size,
-        )
+        width = self.config.screen_width
+        height = self.config.screen_height
+
+        # Get current simulation status
+        status = self.get_simulation_status()
+        current_x = status["current_x"]
+        current_y = status["current_y"]
+
+        # Draw the polynomial curve faintly for reference
+        if self.calibration_polynomial and len(self.calibration_points) > 3:
+            a, b, c, d = self.calibration_polynomial
+            x_coords = [p[0] for p in self.calibration_points]
+            x_min, x_max = min(x_coords), max(x_coords)
+            poly_points = []
+            for x in range(x_min, x_max + 1, 4):
+                y = a * x**3 + b * x**2 + c * x + d
+                if 0 <= y <= height:
+                    poly_points.append((x, int(y)))
+            if len(poly_points) > 1:
+                pygame.draw.lines(self.screen, (40, 40, 40), False, poly_points, 1)
+
+        # Draw the star at current position
+        if self.calibration_polynomial and 0 <= current_y <= height:
+            star_color = (
+                self.config.star_brightness,
+                self.config.star_brightness,
+                self.config.star_brightness,
+            )
+            pygame.draw.circle(
+                self.screen,
+                star_color,
+                (current_x, current_y),
+                self.config.star_size,
+            )
+
+        # Draw status info at top
+        font = pygame.font.Font(None, 36)
+        if status["complete"]:
+            text = font.render("Simulation Complete", True, (0, 255, 0))
+        elif status["running"]:
+            remaining = status["remaining_seconds"]
+            mins = int(remaining // 60)
+            secs = int(remaining % 60)
+            text = font.render(f"Running - {mins:02d}:{secs:02d} remaining", True, (255, 255, 0))
+        else:
+            text = font.render("Simulation Ready - Press Start", True, (200, 200, 200))
+        text_rect = text.get_rect(center=(width // 2, 30))
+        self.screen.blit(text, text_rect)
+
+        # Draw progress bar at bottom
+        bar_height = 10
+        bar_y = height - 40
+        bar_margin = 50
+        bar_width = width - 2 * bar_margin
+        progress = status["progress"] / 100
+
+        # Background
+        pygame.draw.rect(self.screen, (60, 60, 60), (bar_margin, bar_y, bar_width, bar_height))
+        # Progress
+        if progress > 0:
+            pygame.draw.rect(self.screen, (0, 200, 0), (bar_margin, bar_y, int(bar_width * progress), bar_height))
+        # Border
+        pygame.draw.rect(self.screen, (100, 100, 100), (bar_margin, bar_y, bar_width, bar_height), 1)
+
+        # Progress percentage
+        font_small = pygame.font.Font(None, 24)
+        pct_text = font_small.render(f"{status['progress']:.1f}%", True, (200, 200, 200))
+        pct_rect = pct_text.get_rect(center=(width // 2, bar_y + bar_height + 15))
+        self.screen.blit(pct_text, pct_rect)
 
     def quit(self) -> None:
         """Cleanup and quit pygame."""
