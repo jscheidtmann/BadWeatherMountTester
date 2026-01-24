@@ -529,21 +529,6 @@ class SimulatorDisplay:
         selected_color = (255, 255, 255)  # Bright white for selected point
         line_color = (80, 80, 80)  # Dim gray for connecting line
         hover_color = (255, 255, 255)  # White for hover crosshair
-        ellipse_color = (255, 0, 0)  # Red for ellipse fit
-
-        # Draw ellipse fit curve if available
-        if self.calibration_ellipse and len(self.calibration_points) >= 5:
-            # Get x range from points
-            x_coords = [p[0] for p in self.calibration_points]
-            x_min, x_max = min(x_coords), max(x_coords)
-            # Draw curve by connecting many points
-            ellipse_points = []
-            for x in range(x_min, x_max + 1, 2):  # Step by 2 pixels for performance
-                y = self._ellipse_y_from_x(x)
-                if y is not None and 0 <= y <= height:
-                    ellipse_points.append((x, int(y)))
-            if len(ellipse_points) > 1:
-                pygame.draw.lines(self.screen, ellipse_color, False, ellipse_points, 2)
 
         # Draw connecting line between calibration points
         if len(self.calibration_points) > 1:

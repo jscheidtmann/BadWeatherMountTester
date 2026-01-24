@@ -1178,6 +1178,53 @@
                 ctx.stroke();
             }
 
+            // Draw ellipse fit curve if available
+            if (ellipseParams && ellipseParams.coeffs && calibrationPoints.length >= 5) {
+                const [A, B, C, D, E, F] = ellipseParams.coeffs;
+                const centerY = ellipseParams.center_y || 0;
+
+                // Get x range from points
+                const xCoords = calibrationPoints.map(p => p[0]);
+                const xMin = Math.min(...xCoords);
+                const xMax = Math.max(...xCoords);
+
+                // Determine which arc to use based on calibration points
+                const pointsAbove = calibrationPoints.filter(p => p[1] < centerY).length;
+                const useUpperArc = pointsAbove > calibrationPoints.length / 2;
+
+                // Calculate ellipse points
+                ctx.strokeStyle = '#ff0000';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                let started = false;
+
+                for (let x = xMin; x <= xMax; x += 2) {
+                    // Solve quadratic: Cy² + (Bx + E)y + (Ax² + Dx + F) = 0
+                    const qa = C;
+                    const qb = B * x + E;
+                    const qc = A * x * x + D * x + F;
+                    const discriminant = qb * qb - 4 * qa * qc;
+
+                    if (discriminant >= 0 && Math.abs(qa) > 1e-10) {
+                        const sqrtDisc = Math.sqrt(discriminant);
+                        const y1 = (-qb + sqrtDisc) / (2 * qa);
+                        const y2 = (-qb - sqrtDisc) / (2 * qa);
+                        const y = useUpperArc ? Math.min(y1, y2) : Math.max(y1, y2);
+
+                        if (y >= 0 && y <= screenHeight) {
+                            const canvasPoint = screenToCanvas(x, y);
+                            if (!started) {
+                                ctx.moveTo(canvasPoint.x, canvasPoint.y);
+                                started = true;
+                            } else {
+                                ctx.lineTo(canvasPoint.x, canvasPoint.y);
+                            }
+                        }
+                    }
+                }
+                ctx.stroke();
+            }
+
             // Draw calibration points (crosshairs - grayscale for B/W camera compatibility)
             calibrationPoints.forEach((point, index) => {
                 const canvasPoint = screenToCanvas(point[0], point[1]);
