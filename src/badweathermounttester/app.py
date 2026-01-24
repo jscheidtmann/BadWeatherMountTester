@@ -31,6 +31,7 @@ class Application:
         self.server.on_simulation_stop(self._on_simulation_stop)
         self.server.on_simulation_reset(self._on_simulation_reset)
         self.server.on_simulation_skip(self._on_simulation_skip)
+        self.server.on_simulation_seek(self._on_simulation_seek)
         self.server.set_simulation_status_getter(self._get_simulation_status)
 
     def _on_client_connect(self) -> None:
@@ -129,6 +130,10 @@ class Application:
     def _on_simulation_skip(self, seconds: float) -> None:
         """Handle simulation skip."""
         self.display.skip_simulation(seconds)
+
+    def _on_simulation_seek(self, elapsed_seconds: float) -> None:
+        """Handle simulation seek to specific time."""
+        self.display.seek_simulation(elapsed_seconds)
 
     def _get_simulation_status(self) -> dict:
         """Get current simulation status from display."""

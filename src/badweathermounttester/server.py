@@ -159,6 +159,7 @@ class WebServer:
         self._on_simulation_stop_callback: Optional[Callable[[], None]] = None
         self._on_simulation_reset_callback: Optional[Callable[[], None]] = None
         self._on_simulation_skip_callback: Optional[Callable[[float], None]] = None
+        self._on_simulation_seek_callback: Optional[Callable[[float], None]] = None
         self._get_simulation_status_callback: Optional[Callable[[], dict]] = None
 
     def _setup_routes(self) -> None:
@@ -602,6 +603,18 @@ class WebServer:
                 self._on_simulation_skip_callback(seconds)
             return jsonify({"status": "ok", "skipped_seconds": seconds})
 
+        @self.app.route("/api/simulation/seek", methods=["POST"])
+        def simulation_seek():
+            """Seek to a specific elapsed time in the simulation."""
+            data = request.get_json()
+            if not data or "elapsed_seconds" not in data:
+                return jsonify({"error": "elapsed_seconds not specified"}), 400
+
+            elapsed_seconds = float(data["elapsed_seconds"])
+            if self._on_simulation_seek_callback:
+                self._on_simulation_seek_callback(elapsed_seconds)
+            return jsonify({"status": "ok", "elapsed_seconds": elapsed_seconds})
+
         @self.app.route("/api/simulation/status", methods=["GET"])
         def simulation_status():
             """Get current simulation status."""
@@ -659,6 +672,10 @@ class WebServer:
     def on_simulation_skip(self, callback: Callable[[float], None]) -> None:
         """Set callback for simulation skip (seconds to skip, positive or negative)."""
         self._on_simulation_skip_callback = callback
+
+    def on_simulation_seek(self, callback: Callable[[float], None]) -> None:
+        """Set callback for simulation seek (elapsed seconds to seek to)."""
+        self._on_simulation_seek_callback = callback
 
     def set_simulation_status_getter(self, callback: Callable[[], dict]) -> None:
         """Set callback to get simulation status."""

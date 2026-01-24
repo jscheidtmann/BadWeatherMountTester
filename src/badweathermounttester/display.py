@@ -58,6 +58,8 @@ class SimulatorDisplay:
         self.simulation_x_start: int = 0
         self.simulation_x_end: int = 0
         self.simulation_pixels_per_second: float = 1.0  # Will be calculated from sidereal rate
+        # duration of each simulation step in seconds
+        self.simu_render: Optional[float] = None 
 
     def init(self) -> None:
         """Initialize pygame and create the display."""
@@ -175,6 +177,22 @@ class SimulatorDisplay:
             elif self.simulation_elapsed > total_time:
                 self.simulation_elapsed = total_time
 
+    def seek_simulation(self, elapsed_seconds: float) -> None:
+        """Seek the simulation to a specific elapsed time."""
+        # Calculate total time for clamping
+        total_distance = self.simulation_x_end - self.simulation_x_start
+        total_time = total_distance / self.simulation_pixels_per_second if self.simulation_pixels_per_second > 0 else 0
+
+        # Clamp to valid range
+        elapsed_seconds = max(0.0, min(elapsed_seconds, total_time))
+
+        if self.simulation_running and self.simulation_start_time is not None:
+            # Currently running - adjust start time so elapsed calculation is correct
+            self.simulation_start_time = time.time() - elapsed_seconds
+        else:
+            # Paused - set stored elapsed time directly
+            self.simulation_elapsed = elapsed_seconds
+
     def _ellipse_y_from_x(self, x: float, use_upper_arc: Optional[bool] = None) -> Optional[float]:
         """Calculate y coordinate on ellipse for given x using the conic equation.
 
@@ -243,12 +261,12 @@ class SimulatorDisplay:
         else:
             elapsed = self.simulation_elapsed
 
-        current_x = self.simulation_x_start + int(elapsed * self.simulation_pixels_per_second)
+        current_x = self.simulation_x_start + elapsed * self.simulation_pixels_per_second
         current_x = min(current_x, self.simulation_x_end)
 
         # Calculate y from ellipse
         y = self._ellipse_y_from_x(current_x)
-        current_y = int(y) if y is not None else int(self.calibration_ellipse.get("center_y", 0))
+        current_y = y if y is not None else self.calibration_ellipse.get("center_y", 0)
 
         progress = (current_x - self.simulation_x_start) / total_distance * 100 if total_distance > 0 else 100
         remaining = max(0, total_time - elapsed)
@@ -410,7 +428,7 @@ class SimulatorDisplay:
             pygame.draw.line(self.screen, color, (x, 0), (x, height), 1)
         for y in range(0, height, spacing_h):
             pygame.draw.line(self.screen, color, (0, y), (width, y), 1)
-       
+
         # Draw lines at the right and bottom edges
         pygame.draw.line(self.screen, color, (width - 1, 0), (width - 1, height), 1)
         pygame.draw.line(self.screen, color, (0, height - 1), (width, height - 1), 1)
@@ -565,7 +583,8 @@ class SimulatorDisplay:
         current_x = status["current_x"]
         current_y = status["current_y"]
 
-        # Draw the star as a 2D Gaussian distribution
+        start = time.time()
+        # Draw the star as a 2D Gaussian distribution with subpixel accuracy
         # FWHM = 4 pixels, sigma = FWHM / (2 * sqrt(2 * ln(2))) ≈ FWHM / 2.355
         if self.calibration_ellipse and 0 <= current_y <= height:
             fwhm = 4.0
@@ -574,22 +593,29 @@ class SimulatorDisplay:
 
             # Draw pixels in a region around the star (3*sigma is enough to capture most of the light)
             radius = int(3 * sigma) + 1
-            for dy in range(-radius, radius + 1):
-                for dx in range(-radius, radius + 1):
-                    px = current_x + dx
-                    py = current_y + dy
+            # Calculate the bounding box of pixels to render
+            px_min = int(current_x) - radius
+            px_max = int(current_x) + radius + 1
+            py_min = int(current_y) - radius
+            py_max = int(current_y) + radius + 1
 
+            for py in range(py_min, py_max + 1):
+                for px in range(px_min, px_max + 1):
                     # Skip if outside screen
                     if px < 0 or px >= width or py < 0 or py >= height:
                         continue
 
-                    # Calculate Gaussian brightness
-                    dist_sq = dx * dx + dy * dy
+                    # Calculate distance from pixel center to star position (subpixel accuracy)
+                    dist_x = px - current_x
+                    dist_y = py - current_y
+                    dist_sq = dist_x * dist_x + dist_y * dist_y
                     brightness = max_brightness * math.exp(-dist_sq / (2 * sigma * sigma))
 
                     if brightness >= 1:  # Only draw if brightness is visible
                         gray = int(brightness)
                         self.screen.set_at((px, py), (gray, gray, gray))
+        end = time.time()
+        self.simu_render = end - start
 
         # Draw status info at top
         font = pygame.font.Font(None, 36)
@@ -605,11 +631,11 @@ class SimulatorDisplay:
         text_rect = text.get_rect(center=(width // 2, 30))
         self.screen.blit(text, text_rect)
 
+        font_small = pygame.font.Font(None, 24)
         # Draw FPS in top-right corner
         if self.clock:
             fps = self.clock.get_fps()
-            font_small = pygame.font.Font(None, 24)
-            fps_text = font_small.render(f"{fps:.1f} fps", True, (200, 200, 200))
+            fps_text = font_small.render(f"{fps:.1f} fps ({self.simu_render:.3f}s)", True, (200, 200, 200))
             fps_rect = fps_text.get_rect(topright=(width - 10, 10))
             self.screen.blit(fps_text, fps_rect)
 

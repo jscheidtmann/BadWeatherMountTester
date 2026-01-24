@@ -389,6 +389,11 @@
             border-radius: 10px;
             overflow: hidden;
             border: 1px solid #333;
+            cursor: pointer;
+        }
+
+        .progress-bar:hover {
+            border-color: #00d4ff;
         }
 
         .progress-fill {
@@ -1456,8 +1461,10 @@
         const progressPercent = document.getElementById('progress-percent');
         const elapsedTime = document.getElementById('elapsed-time');
         const totalTime = document.getElementById('total-time');
+        const progressBar = document.getElementById('progress-bar');
 
         let simulationSetup = false;
+        let simulationTotalSeconds = 0;
         let simulationPollingInterval = null;
         let isPlaying = false;
 
@@ -1484,6 +1491,7 @@
 
             if (status.total_seconds !== undefined) {
                 totalTime.textContent = formatTime(status.total_seconds);
+                simulationTotalSeconds = status.total_seconds;
             }
 
             // Update play/pause button state
@@ -1555,6 +1563,7 @@
 
                 if (data.status === 'ok') {
                     simulationSetup = true;
+                    simulationTotalSeconds = data.total_seconds;
                     totalTime.textContent = formatTime(data.total_seconds);
                     countdownTime.textContent = formatTime(data.total_seconds);
                     btnPlayPause.disabled = false;
@@ -1658,6 +1667,27 @@
                 pollSimulationStatus();
             } catch (error) {
                 console.error('Failed to skip forward:', error);
+            }
+        });
+
+        // Click on progress bar to seek
+        progressBar.addEventListener('click', async (e) => {
+            if (simulationTotalSeconds <= 0) return;
+
+            const rect = progressBar.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const percentage = clickX / rect.width;
+            const elapsedSeconds = percentage * simulationTotalSeconds;
+
+            try {
+                await fetch('/api/simulation/seek', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ elapsed_seconds: elapsedSeconds })
+                });
+                pollSimulationStatus();
+            } catch (error) {
+                console.error('Failed to seek:', error);
             }
         });
 
