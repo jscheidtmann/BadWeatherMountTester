@@ -425,9 +425,9 @@ class SimulatorDisplay:
         width = self.config.screen_width
         height = self.config.screen_height
 
-        # Target: leftmost column, 1/3 from bottom (= 2/3 from top)
+        # Target: leftmost column, at configured vertical ratio
         target_x = 10
-        target_y = int(height * 2 / 3)
+        target_y = int(height * self.config.target_y_ratio)
 
         self._draw_crosshair(target_x, target_y)
 
@@ -451,8 +451,8 @@ class SimulatorDisplay:
         gray_color = (128, 128, 128)  # 50% gray
         red_color = (255, 0, 0)
 
-        # Use the same target position as the locator crosshair (1/3 from bottom = 2/3 from top)
-        target_y = int(height * 2 / 3)
+        # Use the same target position as the locator crosshair
+        target_y = int(height * self.config.target_y_ratio)
 
         font = pygame.font.Font(None, 24)
 
@@ -605,26 +605,13 @@ class SimulatorDisplay:
         text_rect = text.get_rect(center=(width // 2, 30))
         self.screen.blit(text, text_rect)
 
-        # Draw progress bar at bottom
-        bar_height = 10
-        bar_y = height - 40
-        bar_margin = 50
-        bar_width = width - 2 * bar_margin
-        progress = status["progress"] / 100
-
-        # Background
-        pygame.draw.rect(self.screen, (60, 60, 60), (bar_margin, bar_y, bar_width, bar_height))
-        # Progress
-        if progress > 0:
-            pygame.draw.rect(self.screen, (0, 200, 0), (bar_margin, bar_y, int(bar_width * progress), bar_height))
-        # Border
-        pygame.draw.rect(self.screen, (100, 100, 100), (bar_margin, bar_y, bar_width, bar_height), 1)
-
-        # Progress percentage
-        font_small = pygame.font.Font(None, 24)
-        pct_text = font_small.render(f"{status['progress']:.1f}%", True, (200, 200, 200))
-        pct_rect = pct_text.get_rect(center=(width // 2, bar_y + bar_height + 15))
-        self.screen.blit(pct_text, pct_rect)
+        # Draw FPS in top-right corner
+        if self.clock:
+            fps = self.clock.get_fps()
+            font_small = pygame.font.Font(None, 24)
+            fps_text = font_small.render(f"{fps:.1f} fps", True, (200, 200, 200))
+            fps_rect = fps_text.get_rect(topright=(width - 10, 10))
+            self.screen.blit(fps_text, fps_rect)
 
     def quit(self) -> None:
         """Cleanup and quit pygame."""
