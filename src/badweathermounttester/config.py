@@ -25,7 +25,7 @@ class DisplayConfig:
     screen_width: int = 1920
     screen_height: int = 1080
     screen_width_mm: float = 527.0  # Physical screen width in mm (default: 24" monitor)
-    star_size: int = 5
+    star_fwhm: float = 3.0  # Full Width at Half Maximum of simulated star in pixels
     star_brightness: int = 255
     target_y_ratio: float = 0.5  # Vertical position ratio for target crosshair (0=top, 1=bottom)
 
@@ -83,7 +83,7 @@ class AppConfig:
                 "screen_width": self.display.screen_width,
                 "screen_height": self.display.screen_height,
                 "screen_width_mm": self.display.screen_width_mm,
-                "star_size": self.display.star_size,
+                "star_fwhm": self.display.star_fwhm,
                 "star_brightness": self.display.star_brightness,
                 "target_y_ratio": self.display.target_y_ratio,
             },

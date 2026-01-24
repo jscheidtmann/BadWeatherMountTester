@@ -577,9 +577,9 @@ class SimulatorDisplay:
 
         start = time.time()
         # Draw the star as a 2D Gaussian distribution with subpixel accuracy
-        # FWHM = 4 pixels, sigma = FWHM / (2 * sqrt(2 * ln(2))) ≈ FWHM / 2.355
+        # sigma = FWHM / (2 * sqrt(2 * ln(2))) ≈ FWHM / 2.355
         if self.calibration_ellipse and 0 <= current_y <= height:
-            fwhm = 4.0
+            fwhm = self.config.star_fwhm
             sigma = fwhm / 2.355
             max_brightness = self.config.star_brightness
 
