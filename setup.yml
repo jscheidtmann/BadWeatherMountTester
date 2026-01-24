@@ -10,6 +10,7 @@ display:
   screen_width_mm: 520.0
   star_size: 5
   star_brightness: 255
+  target_y_ratio: 0.5
 server:
   host: 0.0.0.0
   port: 5000
@@ -19,8 +20,8 @@ camera:
   height_px: 2048
 calibration:
   points:
-  - - 74
-    - 795
+  - - 85
+    - 799
   - - 249
     - 677
   - - 393
@@ -29,12 +30,12 @@ calibration:
     - 586
   - - 1160
     - 596
-  - - 1481
+  - - 1482
     - 645
   - - 1648
     - 713
   - - 1799
     - 795
-  - - 1866
-    - 861
+  - - 1883
+    - 856
   is_complete: false

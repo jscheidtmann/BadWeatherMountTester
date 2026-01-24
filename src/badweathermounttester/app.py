@@ -85,10 +85,11 @@ class Application:
         if x == -1 and y == -1:
             # Reset signal
             self.display.clear_calibration_points()
-        elif x == -2 and y == -2:
-            # Delete last signal
-            if self.display.calibration_points:
-                self.display.calibration_points.pop()
+        elif x == -2:
+            # Delete selected signal - y contains the index
+            index = y
+            if 0 <= index < len(self.display.calibration_points):
+                del self.display.calibration_points[index]
                 # Adjust selected index if needed
                 if self.display.calibration_selected_index >= len(self.display.calibration_points):
                     self.display.calibration_selected_index = len(self.display.calibration_points) - 1

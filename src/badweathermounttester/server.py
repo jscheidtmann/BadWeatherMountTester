@@ -419,9 +419,16 @@ class WebServer:
             x = int(data["x"])
             y = int(data["y"])
 
-            # Store the point in config
+            # Store the point in config and sort by x coordinate
             self.config.calibration.points.append([x, y])
+            self.config.calibration.points.sort(key=lambda p: p[0])
             self.config.save_yaml(self.setup_path)
+
+            # Find the new index of the added point after sorting
+            new_index = next(
+                i for i, p in enumerate(self.config.calibration.points)
+                if p[0] == x and p[1] == y
+            )
 
             if self._on_calibration_click_callback:
                 self._on_calibration_click_callback(x, y)
@@ -435,6 +442,7 @@ class WebServer:
                 "y": y,
                 "points": self.config.calibration.points,
                 "count": len(self.config.calibration.points),
+                "new_index": new_index,
                 "ellipse": ellipse_params,
             })
 
@@ -462,16 +470,18 @@ class WebServer:
 
             return jsonify({"status": "ok", "points": [], "count": 0})
 
-        @self.app.route("/api/calibration/last", methods=["DELETE"])
-        def delete_last_calibration_point():
-            """Delete the last calibration point."""
-            if self.config.calibration.points:
-                self.config.calibration.points.pop()
-                self.config.save_yaml(self.setup_path)
+        @self.app.route("/api/calibration/point/<int:index>", methods=["DELETE"])
+        def delete_calibration_point(index: int):
+            """Delete a calibration point by index."""
+            if index < 0 or index >= len(self.config.calibration.points):
+                return jsonify({"error": "Invalid point index"}), 400
 
-                if self._on_calibration_click_callback:
-                    # Notify with special value to indicate deletion
-                    self._on_calibration_click_callback(-2, -2)
+            del self.config.calibration.points[index]
+            self.config.save_yaml(self.setup_path)
+
+            if self._on_calibration_click_callback:
+                # Notify with special value to indicate deletion (-2, index)
+                self._on_calibration_click_callback(-2, index)
 
             ellipse_params = fit_ellipse(self.config.calibration.points)
             return jsonify({

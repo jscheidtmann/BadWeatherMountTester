@@ -614,7 +614,7 @@
                     <span>{{ _('Points collected:') }} <strong id="point-count">0</strong></span>
                     <div class="calibration-buttons">
                         <button class="btn btn-danger btn-small" id="btn-reset-calibration">{{ _('Reset') }}</button>
-                        <button class="btn btn-secondary btn-small" id="btn-delete-last">{{ _('Delete Last') }}</button>
+                        <button class="btn btn-secondary btn-small" id="btn-delete-selected">{{ _('Delete Selected') }}</button>
                     </div>
                 </div>
                 <div class="ellipse-params" id="ellipse-params" style="display: none;">
@@ -1081,7 +1081,7 @@
         const calibrationCtx = calibrationCanvas.getContext('2d');
         const pointCountSpan = document.getElementById('point-count');
         const btnResetCalibration = document.getElementById('btn-reset-calibration');
-        const btnDeleteLast = document.getElementById('btn-delete-last');
+        const btnDeleteSelected = document.getElementById('btn-delete-selected');
 
         let calibrationPoints = [];
         let screenWidth = 1920;  // Will be updated from config
@@ -1164,9 +1164,9 @@
                 ctx.stroke();
             }
 
-            // Draw connecting line between points (orange)
+            // Draw connecting line between points (dim gray for B/W camera compatibility)
             if (calibrationPoints.length > 1) {
-                ctx.strokeStyle = '#ffa500';
+                ctx.strokeStyle = '#505050';
                 ctx.lineWidth = 2;
                 ctx.beginPath();
                 const firstPoint = screenToCanvas(calibrationPoints[0][0], calibrationPoints[0][1]);
@@ -1178,11 +1178,11 @@
                 ctx.stroke();
             }
 
-            // Draw calibration points (crosshairs - green for normal, yellow for selected)
+            // Draw calibration points (crosshairs - grayscale for B/W camera compatibility)
             calibrationPoints.forEach((point, index) => {
                 const canvasPoint = screenToCanvas(point[0], point[1]);
                 const isSelected = (index === selectedPointIndex);
-                const color = isSelected ? '#ff0' : '#0f0';
+                const color = isSelected ? '#fff' : '#a0a0a0';  // white for selected, gray for normal
                 const crossSize = isSelected ? 10 : 6;
 
                 // Draw crosshair
@@ -1261,8 +1261,8 @@
                 if (data.status === 'ok' && data.points) {
                     calibrationPoints = data.points;
                     ellipseParams = data.ellipse || null;
-                    // Auto-select the newly added point
-                    selectedPointIndex = calibrationPoints.length - 1;
+                    // Auto-select the newly added point (points are sorted by x)
+                    selectedPointIndex = data.new_index !== undefined ? data.new_index : calibrationPoints.length - 1;
                     notifySelectedIndex();
                     drawCalibrationCanvas();
                     updateEllipseDisplay();
@@ -1293,12 +1293,12 @@
             }
         });
 
-        // Handle delete last button
-        btnDeleteLast.addEventListener('click', async () => {
-            if (calibrationPoints.length === 0) return;
+        // Handle delete selected button
+        btnDeleteSelected.addEventListener('click', async () => {
+            if (calibrationPoints.length === 0 || selectedPointIndex < 0) return;
 
             try {
-                const response = await fetch('/api/calibration/last', {
+                const response = await fetch(`/api/calibration/point/${selectedPointIndex}`, {
                     method: 'DELETE'
                 });
                 const data = await response.json();
@@ -1309,13 +1309,13 @@
                     // Adjust selected index if needed
                     if (selectedPointIndex >= calibrationPoints.length) {
                         selectedPointIndex = calibrationPoints.length - 1;
-                        notifySelectedIndex();
                     }
+                    notifySelectedIndex();
                     drawCalibrationCanvas();
                     updateEllipseDisplay();
                 }
             } catch (error) {
-                console.error('Failed to delete last point:', error);
+                console.error('Failed to delete selected point:', error);
             }
         });
 

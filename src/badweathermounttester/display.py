@@ -96,12 +96,18 @@ class SimulatorDisplay:
         self.calibration_hover_position = (x, y)
 
     def set_calibration_points(self, points: List[Tuple[int, int]]) -> None:
-        """Set all calibration points."""
-        self.calibration_points = list(points)
+        """Set all calibration points, sorted by x coordinate."""
+        self.calibration_points = sorted(points, key=lambda p: p[0])
 
-    def add_calibration_point(self, x: int, y: int) -> None:
-        """Add a single calibration point."""
+    def add_calibration_point(self, x: int, y: int) -> int:
+        """Add a single calibration point and sort by x coordinate.
+
+        Returns the index of the newly added point after sorting.
+        """
         self.calibration_points.append((x, y))
+        self.calibration_points.sort(key=lambda p: p[0])
+        # Find the index of the newly added point
+        return next(i for i, p in enumerate(self.calibration_points) if p == (x, y))
 
     def clear_calibration_points(self) -> None:
         """Clear all calibration points."""
