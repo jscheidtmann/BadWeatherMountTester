@@ -327,23 +327,24 @@ class SimulatorDisplay:
         font_large = pygame.font.Font(None, 72)
         font_medium = pygame.font.Font(None, 48)
         font_small = pygame.font.Font(None, 36)
+        font_connect = pygame.font.Font(None, 120)  # Large font for "Connect to" info
 
         # Title
         title = font_large.render("Bad Weather Mount Tester", True, (255, 255, 255))
-        title_rect = title.get_rect(center=(self.config.screen_width // 2, 150))
+        title_rect = title.get_rect(center=(self.config.screen_width // 2, 100))
         self.screen.blit(title, title_rect)
 
         # Status
         status = font_medium.render("Waiting for connection...", True, (200, 200, 200))
-        status_rect = status.get_rect(center=(self.config.screen_width // 2, 300))
+        status_rect = status.get_rect(center=(self.config.screen_width // 2, 200))
         self.screen.blit(status, status_rect)
 
-        # Network address
+        # Network address - large font for visibility from distance
         if self.network_address:
-            addr_text = font_medium.render(
+            addr_text = font_connect.render(
                 f"Connect to: {self.network_address}", True, (100, 255, 100)
             )
-            addr_rect = addr_text.get_rect(center=(self.config.screen_width // 2, 400))
+            addr_rect = addr_text.get_rect(center=(self.config.screen_width // 2, 350))
             self.screen.blit(addr_text, addr_rect)
 
         # Instructions
@@ -517,10 +518,10 @@ class SimulatorDisplay:
         width = self.config.screen_width
         height = self.config.screen_height
 
-        # Colors
-        point_color = (0, 255, 0)  # Green for recorded points
-        selected_color = (255, 255, 0)  # Yellow for selected point
-        line_color = (255, 165, 0)  # Orange for connecting line
+        # Colors - grayscale for B/W camera compatibility
+        point_color = (160, 160, 160)  # Medium gray for recorded points
+        selected_color = (255, 255, 255)  # Bright white for selected point
+        line_color = (80, 80, 80)  # Dim gray for connecting line
         hover_color = (255, 255, 255)  # White for hover crosshair
         ellipse_color = (255, 0, 0)  # Red for ellipse fit
 
@@ -560,7 +561,7 @@ class SimulatorDisplay:
 
         # Display point count and instructions
         font = pygame.font.Font(None, 36)
-        text = font.render(f"Calibration - Points: {len(self.calibration_points)}", True, (255, 255, 0))
+        text = font.render(f"Calibration - Points: {len(self.calibration_points)}", True, (255, 255, 255))
         text_rect = text.get_rect(center=(width // 2, 30))
         self.screen.blit(text, text_rect)
 
