@@ -80,30 +80,29 @@ class Application:
         ellipse = fit_ellipse(self.display.calibration_points)
         self.display.set_calibration_ellipse(ellipse)
 
+    def _sync_calibration_from_config(self) -> None:
+        """Sync display calibration points from config to ensure consistency."""
+        points = [(p[0], p[1]) for p in self.config.calibration.points]
+        self.display.set_calibration_points(points)
+        # Adjust selected index if needed
+        if self.display.calibration_selected_index >= len(self.display.calibration_points):
+            self.display.calibration_selected_index = len(self.display.calibration_points) - 1
+        self._update_calibration_ellipse()
+
     def _on_calibration_click(self, x: int, y: int) -> None:
         """Handle calibration point click."""
         if x == -1 and y == -1:
             # Reset signal
             self.display.clear_calibration_points()
         elif x == -2:
-            # Delete selected signal - y contains the index
-            index = y
-            if 0 <= index < len(self.display.calibration_points):
-                del self.display.calibration_points[index]
-                # Adjust selected index if needed
-                if self.display.calibration_selected_index >= len(self.display.calibration_points):
-                    self.display.calibration_selected_index = len(self.display.calibration_points) - 1
-            self._update_calibration_ellipse()
+            # Delete selected signal - reload from config to ensure sync
+            self._sync_calibration_from_config()
         elif x == -3:
-            # Point update signal - y contains the index, reload points from config
-            index = y
-            if 0 <= index < len(self.config.calibration.points):
-                point = self.config.calibration.points[index]
-                self.display.update_calibration_point(index, point[0], point[1])
-            self._update_calibration_ellipse()
+            # Point update signal - reload from config to ensure sync
+            self._sync_calibration_from_config()
         else:
-            self.display.add_calibration_point(x, y)
-            self._update_calibration_ellipse()
+            # Add point - reload from config to ensure sync
+            self._sync_calibration_from_config()
 
     def _on_calibration_select(self, index: int) -> None:
         """Handle calibration point selection."""
