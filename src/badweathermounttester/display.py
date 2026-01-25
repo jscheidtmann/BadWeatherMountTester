@@ -59,7 +59,7 @@ class SimulatorDisplay:
         self.simulation_x_end: int = 0
         self.simulation_pixels_per_second: float = 1.0  # Will be calculated from sidereal rate
         # duration of each simulation step in seconds
-        self.simu_render: Optional[float] = None 
+        self.simu_render: Optional[float] = None
 
     def init(self) -> None:
         """Initialize pygame and create the display."""
@@ -276,7 +276,7 @@ class SimulatorDisplay:
 
         progress = (current_x - self.simulation_x_start) / total_distance * 100 if total_distance > 0 else 100
         remaining = max(0, total_time - elapsed)
-        complete = current_x >= self.simulation_x_end
+        complete = bool(current_x >= self.simulation_x_end)
 
         if complete:
             self.simulation_running = False

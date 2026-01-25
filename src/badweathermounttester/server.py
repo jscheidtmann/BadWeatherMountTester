@@ -281,6 +281,13 @@ class WebServer:
             # Duration in minutes
             duration_minutes = pixel_pitch_arcsec * screen_width_px / 15.0 / 60.0  # Assuming 15 arcsec/sec sidereal rate and convert to minutes
 
+            # Adjust for latitude: star moves slower by factor cos(90° - latitude) = sin(latitude)
+            latitude = abs(self.config.mount.latitude)
+            if latitude != 0:
+                latitude_factor = np.cos(np.radians(90.0 - latitude))
+                if latitude_factor > 0:
+                    duration_minutes /= latitude_factor
+
             return {
                 "effective_focal_length": round(effective_fl, 1),
                 "duration_minutes": round(duration_minutes, 1),
@@ -565,6 +572,13 @@ class WebServer:
             pixel_pitch_mm = screen_width_mm / screen_width_px
             pixel_pitch_arcsec = (pixel_pitch_mm / (distance_m * 1000)) * 206265
             pixels_per_second = 15.0 / pixel_pitch_arcsec  # 15 arcsec/sec sidereal rate
+
+            # Reduce velocity by cos(90° - latitude) = sin(latitude)
+            # At higher latitudes, stars move more slowly across the sky
+            latitude = abs(self.config.mount.latitude)
+            if latitude != 0:
+                latitude_factor = np.cos(np.radians(90.0 - latitude))
+                pixels_per_second *= latitude_factor
 
             if self._on_simulation_setup_callback:
                 self._on_simulation_setup_callback(x_start, x_end, pixels_per_second)
