@@ -4,11 +4,11 @@ mount:
   distance_to_screen_m: 3.5
   main_period_seconds: 480.0
 display:
-  fullscreen: false
+  fullscreen: true
   screen_width: 1920
   screen_height: 1080
   screen_width_mm: 520.0
-  star_size: 5
+  star_size: 3
   star_brightness: 255
   target_y_ratio: 0.5
 server:
