@@ -11,7 +11,8 @@
       "Bash(python3 -m py_compile:*)",
       "Bash(python -m py_compile:*)",
       "Bash(python -m flake8:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(python -m pytest:*)"
     ]
   }
 }

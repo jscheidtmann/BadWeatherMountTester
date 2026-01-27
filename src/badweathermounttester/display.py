@@ -9,12 +9,49 @@ This module handles the pygame-based display that shows:
 import math
 import time
 
+import numpy as np
 import pygame
 from enum import Enum, auto
 from dataclasses import dataclass
 from typing import Optional, Tuple, List, Dict
 
 from badweathermounttester.config import DisplayConfig
+
+
+def generate_beep_sound(frequency: int = 880, duration_ms: int = 150,
+                        sample_rate: int = 44100, volume: float = 0.3) -> pygame.mixer.Sound:
+    """Generate a beep sound as a sine wave.
+
+    Args:
+        frequency: Frequency in Hz (default 880 = A5)
+        duration_ms: Duration in milliseconds
+        sample_rate: Audio sample rate
+        volume: Volume from 0.0 to 1.0
+
+    Returns:
+        pygame.mixer.Sound object
+    """
+    num_samples = int(sample_rate * duration_ms / 1000)
+    t = np.linspace(0, duration_ms / 1000, num_samples, dtype=np.float32)
+
+    # Generate sine wave with fade in/out to avoid clicks
+    wave = np.sin(2 * np.pi * frequency * t)
+
+    # Apply envelope (fade in/out over 10ms)
+    fade_samples = int(sample_rate * 0.01)
+    if fade_samples > 0 and num_samples > 2 * fade_samples:
+        fade_in = np.linspace(0, 1, fade_samples)
+        fade_out = np.linspace(1, 0, fade_samples)
+        wave[:fade_samples] *= fade_in
+        wave[-fade_samples:] *= fade_out
+
+    # Scale to 16-bit integer range and apply volume
+    wave = (wave * volume * 32767).astype(np.int16)
+
+    # Create stereo by duplicating the channel
+    stereo_wave = np.column_stack((wave, wave))
+
+    return pygame.mixer.Sound(buffer=stereo_wave)
 
 
 class DisplayMode(Enum):
@@ -60,6 +97,13 @@ class SimulatorDisplay:
         self.simulation_pixels_per_second: float = 1.0  # Will be calculated from sidereal rate
         # duration of each simulation step in seconds
         self.simu_render: Optional[float] = None
+        # Audio/beep state
+        self.beep_sound: Optional[pygame.mixer.Sound] = None
+        self.beep_end_sound: Optional[pygame.mixer.Sound] = None  # Lower, longer beep for end
+        self.beep_60s_triggered: bool = False
+        self.beep_30s_triggered: bool = False
+        self.countdown_last_second: int = -1  # Track last countdown second beeped
+        self.beep_end_triggered: bool = False  # Track if end beep was played
 
     def init(self) -> None:
         """Initialize pygame and create the display."""
@@ -78,6 +122,74 @@ class SimulatorDisplay:
 
         self.clock = pygame.time.Clock()
         self.running = True
+
+        # Initialize audio system and generate beep sound
+        self._init_audio()
+
+    def _init_audio(self) -> None:
+        """Initialize the audio system and play startup beep to test audio."""
+        try:
+            pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=512)
+            self.beep_sound = generate_beep_sound(frequency=880, duration_ms=150, volume=0.3)
+            # Lower (440 Hz = A4) and longer (500ms) beep for simulation end
+            self.beep_end_sound = generate_beep_sound(frequency=440, duration_ms=500, volume=0.3)
+            # Play startup beep to verify audio is working
+            self.beep_sound.play()
+        except pygame.error as e:
+            print(f"Warning: Could not initialize audio: {e}")
+            self.beep_sound = None
+            self.beep_end_sound = None
+
+    def play_beep(self) -> None:
+        """Play a beep sound if audio is available."""
+        if self.beep_sound:
+            self.beep_sound.play()
+
+    def reset_beep_state(self) -> None:
+        """Reset beep tracking state. Call when simulation is reset."""
+        self.beep_60s_triggered = False
+        self.beep_30s_triggered = False
+        self.countdown_last_second = -1
+        self.beep_end_triggered = False
+
+    def _check_and_play_beeps(self, remaining_seconds: float, complete: bool) -> None:
+        """Check timing thresholds and play beeps as needed.
+
+        Beeps at:
+        - 60 seconds remaining (once)
+        - 30 seconds remaining (once)
+        - 10 down to 1 second (countdown, one beep per second)
+        - Simulation complete (lower, longer beep)
+        """
+        if self.beep_sound is None:
+            return
+
+        # End beep - lower and longer when simulation completes
+        if complete and not self.beep_end_triggered and self.beep_end_sound:
+            self.beep_end_sound.play()
+            self.beep_end_triggered = True
+            return
+
+        if not self.simulation_running:
+            return
+
+        # 60 second warning
+        if not self.beep_60s_triggered and remaining_seconds <= 60.0 and remaining_seconds > 59.0:
+            self.play_beep()
+            self.beep_60s_triggered = True
+
+        # 30 second warning
+        if not self.beep_30s_triggered and remaining_seconds <= 30.0 and remaining_seconds > 29.0:
+            self.play_beep()
+            self.beep_30s_triggered = True
+
+        # Countdown from 10 to 1
+        if remaining_seconds <= 10.0 and remaining_seconds > 0:
+            current_second = int(remaining_seconds)
+            # Beep when we cross into a new second (10, 9, 8, ... 1)
+            if current_second != self.countdown_last_second and current_second >= 1:
+                self.play_beep()
+                self.countdown_last_second = current_second
 
     def set_network_address(self, address: str) -> None:
         """Set the network address to display on the waiting screen."""
@@ -137,6 +249,7 @@ class SimulatorDisplay:
         self.simulation_running = False
         self.simulation_start_time = None
         self.simulation_elapsed = 0.0
+        self.reset_beep_state()
 
     def start_simulation(self) -> None:
         """Start or resume the simulation."""
@@ -158,6 +271,7 @@ class SimulatorDisplay:
         self.simulation_running = False
         self.simulation_start_time = None
         self.simulation_elapsed = 0.0
+        self.reset_beep_state()
 
     def skip_simulation(self, seconds: float) -> None:
         """Skip the simulation forward or backward by the given number of seconds."""
@@ -574,6 +688,9 @@ class SimulatorDisplay:
         status = self.get_simulation_status()
         current_x = status["current_x"]
         current_y = status["current_y"]
+
+        # Check timing and play warning beeps
+        self._check_and_play_beeps(status["remaining_seconds"], status["complete"])
 
         start = time.time()
         # Draw the star as a 2D Gaussian distribution with subpixel accuracy
