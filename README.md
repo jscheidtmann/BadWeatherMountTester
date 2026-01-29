@@ -27,7 +27,7 @@ What you need:
 
 1. Your (new) mount, with your guiding gear and a computer attached to it (the Astro Computer)
 2. A spare computer with monitor (the Simulator)
-3. At least 5 m of space between them. 
+3. At least 5 m of space between them. (Ok, you can do with 3.5 m, but then accuracy will suffer)
 
 ### Setting up the Simulator
 
@@ -36,7 +36,7 @@ What you need:
 - Open a terminal on the Simulator and run `python --version`, the number displayed should at least be 3.10.
 - Then run `pip install BadWeatherMountTester` in the terminal. This installs the Bad Weather Mount Tester on it (both client and server)
 - Then run `python -m BadWeatherMountTester`. The program will open and show it's logo, display "Waiting for a connection" and its network address.
-- Use a spirit level to position the monitor level horizontally and vertically. The screens middle pixel should be pointing to the mount. 
+- Use a spirit level to position the screen level horizontally and vertically. The screens middle pixel should be pointing to the mount. 
 
 ### Setting up your Astro Computer
 
@@ -48,45 +48,47 @@ Make sure you can startup BWMT as described here, before setting up the gear (ca
 
 ### Setting up your astro gear
 
-- Fix your guiding gear on the (new) mount. Make sure you can control the mount, the camera and that you can run PHD2 and that it is able to control the correct camera. 
+- Fix your guiding gear on the (new) mount. Make sure you can control the mount using your Astro Computer, the camera and that you can run PHD2 and that it is able to 
+  control the correct camera. 
 - Place the simulator and its monitor in a distance approximately 5 m dead south of your mount (on northern hemisphere, dead north on southern hemisphere). 
   With "dead south" we mean, that when standing north of the mount (where the guidescope is pointing to), looking south along the RA axis, that line will hit the middle of the 
   screen of the simulator. The extension of the axis of the guidescope (how you would be looking through, but reversed) will hit the ground somwhere between your mount 
   and the simulator's screen. We will fine tune that in one of the next steps. 
-- Now start BWMT on the simulator and connect to the simulator using a web browser on your astro computer. BWMT will display a screen full of arrows.
+- Now start BWMT on the simulator and connect to the Simulator using a web browser on your Astro Computer. BWMT will display a screen full of arrows.
 - Point the guidescope to have a good look at the simulator's screen and focus it, using what is displayed by BWMT on the screen.
 
 That's it, you're mostly set to go. Now follow the instructions displayed in the web browser. 
 You will be asked to provide some background information to BWMT through the web browser then configure PHD2 correctly:
 
 - Enter the latitude that your mount is configured for into BWMT
-- Enter the focal length of your guide scope and the distance between mount and simulator screen. 
+- Enter the focal length of your guide scope and the distance between mount and simulator screen 
 - Enter the guide camera's sensor information, i.e. the number of pixels in width and heigth and the pixel pitch
 - Enter the mount's main period into the web application. (For worm gear mounts: How long does it take to have the worm rotate once?). 
-  This is information that the manufacturer of your mount provides.
+  This is information that the manufacturer of your mount provides
 
 In PHD2: 
 - Create a new guiding profile with the focal length displayed and the binning recommended by BWMT. 
   (The guide scope is not focused to infinity now, and we need to compensate for that to have PHD2 display correct data)
-- Disable multi-star guiding, as we will be using one simulated star. 
+- Disable multi-star guiding, as we will be using one simulated star.
 - Start looping in PHD2. From the `Tools` menu enable the bullseye in the camera display in PHD2.
 
 Next will be orienting mount and screen.
 
 ### Placing BWMT dead south of the mount (Northern Hemisphere)
 
-!!! note: Southern hemisphere 
-  The same procedure applies but the mount will be moving right-to-left instead of left-to-right. And North and South will be exchanged.
+> [!NOTE]
+> Southern hemisphere 
+> The same procedure applies but the mount will be moving right-to-left instead of left-to-right. And North and South will be exchanged.
 
 Starting from home position, and using PHD2's calibration assistant, slew the mount to point at the screen. For this you have to enter the negative value of `(90° - Latitude)` into Dec 
 and then let it slew the mount. Adjust the RA value that it chooses up or down, so that the guide scope takes a nice view at the screen. Focus the guide scope on the screen.
 
 If you're not hitting the middle line (where all arrows are pointing to the left), adjust the height of your mount or the height of your simulator screen. A few 10th of pixels difference are ok.
 
-Now we will move the mount back and forth in RA to position the screen dead south of the mount. 
+Now we will move the mount back and forth in RA repeatedly to position the screen dead south of the mount: 
 
 If during the following procedure the sharpness of the image on left and right hand side is extremely different, orient the screen so, that it is perpendicular to your guide scope. 
-The best place to adjust focus is at 25% or 75% of the screen, there are vertical lines on the screen to find that position.
+The best place to adjust focus is at 25% or 75% of the screen from left-to-right, there are vertical lines on the screen to find that position.
 
 If your mount performs a meridian flip in between, check the meridian flip settings in your mount and adjust these so, 
 that a meridian flip is avoided and does not interfere with setting up BWMT. Then restart the procedure after these adjustments.
@@ -98,15 +100,16 @@ The webbrowser will display horizontol lines and a pixel scale on each side of t
 Using the bullseye displayed by PHD2, center the zero-line in the bullseye (at first this does not have to be pixel-perfect) using your driver's mount control.
 
 Second, using **ONLY** the RA axis, locate the right side of the screen on the guide scope's picture. If you're leaving the screen on top or bottom, stop there and adjust the axis of your mount
-to point to the screen. You will notice, that it's very problably showing a different line. Using the azimuth screws of you mount, rotate it such, that the mount will hit the same horizontal line 
+to point to the screen. Once you reach the right-hand-side, you will notice, that it's very problably showing a different line. Using the azimuth screws of you mount, rotate it such, that the mount will hit the same horizontal line 
 on both sides of the screen. A few pixel difference from left to right is ok.  
 
-Repeat this procedure until you're satisfied, that a symmetric arc will be traced on the monitor when fully moving from left-to-right. Then press next.
+Repeat this procedure until you're satisfied, that a symmetric arc will be traced on the monitor when fully moving from left-to-right. Then press `next`.
 
-!!! warning: In this version the velocity that the star traces is calculated and valid for this geometry. 
-  If you use different orientations of the mount the velocity might not match and PHD2 might loose the star.
+> [!WARNING] 
+> In this version the velocity that the star traces is calculated and valid for this geometry. 
+> If you use different orientations of the mount the velocity might not match and PHD2 might loose the star.
 
-Move the mount to the left hand side of the screen and press next.
+Move the mount to the left hand side of the screen and press `next`.
 
 ### Setting up the trace line
 
@@ -129,7 +132,7 @@ Repeat Steps 1 and 2 until you have alignment points spanning the whole distance
 
 BWMT will display an ellipse fit below the screen in the webbroswer. This will in the next step be used to simulate a star corssing the screen.
 
-Press next, to show the simulated star
+At last, move the mount to the left of the screen, then press `next`, to show the simulated star.
 
 ### Measuring a guiding run
 
@@ -172,16 +175,21 @@ press back to display the alignment points.
 
 Repeat this procedure at 50%, 75% and 100% of the simulation. All these measurements should be congruent and give you similar figures for RMS RA. 
 
-!!! note: Dec values may be different
-  The Dec values in this chosen geometry are roughly parallel to the vertical lines of the screen. Due to screen updates usually going top down, noise in that direction might be much higher than noise in RA direction.
-  This does not matter for measuring the periodic error of the mount.
+> [!NOTE]
+> Dec values may be different
+> The Dec values in this chosen geometry are roughly parallel to the vertical lines of the screen. Due to screen updates usually going top down, noise in that direction might be much higher than noise in RA direction.
+> This does not matter for measuring the periodic error of the mount.
 
 #### Measurement: Guiding 
 
-!!! warning: During measurement avoid crossing the line of sight and walking around the mount and screen!
-  During measurements avoid crossing the line of sight, as PHD2 might loose the simulated guide star and stop guiding. 
-  Also do not walk next to the mount or the simulator screen, as depending on the floor you're measuring this on, your weight will create vibrations or changes of the floor that might travel to the mount or screen and 
-  create excursions. 
+> [!IMPORTANT]
+> At the moment southern hemisphere mode is not supported yet.
+
+> [!WARNING]
+> During measurement avoid crossing the line of sight and walking around the mount and screen!
+> During measurements avoid crossing the line of sight, as PHD2 might loose the simulated guide star and stop guiding. 
+> Also do not walk next to the mount or the simulator screen, as depending on the floor you're measuring this on, your weight will create vibrations or changes of the floor that might travel to the mount or screen and 
+> create excursions. 
 
 Now return the simulation back to 0% by clicking the "back to start" button, rotate the guide scope back to point at the simulated star. 
 Now it's time to start the simulation: 
