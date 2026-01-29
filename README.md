@@ -180,7 +180,8 @@ If the figures are inconsistent and diverging from each other much:
 - Check a different focus setting of the guide scope
 - Increase the distance between mount and Simulator screen
 
-> [!NOTE] Dec values may be different!
+> [!NOTE] 
+> Dec values may be different!
 >
 > The Dec values in this chosen geometry are roughly parallel to the vertical lines of the screen. Due to screen updates usually going top down, noise in that direction might be much higher than noise in RA direction.
 > This does not matter for measuring the periodic error of the mount.
