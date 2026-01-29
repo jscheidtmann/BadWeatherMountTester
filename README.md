@@ -70,15 +70,14 @@ In PHD2:
 - Create a new guiding profile with the focal length displayed and the binning recommended by BWMT. 
   (The guide scope is not focused to infinity now, and we need to compensate for that to have PHD2 display correct data)
 - Disable multi-star guiding, as we will be using one simulated star.
-- Start looping in PHD2. From the `Tools` menu enable the bullseye in the camera display in PHD2.
+- Start looping in PHD2. From the `View` menu enable the bullseye overlay in the camera display in PHD2.
 
 Next will be orienting mount and screen.
 
 ### Placing BWMT dead south of the mount (Northern Hemisphere)
 
 > [!NOTE]
-> Southern hemisphere 
-> The same procedure applies but the mount will be moving right-to-left instead of left-to-right. And North and South will be exchanged.
+> For Southern hemisphere the same procedure applies but the mount will be moving right-to-left instead of left-to-right. And North and South will be exchanged.
 
 Starting from home position, and using PHD2's calibration assistant, slew the mount to point at the screen. For this you have to enter the negative value of `(90° - Latitude)` into Dec 
 and then let it slew the mount. Adjust the RA value that it chooses up or down, so that the guide scope takes a nice view at the screen. Focus the guide scope on the screen.
@@ -122,7 +121,7 @@ Now we will trace the mount's location accross the screen, to setup the average 
 Step 1:
 BWMT displays on the webpage a scaled down picture of the screen. When hovering with the mouse, a cross is displayed on the simulator screen at the location of the mouse. 
 Looking at PHD2's guide scope picture, move the mouse so that the cross is displayed in the middle of the bullseye, that PHD2 is overlaying on the picture. Right click to place the first alignment point. 
-Using curser keys, adjust to the cross to be at the center of the bullseye. 
+Using curser keys, adjust to the cross to be at the center of the bullseye. The keys only work, if the cursor is hovering on the picture.
 
 Step 2: 
 Using **ONLY** the RA axis, move the mount to the right, so that you can still see the previous alignment point. Then repeat step 1.
@@ -145,7 +144,7 @@ As the pixel resolution of the screen is fixed, you will have to adjust your gui
 Center this "star" in PHD2 and click on it. If you have not displayed the "Star Profile" yet, activate it from the menu ("View" > "Display Star Profile"). 
 Then adjust camera gain and exposure time so that the star profile is not clipped at the top (mesa shape). If you get a ragged profile (stemming from the different pixels simulated star), unfocus slightly.
 Make sure that the star profile does not become too broad. The square displayed by PHD2 around the simulated star should always be green and it should not vanish in between. Check the message that is displayed 
-in the Star Profile view. You may have to adjust PHD2 configuration settings to tell PHD2 to be more tolerant:
+in the Star Profile view, if that happens. You may have to adjust PHD2 configuration settings to tell PHD2 to be more tolerant:
 
 1. Disable "Star Mass Detection"
 2. Disable "Use multiple stars"
@@ -154,7 +153,7 @@ in the Star Profile view. You may have to adjust PHD2 configuration settings to 
 If you have difficulties to get a smooth star profile, consider: 
 
 - Adjusting the distance between scope and simulator screen: The wider the distance the smaller the pixels from the point of view of the guide scope
-- Adjusting the focal length of the guide scope. By choosing a smaller focal length, the size of the displayed pixels with shrink
+- Adjusting the focal length of the guide scope. By choosing a smaller focal length, the size of the displayed pixels will shrink, but your arcsec resolution will suffer
 - Using a different guide camera with larger pixels
 - Using a different screen, with a better resolution (higher dpi)
 
@@ -162,21 +161,22 @@ If you have difficulties to get a smooth star profile, consider:
 
 Start looping in PHD2, then by moving the mount **ONLY** in RA, center the simulated star in PHD2's display. Click on the star and press "Begin Guiding" in PHD2. 
 PHD2 will complain that that this is a bad location for a calibration but start calibration anyway. The calibration should run through successfully and PHD2 will start guiding.
-Check you mount driver, if PHD2 started tracking. If it did, stop tracking. 
+Check your mount driver, if PHD2 started tracking. If it did, stop tracking. 
 
 Now let PHD2 and the simulation run for a few minutes. Check the "Guide Stats" in PHD2: The RA RMS and Peak should give you an indication of how good the measurement will be. This value will not be zero,
 as the screen's refresh cycle might overlap or otherwise influence the values of the guide camera. On the other hand, noise and other influences (e.g. vibrations of the building) will also move the camera and 
-screen relative to each other. Remember the pixel scale is on the order of µm, which is 1/60th of a hair and we are trying to measure movements on the order of a few 1 arcsec, 
-which is the diameter of 1 Euro coin at 4.8 km distance. Anyway, the valus displayed are usually 1/10th of the pixel scale of the guide scope. 
+screen relative to each other. Remember the pixel scale is on the order of µm, which is 1/60th of a hair and we are trying to measure movements on the order of a few arcsec (1 arcsec is the diameter of 1 Euro coin at 4.8 km distance). 
+Anyway, the values displayed are usually 1/10th of the pixel scale of the guide scope. 
 Depending on which periodic error you want to measure, make sure this figure is small enough to measure what you want. 
 
 Then move the simulated star to the 25% mark. For this you can click on the progress bar in the web application and use the "fast backward" and "fast forward" buttons. If you lost the position of the guide camera,
-press back to display the alignment points. 
+press back to display the alignment points to point your guide scope and locate the simulated star.
 
 Repeat this procedure at 50%, 75% and 100% of the simulation. All these measurements should be congruent and give you similar figures for RMS RA. 
 
 > [!NOTE]
-> Dec values may be different
+> Dec values may be different!
+>
 > The Dec values in this chosen geometry are roughly parallel to the vertical lines of the screen. Due to screen updates usually going top down, noise in that direction might be much higher than noise in RA direction.
 > This does not matter for measuring the periodic error of the mount.
 
