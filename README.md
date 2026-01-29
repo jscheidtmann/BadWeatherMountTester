@@ -174,8 +174,13 @@ press back to display the alignment points to point your guide scope and locate 
 
 Repeat this procedure at 50%, 75% and 100% of the simulation. All these measurements should be congruent and give you similar figures for RMS RA. 
 
-> [!NOTE]
-> Dec values may be different!
+If the figures are inconsistent and diverging from each other much: 
+
+- Check orientations of guide scope and Simulator screen
+- Check a different focus setting of the guide scope
+- Increase the distance between mount and Simulator screen
+
+> [!NOTE] Dec values may be different!
 >
 > The Dec values in this chosen geometry are roughly parallel to the vertical lines of the screen. Due to screen updates usually going top down, noise in that direction might be much higher than noise in RA direction.
 > This does not matter for measuring the periodic error of the mount.
