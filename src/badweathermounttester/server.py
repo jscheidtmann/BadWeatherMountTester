@@ -12,6 +12,7 @@ from typing import Optional, Callable, List, Dict
 import numpy as np
 from flask import Flask, render_template, jsonify, request  # , g
 from flask_babel import Babel  # , gettext as _
+from waitress import serve
 
 from badweathermounttester.config import AppConfig, DEFAULT_SETUP_PATH
 
@@ -728,12 +729,11 @@ class WebServer:
         self._server_thread.start()
 
     def _run_server(self) -> None:
-        """Run the Flask server."""
-        self.app.run(
+        """Run the Flask server using waitress."""
+        serve(
+            self.app,
             host=self.config.server.host,
             port=self.config.server.port,
-            debug=False,
-            use_reloader=False,
         )
 
     def stop(self) -> None:
