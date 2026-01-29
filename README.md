@@ -1,5 +1,11 @@
 # Bad Weather Mount Tester
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/BWMT_logo_w.svg">
+  <source media="(prefers-color-scheme: light)" srcset="docs/BWMT_logo_b.svg">
+  <img alt="Bad Weather Mount Tester Logo" src="BWMT_logo_b.svg">
+</picture>
+
 When you buy a new telescope mount, the first things to do is to measure the periodic error, because if the periodic error is really high, you would like to
 complain and send it back as fast as possible. Unfortunately, most of the time there will be bad weather after buying astro gear for an indefinite amount of time.
 
