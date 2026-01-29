@@ -181,7 +181,7 @@ If the figures are inconsistent and diverging from each other much:
 - Increase the distance between mount and Simulator screen
 
 > [!NOTE] 
-> Dec values may be different!
+> **Dec values may be different!**
 >
 > The Dec values in this chosen geometry are roughly parallel to the vertical lines of the screen. Due to screen updates usually going top down, noise in that direction might be much higher than noise in RA direction.
 > This does not matter for measuring the periodic error of the mount.
@@ -193,11 +193,13 @@ If the figures are inconsistent and diverging from each other much:
 
 > [!WARNING]
 > During measurement avoid crossing the line of sight and walking around the mount and screen!
-> During measurements avoid crossing the line of sight, as PHD2 might loose the simulated guide star and stop guiding. 
+> Else PHD2 might loose the simulated guide star and stop guiding. 
+> 
 > Also do not walk next to the mount or the simulator screen, as depending on the floor you're measuring this on, your weight will create vibrations or changes of the floor that might travel to the mount or screen and 
 > create excursions. 
 
-Now return the simulation back to 0% by clicking the "back to start" button, rotate the guide scope back to point at the simulated star. 
+Now return the simulation back to 0% by clicking the "back to start" button, and rotate the guide scope back to point at the simulated star. 
+
 Now it's time to start the simulation: 
 
 1. Start the simulation, by clicking on the play button in the webpage. 
