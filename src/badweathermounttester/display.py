@@ -8,6 +8,7 @@ This module handles the pygame-based display that shows:
 
 import math
 import time
+from pathlib import Path
 
 import numpy as np
 import pygame
@@ -16,6 +17,9 @@ from dataclasses import dataclass
 from typing import Optional, Tuple, List, Dict
 
 from badweathermounttester.config import DisplayConfig
+
+# Path to the logo file
+LOGO_PATH = Path(__file__).parent / "static" / "BWMT_logo_w.png"
 
 
 def generate_beep_sound(frequency: int = 880, duration_ms: int = 150,
@@ -104,6 +108,8 @@ class SimulatorDisplay:
         self.beep_30s_triggered: bool = False
         self.countdown_last_second: int = -1  # Track last countdown second beeped
         self.beep_end_triggered: bool = False  # Track if end beep was played
+        # Logo surface (loaded in init)
+        self.logo: Optional[pygame.Surface] = None
 
     def init(self) -> None:
         """Initialize pygame and create the display."""
@@ -123,8 +129,21 @@ class SimulatorDisplay:
         self.clock = pygame.time.Clock()
         self.running = True
 
+        # Load logo
+        self._load_logo()
+
         # Initialize audio system and generate beep sound
         self._init_audio()
+
+    def _load_logo(self) -> None:
+        """Load the BWMT logo image."""
+        try:
+            if LOGO_PATH.exists():
+                self.logo = pygame.image.load(str(LOGO_PATH)).convert_alpha()
+            else:
+                print(f"Warning: Logo file not found: {LOGO_PATH}")
+        except pygame.error as e:
+            print(f"Warning: Could not load logo: {e}")
 
     def _init_audio(self) -> None:
         """Initialize the audio system and play startup beep to test audio."""
@@ -444,37 +463,59 @@ class SimulatorDisplay:
         if not self.screen:
             return
 
-        font_large = pygame.font.Font(None, 72)
         font_medium = pygame.font.Font(None, 48)
         font_small = pygame.font.Font(None, 36)
         font_connect = pygame.font.Font(None, 120)  # Large font for "Connect to" info
 
-        # Title
-        title = font_large.render("Bad Weather Mount Tester", True, (255, 255, 255))
+        # Title - dynamically sized to span screen width
+        title_text = "Bad Weather Mount Tester"
+        margin = 20  # Small margin on each side
+        target_width = self.config.screen_width - 2 * margin
+
+        # Start with a base font size and calculate the needed size
+        base_size = 72
+        base_font = pygame.font.Font(None, base_size)
+        base_title = base_font.render(title_text, True, (255, 255, 255))
+        base_width = base_title.get_width()
+
+        # Scale font size proportionally to fill screen width
+        title_font_size = int(base_size * target_width / base_width)
+        font_large = pygame.font.Font(None, title_font_size)
+        title = font_large.render(title_text, True, (255, 255, 255))
         title_rect = title.get_rect(center=(self.config.screen_width // 2, 100))
         self.screen.blit(title, title_rect)
 
-        # Status
-        status = font_medium.render("Waiting for connection...", True, (200, 200, 200))
-        status_rect = status.get_rect(center=(self.config.screen_width // 2, 200))
-        self.screen.blit(status, status_rect)
+        # Logo - centered on screen
+        if self.logo:
+            # Scale logo to fit nicely (max 80% of screen width, maintain aspect ratio)
+            max_logo_width = int(self.config.screen_width * 0.8)
+            max_logo_height = int(self.config.screen_height * 0.4)
+            logo_width, logo_height = self.logo.get_size()
 
-        # Network address - large font for visibility from distance
-        if self.network_address:
-            addr_text = font_connect.render(
-                f"Connect to: {self.network_address}", True, (100, 255, 100)
-            )
-            addr_rect = addr_text.get_rect(center=(self.config.screen_width // 2, 350))
-            self.screen.blit(addr_text, addr_rect)
+            scale = min(max_logo_width / logo_width, max_logo_height / logo_height)
+            new_width = int(logo_width * scale)
+            new_height = int(logo_height * scale)
 
-        # Instructions
+            scaled_logo = pygame.transform.smoothscale(self.logo, (new_width, new_height))
+            logo_rect = scaled_logo.get_rect(center=(self.config.screen_width // 2, self.config.screen_height // 2))
+            self.screen.blit(scaled_logo, logo_rect)
+
+        # Instructions at bottom
         instructions = font_small.render(
             "Press ESC to exit", True, (150, 150, 150)
         )
         instr_rect = instructions.get_rect(
-            center=(self.config.screen_width // 2, self.config.screen_height - 50)
+            center=(self.config.screen_width // 2, self.config.screen_height - 30)
         )
         self.screen.blit(instructions, instr_rect)
+
+        # Network address - just above instructions
+        if self.network_address:
+            addr_text = font_connect.render(
+                f"Connect to: {self.network_address}", True, (100, 255, 100)
+            )
+            addr_rect = addr_text.get_rect(center=(self.config.screen_width // 2, self.config.screen_height - 100))
+            self.screen.blit(addr_text, addr_rect)
 
     def _draw_arrow(self, x: int, y: int, target_x: int, target_y: int,
                     size: int = 10, color: Tuple[int, int, int] = (255, 255, 255)) -> None:
