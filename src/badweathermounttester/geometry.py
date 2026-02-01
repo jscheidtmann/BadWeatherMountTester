@@ -186,6 +186,18 @@ corners = np.array(corners)
 
 ax.plot(corners[:, 0], corners[:, 1], corners[:, 2], color='blue', linewidth=2, label="Screen")
 
+ax.set_xlabel("X")
+ax.set_ylabel("Y")
+ax.set_zlabel("Z")
+ax.legend()
+
+set_axes_equal(ax)
+ax.view_init(elev=10, azim=75)
+
+
+# Plot intersections in second figure
+fig2, (ax2, ax3) = plt.subplots(2, 1, figsize=(6, 10))
+
 # Calculate intersections of lines with the screen plane
 # Plane defined by: (P - rect_center) · d_mid = 0
 intersections_x = []
@@ -209,6 +221,14 @@ for deg in np.linspace(start_angle, stop_angle, 200):
         intersections_x.append(x)
         intersections_y.append(y)
 
+# Plot Intersections
+ax2.plot(intersections_x, intersections_y, 'b.-')
+ax2.set_xlabel("Screen X / m (horizontal)")
+ax2.set_ylabel("Screen Y / m (vertical)")
+ax2.set_title("Line of sight on Simulator Screen")
+ax2.set_aspect('equal')
+ax2.grid(True)
+
 # Calculate segment lengths
 segment_lengths = []
 for i in range(1, len(intersections_x)):
@@ -217,49 +237,31 @@ for i in range(1, len(intersections_x)):
     segment_lengths.append(math.sqrt(dx * dx + dy * dy))
 
 # Calculate velocity assuming angular velocity of 15 arcsec/sec
-n_samples = 200
+n_samples = len(intersections_x)
 angular_step_deg = abs(stop_angle - start_angle) / (n_samples - 1)
 angular_step_arcsec = angular_step_deg * 3600
-angular_velocity = 15  # arcsec/sec
-velocities_m_s = [length * angular_velocity / angular_step_arcsec for length in segment_lengths]
+sidereal_rate = 15.041  # arcsec/sec
+time_per_step_s = angular_step_arcsec / sidereal_rate
+velocities_m_s = [length / time_per_step_s for length in segment_lengths]
 
-# Convert linear velocity (m/s) to angular velocity (arcsec/sec)
-# angular_velocity = linear_velocity / distance * (180/π) * 3600
-rad_to_arcsec = (180 / math.pi) * 3600
-velocities_arcsec = [v / abs(args.distance) * rad_to_arcsec for v in velocities_m_s]
+ax3.plot(velocities_m_s, 'r.-')
 
-# Plot intersections in second figure
-fig2, (ax2, ax3) = plt.subplots(2, 1, figsize=(6, 10))
+# # Calculate and plot sidereal velocity at this distance for comparison
+# # Sidereal rate: 15.041 arcsec/sec
+# # Convert to rad/s: 15.041 * (pi/180) / 3600 rad/s
+# sidereal_rate_rad_s = sidereal_rate * math.pi / (180 * 3600)
+# # Velocity = angular_velocity * distance
+# sidereal_velocity_m_s = sidereal_rate_rad_s * abs(args.distance) * abs(math.cos(math.radians(90)-dec if dec is not None else math.radians(90)-lat))
+# ax3.axhline(y=sidereal_velocity_m_s, color='green', linestyle='--', 
+#            label=f'Sidereal velocity: {sidereal_velocity_m_s:.4f} m/s')
 
-ax2.plot(intersections_x, intersections_y, 'b.-')
-ax2.set_xlabel("Screen X / m (horizontal)")
-ax2.set_ylabel("Screen Y / m (vertical)")
-ax2.set_title("Line of sight on Simulator Screen")
-ax2.set_aspect('equal')
-ax2.grid(True)
 
-ax3.plot(range(1, len(velocities_arcsec) + 1), velocities_arcsec, 'g.-')
-
-# Expected velocity for stars at this declination: 15 * cos(dec) arcsec/sec
-dec_for_calc = dec if dec is not None else 0
-expected_velocity = angular_velocity * math.cos(dec_for_calc)
-ax3.axhline(y=expected_velocity, color='orange', linestyle='--',
-            label=f"Expected for dec={math.degrees(dec_for_calc):.1f}°: {expected_velocity:.2f} arcsec/s")
+ax3.set_xlabel("Sample")
+ax3.set_ylabel("Velocity (m/s)")
+ax3.set_title("Velocity of line of sight on screen / m/s")
 ax3.legend()
-
-ax3.set_xlabel("Segment number")
-ax3.set_ylabel("Velocity / arcsec/s")
-ax3.set_title(f"Line of sight angular velocity (mount ω = {angular_velocity} arcsec/sec)")
 ax3.grid(True)
 
 fig2.tight_layout()
-
-ax.set_xlabel("X")
-ax.set_ylabel("Y")
-ax.set_zlabel("Z")
-ax.legend()
-
-set_axes_equal(ax)
-ax.view_init(elev=10, azim=75)
 
 plt.show()
