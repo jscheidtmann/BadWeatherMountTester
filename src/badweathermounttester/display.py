@@ -129,6 +129,9 @@ class SimulatorDisplay:
         self.clock = pygame.time.Clock()
         self.running = True
 
+        # Hide the mouse cursor
+        pygame.mouse.set_visible(False)
+
         # Load logo
         self._load_logo()
 
