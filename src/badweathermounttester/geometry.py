@@ -1,14 +1,30 @@
 import argparse
 import math
+from pathlib import Path
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+import yaml
 from mpl_toolkits.mplot3d import Axes3D
 
 
-def parse_args() -> argparse.Namespace:
-    """Parse command line arguments."""
+def load_config() -> dict:
+    """Load configuration from setup.yml."""
+    config_path = Path(__file__).parent.parent.parent / "setup.yml"
+    if not config_path.exists():
+        config_path = Path("setup.yml")
+    if config_path.exists():
+        with open(config_path, "r") as f:
+            return yaml.safe_load(f)
+    return {}
+
+
+def parse_args(config: dict) -> argparse.Namespace:
+    """Parse command line arguments with defaults from config."""
+    mount = config.get("mount", {})
+    display = config.get("display", {})
+
     parser = argparse.ArgumentParser(
         prog="geometry",
         description="Visualize telescope mount geometry and rotation",
@@ -16,40 +32,52 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--lat",
         type=float,
-        default=51.0,
-        help="Latitude in degrees (default: 51.0)",
+        default=mount.get("latitude", 51.0),
+        help=f"Latitude in degrees (default from setup.yml: {mount.get('latitude', 51.0)})",
     )
     parser.add_argument(
         "-o",
         "--offset",
         type=float,
-        default=0.27,
-        help="Telescope offset from rotation axis (default: 0.27)",
+        default=mount.get("telescope_offset_m", 0.27),
+        help=f"Telescope offset from rotation axis (default from setup.yml: {mount.get('telescope_offset_m', 0.27)})",
     )
     parser.add_argument(
         "--start",
         type=float,
-        default=0.0,
-        help="Start angle in degrees (default: 0.0)",
+        default=mount.get("angle_start_deg", 0.0),
+        help=f"Start angle in degrees (default from setup.yml: {mount.get('angle_start_deg', 0.0)})",
     )
     parser.add_argument(
         "--stop",
         type=float,
-        default=-10.0,
-        help="Stop angle in degrees (default: -10.0)",
+        default=mount.get("angle_stop_deg", -10.0),
+        help=f"Stop angle in degrees (default from setup.yml: {mount.get('angle_stop_deg', -10.0)})",
     )
     parser.add_argument(
         "-d",
         "--distance",
         type=float,
-        default=-3.41,
-        help="Distance from origin along the line (default: 3.41m)",
+        default=-mount.get("distance_to_screen_m", 3.41),
+        help=f"Distance from origin along the line (default from setup.yml: {mount.get('distance_to_screen_m', 3.41)}m)",
     )
     parser.add_argument(
         "--dec",
         type=float,
-        default=None,
+        default=mount.get("declination_deg"),
         help="Declination in degrees for line of sight calculation",
+    )
+    parser.add_argument(
+        "--screen-width",
+        type=float,
+        default=display.get("screen_width_mm", 520.0) / 1000.0,
+        help=f"Screen width (default from setup.yml: {display.get('screen_width_mm', 520.0)}m)",
+    )
+    parser.add_argument(
+        "--screen-height",
+        type=float,
+        default=display.get("screen_height_mm", 293.0) / 1000.0,
+        help=f"Screen height (default from setup.yml: {display.get('screen_height_mm', 325.0)}m)",
     )
     return parser.parse_args()
 
@@ -79,10 +107,12 @@ def rotate(v, axis, angle):
             np.cross(axis, v) * math.sin(angle) +
             axis * np.dot(axis, v) * (1 - math.cos(angle)))
 
+
 ########
 # Preparations
 ########
-args = parse_args()
+config = load_config()
+args = parse_args(config)
 
 dec_str = f", Declination: {args.dec}°" if args.dec is not None else ""
 print(f"Latitude: {args.lat}°, Offset: {args.offset}m, Start: {args.start}°, Stop: {args.stop}°{dec_str}")
@@ -171,8 +201,8 @@ perp1 = perp1 / np.linalg.norm(perp1)
 perp2 = np.cross(perp1, d_mid)
 perp2 = perp2 / np.linalg.norm(perp2)
 
-# Rectangle dimensions
-width, height = 0.5, 0.3
+# Rectangle dimensions (from setup.yml or command-line overrides)
+width, height = args.screen_width, args.screen_height
 
 # Rectangle corners
 corners = [
@@ -196,7 +226,7 @@ ax.view_init(elev=10, azim=75)
 
 
 # Plot intersections in second figure
-fig2, (ax2, ax3) = plt.subplots(2, 1, figsize=(6, 10))
+fig2, (ax2, ax3, ax4) = plt.subplots(3, 1, figsize=(6, 10))
 
 # Calculate intersections of lines with the screen plane
 # Plane defined by: (P - rect_center) · d_mid = 0
@@ -229,38 +259,48 @@ ax2.set_title("Line of sight on Simulator Screen")
 ax2.set_aspect('equal')
 ax2.grid(True)
 
-# Calculate segment lengths
+# Calculate segment lengths and x displacements
 segment_lengths = []
+x_displacements = []
 for i in range(1, len(intersections_x)):
     dx = intersections_x[i] - intersections_x[i - 1]
     dy = intersections_y[i] - intersections_y[i - 1]
+    x_displacements.append(dx)
     segment_lengths.append(math.sqrt(dx * dx + dy * dy))
 
-# Calculate velocity assuming angular velocity of 15 arcsec/sec
+# Calculate velocity assuming an angular velocity of 15 arcsec/sec for rotation around rot_axis.
+# The cosine for dec is already accounted for by the simulation of lines of sights on the screen.
 n_samples = len(intersections_x)
 angular_step_deg = abs(stop_angle - start_angle) / (n_samples - 1)
 angular_step_arcsec = angular_step_deg * 3600
 sidereal_rate = 15.041  # arcsec/sec
 time_per_step_s = angular_step_arcsec / sidereal_rate
-velocities_m_s = [length / time_per_step_s for length in segment_lengths]
+velocities_mm_s = [length / time_per_step_s / 1000.0 for length in segment_lengths]
+x_velocities_mm_s = [dx / time_per_step_s / 1000.0 for dx in x_displacements]
 
-ax3.plot(velocities_m_s, 'r.-')
+ax3.plot(velocities_mm_s, 'r.-', label='Total velocity (mm/s)')
 
-# # Calculate and plot sidereal velocity at this distance for comparison
-# # Sidereal rate: 15.041 arcsec/sec
-# # Convert to rad/s: 15.041 * (pi/180) / 3600 rad/s
-# sidereal_rate_rad_s = sidereal_rate * math.pi / (180 * 3600)
-# # Velocity = angular_velocity * distance
-# sidereal_velocity_m_s = sidereal_rate_rad_s * abs(args.distance) * abs(math.cos(math.radians(90)-dec if dec is not None else math.radians(90)-lat))
-# ax3.axhline(y=sidereal_velocity_m_s, color='green', linestyle='--', 
-#            label=f'Sidereal velocity: {sidereal_velocity_m_s:.4f} m/s')
+ax4.plot(x_velocities_mm_s, 'b.-', label='X velocity (mm/s)')
 
+# Calculate and plot sidereal velocity at this distance for comparison
+# Convert to rad/s: 15.041 * (pi/180) / 3600 rad/s
+sidereal_rate_rad_s = sidereal_rate * math.pi / (180 * 3600)  # rad/s
+# Velocity = angular_velocity * distance
+sidereal_velocity_mm_s = sidereal_rate_rad_s * abs(args.distance) / 1000.0 * math.cos(dec if dec is not None else 0)
+ax3.axhline(y=sidereal_velocity_mm_s, color='green', linestyle='--',
+            label=f'Sidereal velocity: {sidereal_velocity_mm_s:.4f} mm/s')
 
 ax3.set_xlabel("Sample")
-ax3.set_ylabel("Velocity (m/s)")
-ax3.set_title("Velocity of line of sight on screen / m/s")
+ax3.set_ylabel("Velocity (mm/s)")
+ax3.set_title("Velocity of line of sight on screen")
 ax3.legend()
 ax3.grid(True)
+
+ax4.set_xlabel("Sample")
+ax4.set_ylabel("X Velocity (mm/s)")
+ax4.set_title("X velocity (horizontal) on screen")
+ax4.legend()
+ax4.grid(True)
 
 fig2.tight_layout()
 
