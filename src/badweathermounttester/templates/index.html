@@ -54,10 +54,70 @@
         }
 
         .form-group label {
-            display: block;
+            display: flex;
+            align-items: center;
+            gap: 6px;
             margin-bottom: 2px;
             color: #aaa;
             font-size: 0.85em;
+        }
+
+        .info-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: #444;
+            color: #aaa;
+            font-size: 11px;
+            font-weight: bold;
+            font-style: italic;
+            font-family: Georgia, serif;
+            cursor: help;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .info-icon:hover {
+            background-color: #00d4ff;
+            color: #000;
+        }
+
+        .info-icon .tooltip {
+            display: none;
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #1a1a2e;
+            border: 1px solid #00d4ff;
+            border-radius: 6px;
+            padding: 10px 12px;
+            width: 280px;
+            font-size: 13px;
+            font-style: normal;
+            font-weight: normal;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #eee;
+            line-height: 1.4;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .info-icon .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: #00d4ff;
+        }
+
+        .info-icon:hover .tooltip {
+            display: block;
         }
 
         .form-group input {
@@ -655,19 +715,27 @@
                 <div class="card" id="config-card">
                     <h2>{{ _('Mount Configuration') }}</h2>
                     <div class="form-group">
-                        <label for="latitude">{{ _('Latitude (degrees)') }}</label>
+                        <label for="latitude">{{ _('Latitude (degrees)') }}
+                            <span class="info-icon">i<span class="tooltip">{{ _('Enter the latitude that your mount is configured for. This affects the geometry calculations for the simulated star movement.') }}</span></span>
+                        </label>
                         <input type="number" id="latitude" step="0.1" value="0">
                     </div>
                     <div class="form-group">
-                        <label for="focal-length">{{ _('Guide Scope Focal Length (mm)') }}</label>
+                        <label for="focal-length">{{ _('Guide Scope Focal Length (mm)') }}
+                            <span class="info-icon">i<span class="tooltip">{{ _('Enter the focal length of your guide scope. Since the scope is not focused to infinity, BWMT will calculate an effective focal length for PHD2.') }}</span></span>
+                        </label>
                         <input type="number" id="focal-length" step="1" value="200">
                     </div>
                     <div class="form-group">
-                        <label for="distance">{{ _('Distance to Screen (m)') }}</label>
+                        <label for="distance">{{ _('Distance to Screen (m)') }}
+                            <span class="info-icon">i<span class="tooltip">{{ _('The distance between mount and simulator screen. At least 5m is recommended for best accuracy, though 3.5m minimum is possible.') }}</span></span>
+                        </label>
                         <input type="number" id="distance" step="0.1" value="5">
                     </div>
                     <div class="form-group">
-                        <label for="period">{{ _('Mount Main Period (seconds)') }}</label>
+                        <label for="period">{{ _('Mount Main Period (seconds)') }}
+                            <span class="info-icon">i<span class="tooltip">{{ _('For worm gear mounts: How long does it take for the worm to rotate once? This information is provided by the manufacturer of your mount.') }}</span></span>
+                        </label>
                         <input type="number" id="period" step="1" value="480">
                     </div>
                 </div>
@@ -675,15 +743,21 @@
                 <div class="card" id="camera-card">
                     <h2>{{ _('Guiding Camera') }}</h2>
                     <div class="form-group">
-                        <label for="pixel-size">{{ _('Pixel Size (micrometer)') }}</label>
+                        <label for="pixel-size">{{ _('Pixel Size (micrometer)') }}
+                            <span class="info-icon">i<span class="tooltip">{{ _('The pixel pitch of your guide camera sensor. This is typically found in the camera specifications (e.g., 2.4µm, 3.75µm).') }}</span></span>
+                        </label>
                         <input type="number" id="pixel-size" step="0.01" value="3.75">
                     </div>
                     <div class="form-group">
-                        <label for="camera-width">{{ _('Width (pixels)') }}</label>
+                        <label for="camera-width">{{ _('Width (pixels)') }}
+                            <span class="info-icon">i<span class="tooltip">{{ _('The number of pixels in the horizontal direction of your guide camera sensor.') }}</span></span>
+                        </label>
                         <input type="number" id="camera-width" step="1" value="1280">
                     </div>
                     <div class="form-group">
-                        <label for="camera-height">{{ _('Height (pixels)') }}</label>
+                        <label for="camera-height">{{ _('Height (pixels)') }}
+                            <span class="info-icon">i<span class="tooltip">{{ _('The number of pixels in the vertical direction of your guide camera sensor.') }}</span></span>
+                        </label>
                         <input type="number" id="camera-height" step="1" value="960">
                     </div>
                     <div class="screen-calc">
@@ -695,7 +769,9 @@
                 <div class="card" id="screen-card">
                     <h2>{{ _('Screen') }}</h2>
                     <div class="form-group">
-                        <label for="screen-width-mm">{{ _('Screen Width (mm)') }}</label>
+                        <label for="screen-width-mm">{{ _('Screen Width (mm)') }}
+                            <span class="info-icon">i<span class="tooltip">{{ _('The physical width of your simulator screen in millimeters. Measure the visible display area, not the bezel. This is used to calculate the pixel pitch.') }}</span></span>
+                        </label>
                         <input type="number" id="screen-width-mm" step="1" value="527">
                     </div>
                     <div class="screen-calc">

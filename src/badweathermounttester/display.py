@@ -833,6 +833,28 @@ class SimulatorDisplay:
                 width_rect = width_surface.get_rect(centerx=center_x, top=label_rect.bottom + 10)
             self.screen.blit(width_surface, width_rect)
 
+            # Draw repeated label text vertically along the stripe for guidescope visibility
+            # Use smaller font for repeated text
+            font_repeated = pygame.font.Font(None, 48)
+            repeated_text = label.lower()
+            repeated_surface = font_repeated.render(repeated_text, True, label_color)
+            text_height = repeated_surface.get_height()
+            spacing = text_height + 20  # Space between repeated labels
+
+            # Start below the width info, leave some margin
+            start_y = width_rect.bottom + 40
+            current_y = start_y
+
+            while current_y + text_height < height - 20:
+                if i == 0:  # LEFT stripe - left-aligned
+                    text_rect = repeated_surface.get_rect(left=left_edge + 10, top=current_y)
+                elif i == 2:  # RIGHT stripe - right-aligned
+                    text_rect = repeated_surface.get_rect(right=left_edge + stripe_width - 10, top=current_y)
+                else:  # MIDDLE stripe - centered
+                    text_rect = repeated_surface.get_rect(centerx=center_x, top=current_y)
+                self.screen.blit(repeated_surface, text_rect)
+                current_y += spacing
+
     def _render_simulation(self) -> None:
         """Render the simulated star moving along the ellipse curve."""
         if not self.screen:
@@ -883,19 +905,29 @@ class SimulatorDisplay:
         end = time.time()
         self.simu_render = end - start
 
-        # Draw status info at top
-        font = pygame.font.Font(None, 36)
+        # Draw status info at top - large font for visibility from distance
+        font_status = pygame.font.Font(None, 72)
+        font_time = pygame.font.Font(None, 200)  # Very large for time remaining
         if status["complete"]:
-            text = font.render("Simulation Complete", True, (0, 255, 0))
+            text = font_status.render("Simulation Complete", True, (0, 255, 0))
+            text_rect = text.get_rect(center=(width // 2, 50))
+            self.screen.blit(text, text_rect)
         elif status["running"]:
             remaining = status["remaining_seconds"]
             mins = int(remaining // 60)
             secs = int(remaining % 60)
-            text = font.render(f"Running - {mins:02d}:{secs:02d} remaining", True, (255, 255, 0))
+            # Draw "Running" label
+            label = font_status.render("Running", True, (255, 255, 0))
+            label_rect = label.get_rect(center=(width // 2, 40))
+            self.screen.blit(label, label_rect)
+            # Draw large time remaining
+            time_text = font_time.render(f"{mins:02d}:{secs:02d}", True, (255, 255, 0))
+            time_rect = time_text.get_rect(center=(width // 2, 130))
+            self.screen.blit(time_text, time_rect)
         else:
-            text = font.render("Simulation Ready - Press Start", True, (200, 200, 200))
-        text_rect = text.get_rect(center=(width // 2, 30))
-        self.screen.blit(text, text_rect)
+            text = font_status.render("Simulation Ready - Press Start", True, (200, 200, 200))
+            text_rect = text.get_rect(center=(width // 2, 50))
+            self.screen.blit(text, text_rect)
 
         font_small = pygame.font.Font(None, 24)
         # Draw FPS in top-right corner
