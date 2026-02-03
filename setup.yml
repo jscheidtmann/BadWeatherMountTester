@@ -44,3 +44,9 @@ calibration:
   - - 1883
     - 856
   is_complete: false
+velocity:
+  left_time_seconds: null
+  middle_time_seconds: null
+  right_time_seconds: null
+  stripe_width_pixels: 128
+  is_complete: false

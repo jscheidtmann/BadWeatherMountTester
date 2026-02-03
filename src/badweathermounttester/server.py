@@ -592,15 +592,16 @@ class WebServer:
                     and self.config.velocity.left_time_seconds is not None
                     and self.config.velocity.middle_time_seconds is not None
                     and self.config.velocity.right_time_seconds is not None):
-                # Calculate average measured velocity from the three stripe crossings
+                # Calculate max measured velocity from the three stripe crossings
+                # Max velocity = min time (velocity = distance/time)
                 stripe_width = self.config.velocity.stripe_width_pixels
-                avg_time = (
-                    self.config.velocity.left_time_seconds
-                    + self.config.velocity.middle_time_seconds
-                    + self.config.velocity.right_time_seconds
-                ) / 3.0
-                if avg_time > 0:
-                    measured_pixels_per_second = stripe_width / avg_time
+                min_time = min(
+                    self.config.velocity.left_time_seconds,
+                    self.config.velocity.middle_time_seconds,
+                    self.config.velocity.right_time_seconds
+                )
+                if min_time > 0:
+                    measured_pixels_per_second = stripe_width / min_time
                     pixels_per_second = measured_pixels_per_second
                     velocity_source = "measured"
 

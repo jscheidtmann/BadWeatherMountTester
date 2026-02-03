@@ -920,8 +920,8 @@
 
                 <div class="velocity-info" id="velocity-info">
                     <p>{{ _('Stripe width:') }} <strong id="stripe-width">--</strong> px | {{ _('Expected:') }} <strong id="expected-crossing">--</strong>s</p>
-                    <p class="calculated-velocity" id="avg-velocity-text" style="display: none;">
-                        {{ _('Average measured velocity:') }} <strong id="avg-velocity">--</strong> px/s
+                    <p class="calculated-velocity" id="max-velocity-text" style="display: none;">
+                        {{ _('Max measured velocity:') }} <strong id="max-velocity">--</strong> px/s
                     </p>
                 </div>
             </div>
@@ -2131,8 +2131,8 @@
         const stripeButtons = document.querySelectorAll('.stripe-btn');
         const expectedCrossingSpan = document.getElementById('expected-crossing');
         const stripeWidthSpan = document.getElementById('stripe-width');
-        const avgVelocityText = document.getElementById('avg-velocity-text');
-        const avgVelocitySpan = document.getElementById('avg-velocity');
+        const maxVelocityText = document.getElementById('max-velocity-text');
+        const maxVelocitySpan = document.getElementById('max-velocity');
 
         // Format time as MM:SS.mmm
         function formatStopwatchTime(ms) {
@@ -2246,7 +2246,7 @@
                     // Calculate and display velocity for this stripe
                     if (velocityStripeWidth > 0 && velocityMeasurements[stripe] > 0) {
                         const stripeVelocity = velocityStripeWidth / velocityMeasurements[stripe];
-                        velocityEl.textContent = stripeVelocity.toFixed(2) + ' px/s';
+                        velocityEl.textContent = stripeVelocity.toFixed(3) + ' px/s';
                     } else {
                         velocityEl.textContent = '-- px/s';
                     }
@@ -2262,15 +2262,16 @@
                 }
             });
 
-            // Calculate average velocity if all measurements are complete
+            // Calculate max velocity if all measurements are complete
+            // Max velocity = min time (velocity = distance/time)
             const validMeasurements = Object.values(velocityMeasurements).filter(v => v !== null);
             if (validMeasurements.length > 0 && velocityStripeWidth > 0) {
-                const avgTime = validMeasurements.reduce((a, b) => a + b, 0) / validMeasurements.length;
-                const measuredVelocity = velocityStripeWidth / avgTime;
-                avgVelocitySpan.textContent = measuredVelocity.toFixed(2);
-                avgVelocityText.style.display = 'block';
+                const minTime = Math.min(...validMeasurements);
+                const measuredVelocity = velocityStripeWidth / minTime;
+                maxVelocitySpan.textContent = measuredVelocity.toFixed(3);
+                maxVelocityText.style.display = 'block';
             } else {
-                avgVelocityText.style.display = 'none';
+                maxVelocityText.style.display = 'none';
             }
         }
 
