@@ -4,6 +4,7 @@ mount:
   distance_to_screen_m: 3.41
   main_period_seconds: 480.0
   telescope_offset_m: 0.27
+  telescope_offset_dec_m: -0.03
   angle_start_deg: 0.0
   angle_stop_deg: -10.0
   declination_deg: -38.0

@@ -796,64 +796,43 @@ class SimulatorDisplay:
             (width - stripe_width) // 2,    # Middle stripe centered
             width - stripe_width,           # Right stripe flush with right edge
         ]
-        stripe_labels = ["LEFT", "MIDDLE", "RIGHT"]
+        stripe_base_labels = ["LEFT ", "MIDDLE ", "RIGHT "]
 
         # Stripe color (gray for B/W camera)
-        stripe_color = (80, 80, 80)
-        label_color = (200, 200, 200)
+        stripe_color = (200, 200, 200)
 
-        # Large fonts readable from 5m distance
-        font_large = pygame.font.Font(None, 96)
-        font_medium = pygame.font.Font(None, 64)
+        # Small font for labels, so it can be read in guidescope image
+        font_small = pygame.font.Font(None, 12)
 
-        for i, (left_edge, label) in enumerate(zip(stripe_left_edges, stripe_labels)):
+        for i, (left_edge, base_label) in enumerate(zip(stripe_left_edges, stripe_base_labels)):
             # Draw vertical stripe
             rect = pygame.Rect(left_edge, 0, stripe_width, height)
             pygame.draw.rect(self.screen, stripe_color, rect)
 
-            # Draw label - left-aligned for LEFT, right-aligned for RIGHT, centered for MIDDLE
-            label_surface = font_large.render(label, True, label_color)
-            if i == 0:  # LEFT stripe - left-aligned
-                label_rect = label_surface.get_rect(left=left_edge + 10, top=30)
-            elif i == 2:  # RIGHT stripe - right-aligned
-                label_rect = label_surface.get_rect(right=left_edge + stripe_width - 10, top=30)
-            else:  # MIDDLE stripe - centered
-                center_x = left_edge + stripe_width // 2
-                label_rect = label_surface.get_rect(centerx=center_x, top=30)
-            self.screen.blit(label_surface, label_rect)
+            # Calculate how many repetitions needed to fill screen height
+            # Render single label to measure its width (becomes height when rotated)
+            single_surface = font_small.render(base_label, True, stripe_color)
+            single_width = single_surface.get_width()
+            # Calculate repetitions needed to fill height, add 1 to ensure full coverage
+            repetitions = (height // single_width) + 1
+            label = base_label * repetitions
 
-            # Draw stripe width info below label (same alignment as label)
-            width_text = f"{stripe_width}px"
-            width_surface = font_medium.render(width_text, True, (150, 150, 150))
-            if i == 0:  # LEFT stripe
-                width_rect = width_surface.get_rect(left=left_edge + 10, top=label_rect.bottom + 10)
-            elif i == 2:  # RIGHT stripe
-                width_rect = width_surface.get_rect(right=left_edge + stripe_width - 10, top=label_rect.bottom + 10)
-            else:  # MIDDLE stripe
-                width_rect = width_surface.get_rect(centerx=center_x, top=label_rect.bottom + 10)
-            self.screen.blit(width_surface, width_rect)
+            # Draw label next to stripe, rotated to read bottom-to-top
+            # 10 pixel gap between stripe and text
+            label_surface = font_small.render(label, True, stripe_color)
+            # Rotate 90 degrees counter-clockwise (text reads bottom to top)
+            rotated_label = pygame.transform.rotate(label_surface, 90)
 
-            # Draw repeated label text vertically along the stripe for guidescope visibility
-            # Use smaller font for repeated text
-            font_repeated = pygame.font.Font(None, 48)
-            repeated_text = label.lower()
-            repeated_surface = font_repeated.render(repeated_text, True, label_color)
-            text_height = repeated_surface.get_height()
-            spacing = text_height + 20  # Space between repeated labels
-
-            # Start below the width info, leave some margin
-            start_y = width_rect.bottom + 40
-            current_y = start_y
-
-            while current_y + text_height < height - 20:
-                if i == 0:  # LEFT stripe - left-aligned
-                    text_rect = repeated_surface.get_rect(left=left_edge + 10, top=current_y)
-                elif i == 2:  # RIGHT stripe - right-aligned
-                    text_rect = repeated_surface.get_rect(right=left_edge + stripe_width - 10, top=current_y)
-                else:  # MIDDLE stripe - centered
-                    text_rect = repeated_surface.get_rect(centerx=center_x, top=current_y)
-                self.screen.blit(repeated_surface, text_rect)
-                current_y += spacing
+            if i == 0:  # LEFT stripe - label to the right of stripe
+                label_x = left_edge + stripe_width + 10
+                label_rect = rotated_label.get_rect(left=label_x, bottom=height)
+            elif i == 2:  # RIGHT stripe - label to the left of stripe
+                label_x = left_edge - 10 - rotated_label.get_width()
+                label_rect = rotated_label.get_rect(left=label_x, bottom=height)
+            else:  # MIDDLE stripe - label to the right of stripe
+                label_x = left_edge + stripe_width + 10
+                label_rect = rotated_label.get_rect(left=label_x, bottom=height)
+            self.screen.blit(rotated_label, label_rect)
 
     def _render_simulation(self) -> None:
         """Render the simulated star moving along the ellipse curve."""
