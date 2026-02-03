@@ -489,7 +489,6 @@ class SimulatorDisplay:
         if not self.screen:
             return
 
-        font_medium = pygame.font.Font(None, 48)
         font_small = pygame.font.Font(None, 36)
         font_connect = pygame.font.Font(None, 120)  # Large font for "Connect to" info
 

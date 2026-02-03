@@ -621,6 +621,67 @@ class WebServer:
                 "total_seconds": round(total_time, 1),
             })
 
+        @self.app.route("/api/simulation/velocity", methods=["GET"])
+        def simulation_velocity():
+            """Get simulation velocity without side effects."""
+            # Get x range from calibration points
+            if len(self.config.calibration.points) < 4:
+                return jsonify({"error": "Not enough calibration points"}), 400
+
+            x_coords = [p[0] for p in self.config.calibration.points]
+            x_start = min(x_coords)
+            x_end = max(x_coords)
+
+            # Calculate theoretical pixels per second based on sidereal rate
+            screen_width_mm = self.config.display.screen_width_mm
+            screen_width_px = self.config.display.screen_width
+            distance_m = self.config.mount.distance_to_screen_m
+
+            if screen_width_mm <= 0 or screen_width_px <= 0 or distance_m <= 0:
+                return jsonify({"error": "Invalid display/mount configuration"}), 400
+
+            pixel_pitch_mm = screen_width_mm / screen_width_px
+            pixel_pitch_arcsec = (pixel_pitch_mm / (distance_m * 1000)) * 206265
+            calculated_pixels_per_second = 15.0 / pixel_pitch_arcsec
+
+            # Reduce velocity by cos(90° - latitude) = sin(latitude)
+            latitude = abs(self.config.mount.latitude)
+            if latitude != 0:
+                latitude_factor = np.cos(np.radians(90.0 - latitude))
+                calculated_pixels_per_second *= latitude_factor
+
+            # Check if we have measured velocity data
+            velocity_source = "calculated"
+            pixels_per_second = calculated_pixels_per_second
+
+            if (self.config.velocity.is_complete
+                    and self.config.velocity.stripe_width_pixels > 0
+                    and self.config.velocity.left_time_seconds is not None
+                    and self.config.velocity.middle_time_seconds is not None
+                    and self.config.velocity.right_time_seconds is not None):
+                stripe_width = self.config.velocity.stripe_width_pixels
+                min_time = min(
+                    self.config.velocity.left_time_seconds,
+                    self.config.velocity.middle_time_seconds,
+                    self.config.velocity.right_time_seconds
+                )
+                if min_time > 0:
+                    measured_pixels_per_second = stripe_width / min_time
+                    pixels_per_second = measured_pixels_per_second
+                    velocity_source = "measured"
+
+            total_distance = x_end - x_start
+            total_time = total_distance / pixels_per_second if pixels_per_second > 0 else 0
+
+            return jsonify({
+                "x_start": x_start,
+                "x_end": x_end,
+                "pixels_per_second": round(pixels_per_second, 4),
+                "calculated_pixels_per_second": round(calculated_pixels_per_second, 4),
+                "velocity_source": velocity_source,
+                "total_seconds": round(total_time, 1),
+            })
+
         @self.app.route("/api/simulation/start", methods=["POST"])
         def simulation_start():
             """Start or resume the simulation."""
