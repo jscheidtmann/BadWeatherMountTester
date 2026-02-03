@@ -486,6 +486,155 @@
             color: #888;
             border-color: #555;
         }
+
+        /* Velocity measurement styles */
+        .stopwatch-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .stopwatch-display {
+            text-align: center;
+            flex: 1;
+        }
+
+        .stopwatch-time {
+            font-family: 'Courier New', monospace;
+            font-size: 2.2em;
+            font-weight: bold;
+            color: #00d4ff;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+        }
+
+        .stopwatch-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-stopwatch {
+            padding: 10px 20px;
+            font-size: 1em;
+            min-width: 80px;
+        }
+
+        .btn-stopwatch.btn-start {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        .btn-stopwatch.btn-start:hover {
+            background-color: #45a049;
+        }
+
+        .btn-stopwatch.btn-stop {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .btn-stopwatch.btn-stop:hover {
+            background-color: #da190b;
+        }
+
+        .stripe-selector {
+            display: flex;
+            gap: 6px;
+        }
+
+        .stripe-btn {
+            padding: 10px 18px;
+            border: 2px solid #444;
+            border-radius: 4px;
+            background-color: #222;
+            color: #888;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.95em;
+        }
+
+        .stripe-btn:hover {
+            border-color: #666;
+            color: #aaa;
+        }
+
+        .stripe-btn.selected {
+            border-color: #00d4ff;
+            background-color: #0a2a3a;
+            color: #00d4ff;
+        }
+
+        .stripe-btn.recorded {
+            border-color: #4caf50;
+            color: #4caf50;
+        }
+
+        .stripe-btn.selected.recorded {
+            border-color: #00d4ff;
+            background-color: #0a2a3a;
+        }
+
+        .measurements-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .measurement-card {
+            background-color: #0f0f23;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .measurement-card.has-value {
+            border-color: #4caf50;
+        }
+
+        .measurement-card h4 {
+            margin: 0 0 8px 0;
+            color: #aaa;
+            font-size: 0.9em;
+        }
+
+        .measurement-value {
+            font-family: 'Courier New', monospace;
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .measurement-velocity {
+            font-size: 0.9em;
+            color: #4caf50;
+            margin-bottom: 8px;
+        }
+
+        .measurement-card .btn-clear {
+            padding: 4px 12px;
+            font-size: 0.8em;
+        }
+
+        .velocity-info {
+            text-align: center;
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #1a1a2e;
+            border-radius: 4px;
+        }
+
+        .velocity-info p {
+            margin: 4px 0;
+            color: #aaa;
+        }
+
+        .velocity-info .calculated-velocity {
+            font-size: 1.1em;
+            color: #4caf50;
+        }
     </style>
 </head>
 <body>
@@ -496,7 +645,8 @@
             <div class="step active" id="step-1">1. {{ _('Configure') }}</div>
             <div class="step" id="step-2">2. {{ _('Align') }}</div>
             <div class="step" id="step-3">3. {{ _('Calibrate') }}</div>
-            <div class="step" id="step-4">4. {{ _('Measure') }}</div>
+            <div class="step" id="step-4">4. {{ _('Velocity') }}</div>
+            <div class="step" id="step-5">5. {{ _('Measure') }}</div>
         </div>
 
         <!-- Step 1: Configure -->
@@ -637,8 +787,72 @@
             </div>
         </div>
 
-        <!-- Step 4: Measure -->
+        <!-- Step 4: Velocity Measurement -->
         <div class="step-content" id="step-4-content">
+            <div class="card instructions-card">
+                <h2>{{ _('Instructions') }}</h2>
+                <ol>
+                    <li>{{ _('Three vertical stripes are now displayed on the simulator screen.') }}</li>
+                    <li>{{ _('Select a stripe below (Left, Middle, or Right).') }}</li>
+                    <li>{{ _('Move the mount until the star is about to enter the stripe.') }}</li>
+                    <li>{{ _('Press Start when the star enters the stripe, Stop when it exits.') }}</li>
+                    <li>{{ _('Record the time for each stripe to validate the calculated velocity.') }}</li>
+                </ol>
+                <p>{{ _('This step verifies that the mount moves at the expected sidereal rate.') }}</p>
+            </div>
+
+            <div class="card">
+                <h2>{{ _('Stopwatch') }}</h2>
+                <div class="stopwatch-row">
+                    <div class="stripe-selector">
+                        <button class="stripe-btn selected" id="stripe-left" data-stripe="left">{{ _('Left') }}</button>
+                        <button class="stripe-btn" id="stripe-middle" data-stripe="middle">{{ _('Middle') }}</button>
+                        <button class="stripe-btn" id="stripe-right" data-stripe="right">{{ _('Right') }}</button>
+                    </div>
+                    <div class="stopwatch-display">
+                        <span class="stopwatch-time" id="stopwatch-time">00:00.000</span>
+                    </div>
+                    <div class="stopwatch-buttons">
+                        <button class="btn btn-stopwatch btn-start" id="btn-stopwatch-toggle">{{ _('Start') }}</button>
+                        <button class="btn btn-stopwatch btn-secondary" id="btn-stopwatch-reset">{{ _('Reset') }}</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>{{ _('Recorded Times') }}</h2>
+                <div class="measurements-grid">
+                    <div class="measurement-card" id="measurement-left">
+                        <h4>{{ _('Left Stripe') }}</h4>
+                        <div class="measurement-value" id="value-left">--:--</div>
+                        <div class="measurement-velocity" id="velocity-left">-- px/s</div>
+                        <button class="btn btn-danger btn-clear" id="clear-left" disabled>{{ _('Clear') }}</button>
+                    </div>
+                    <div class="measurement-card" id="measurement-middle">
+                        <h4>{{ _('Middle Stripe') }}</h4>
+                        <div class="measurement-value" id="value-middle">--:--</div>
+                        <div class="measurement-velocity" id="velocity-middle">-- px/s</div>
+                        <button class="btn btn-danger btn-clear" id="clear-middle" disabled>{{ _('Clear') }}</button>
+                    </div>
+                    <div class="measurement-card" id="measurement-right">
+                        <h4>{{ _('Right Stripe') }}</h4>
+                        <div class="measurement-value" id="value-right">--:--</div>
+                        <div class="measurement-velocity" id="velocity-right">-- px/s</div>
+                        <button class="btn btn-danger btn-clear" id="clear-right" disabled>{{ _('Clear') }}</button>
+                    </div>
+                </div>
+
+                <div class="velocity-info" id="velocity-info">
+                    <p>{{ _('Stripe width:') }} <strong id="stripe-width">--</strong> px | {{ _('Expected:') }} <strong id="expected-crossing">--</strong>s</p>
+                    <p class="calculated-velocity" id="avg-velocity-text" style="display: none;">
+                        {{ _('Average measured velocity:') }} <strong id="avg-velocity">--</strong> px/s
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 5: Measure -->
+        <div class="step-content" id="step-5-content">
             <div class="card instructions-card">
                 <h2>{{ _('Instructions') }}</h2>
                 <ol>
@@ -672,6 +886,10 @@
 
                 <div class="simulation-info">
                     <p>{{ _('Elapsed:') }} <strong id="elapsed-time">0:00</strong> | {{ _('Total:') }} <strong id="total-time">--:--</strong></p>
+                    <p id="velocity-source-info" style="font-size: 0.85em; margin-top: 4px;">
+                        {{ _('Velocity:') }} <strong id="sim-velocity">--</strong> px/s
+                        (<span id="velocity-source-label">--</span>)
+                    </p>
                 </div>
 
                 <div class="simulation-buttons media-controls">
@@ -969,7 +1187,7 @@
         });
 
         btnNext.addEventListener('click', async () => {
-            if (currentStep < 4) {
+            if (currentStep < 5) {
                 // Update step indicator
                 document.getElementById(`step-${currentStep}`).classList.remove('active');
                 document.getElementById(`step-${currentStep}`).classList.add('completed');
@@ -996,6 +1214,11 @@
                     loadCalibrationPoints();
                 } else {
                     updateEllipseDisplay();  // Hide when leaving step 3
+                }
+
+                // Setup velocity measurement when entering step 4
+                if (currentStep === 4) {
+                    setupVelocityMeasurement();
                 }
             }
         });
@@ -1032,18 +1255,23 @@
                 } else {
                     updateEllipseDisplay();  // Hide when leaving step 3
                 }
+
+                // Setup velocity measurement when returning to step 4
+                if (currentStep === 4) {
+                    setupVelocityMeasurement();
+                }
             }
         });
 
         // Add click handlers for step indicator tabs
-        for (let stepNum = 1; stepNum <= 4; stepNum++) {
+        for (let stepNum = 1; stepNum <= 5; stepNum++) {
             const stepElement = document.getElementById(`step-${stepNum}`);
             stepElement.style.cursor = 'pointer';
             stepElement.addEventListener('click', async () => {
                 if (stepNum === currentStep) return;
 
                 // Update all step indicators
-                for (let i = 1; i <= 4; i++) {
+                for (let i = 1; i <= 5; i++) {
                     const el = document.getElementById(`step-${i}`);
                     el.classList.remove('active', 'completed');
                     document.getElementById(`step-${i}-content`).classList.remove('active');
@@ -1072,6 +1300,11 @@
                     loadCalibrationPoints();
                 } else {
                     updateEllipseDisplay();  // Hide when leaving step 3
+                }
+
+                // Setup velocity measurement when entering step 4
+                if (stepNum === 4) {
+                    setupVelocityMeasurement();
                 }
             });
         }
@@ -1581,7 +1814,7 @@
 
         // Poll simulation status
         async function pollSimulationStatus() {
-            if (currentStep !== 4) return;
+            if (currentStep !== 5) return;
 
             try {
                 const response = await fetch('/api/simulation/status');
@@ -1598,7 +1831,11 @@
             }
         }
 
-        // Setup simulation when entering step 4
+        // Velocity source display elements
+        const simVelocitySpan = document.getElementById('sim-velocity');
+        const velocitySourceLabel = document.getElementById('velocity-source-label');
+
+        // Setup simulation when entering step 5
         async function setupSimulation() {
             try {
                 const response = await fetch('/api/simulation/setup', {
@@ -1614,6 +1851,16 @@
                     totalTime.textContent = formatTime(data.total_seconds);
                     countdownTime.textContent = formatTime(data.total_seconds);
                     btnPlayPause.disabled = false;
+
+                    // Display velocity and source
+                    simVelocitySpan.textContent = data.pixels_per_second;
+                    if (data.velocity_source === 'measured') {
+                        velocitySourceLabel.textContent = 'measured';
+                        velocitySourceLabel.style.color = '#4caf50';  // Green for measured
+                    } else {
+                        velocitySourceLabel.textContent = 'calculated';
+                        velocitySourceLabel.style.color = '#aaa';  // Gray for calculated
+                    }
                 } else {
                     console.error('Simulation setup failed:', data.error);
                     statusText.textContent = 'Setup Error';
@@ -1741,12 +1988,12 @@
         // Hook into step navigation to setup simulation when entering step 4
         const originalStepClickHandlers = [];
 
-        // Modify btnNext click handler to setup simulation when entering step 4
+        // Modify btnNext click handler to setup simulation when entering step 5
         const originalBtnNextHandler = btnNext.onclick;
         btnNext.addEventListener('click', async () => {
             // Wait a bit for the step to change
             setTimeout(async () => {
-                if (currentStep === 4) {
+                if (currentStep === 5) {
                     await setupSimulation();
                     pollSimulationStatus();
                     // Start continuous polling
@@ -1761,11 +2008,11 @@
         });
 
         // Also handle direct tab clicks
-        for (let stepNum = 1; stepNum <= 4; stepNum++) {
+        for (let stepNum = 1; stepNum <= 5; stepNum++) {
             const stepElement = document.getElementById(`step-${stepNum}`);
             stepElement.addEventListener('click', async () => {
                 setTimeout(async () => {
-                    if (currentStep === 4) {
+                    if (currentStep === 5) {
                         await setupSimulation();
                         pollSimulationStatus();
                         if (!simulationPollingInterval) {
@@ -1779,15 +2026,225 @@
             });
         }
 
-        // Handle btnBack to stop polling when leaving step 4
+        // Handle btnBack to stop polling when leaving step 5
         btnBack.addEventListener('click', () => {
             setTimeout(() => {
-                if (currentStep !== 4 && simulationPollingInterval) {
+                if (currentStep !== 5 && simulationPollingInterval) {
                     clearInterval(simulationPollingInterval);
                     simulationPollingInterval = null;
                 }
             }, 100);
         });
+
+        // ===== Velocity Measurement =====
+        let velocityStripeWidth = 0;
+        let velocityPixelsPerSecond = 0;
+        let selectedStripe = 'left';
+        let stopwatchRunning = false;
+        let stopwatchStartTime = 0;
+        let stopwatchAnimationFrame = null;
+        let velocityMeasurements = {
+            left: null,
+            middle: null,
+            right: null
+        };
+
+        const stopwatchTimeDisplay = document.getElementById('stopwatch-time');
+        const btnStopwatchToggle = document.getElementById('btn-stopwatch-toggle');
+        const btnStopwatchReset = document.getElementById('btn-stopwatch-reset');
+        const stripeButtons = document.querySelectorAll('.stripe-btn');
+        const expectedCrossingSpan = document.getElementById('expected-crossing');
+        const stripeWidthSpan = document.getElementById('stripe-width');
+        const avgVelocityText = document.getElementById('avg-velocity-text');
+        const avgVelocitySpan = document.getElementById('avg-velocity');
+
+        // Format time as MM:SS.mmm
+        function formatStopwatchTime(ms) {
+            const totalSeconds = ms / 1000;
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = Math.floor(totalSeconds % 60);
+            const millis = Math.floor(ms % 1000);
+            return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${millis.toString().padStart(3, '0')}`;
+        }
+
+        // Update stopwatch display
+        function updateStopwatchDisplay() {
+            if (stopwatchRunning) {
+                const elapsed = performance.now() - stopwatchStartTime;
+                stopwatchTimeDisplay.textContent = formatStopwatchTime(elapsed);
+                stopwatchAnimationFrame = requestAnimationFrame(updateStopwatchDisplay);
+            }
+        }
+
+        // Start/Stop toggle
+        btnStopwatchToggle.addEventListener('click', async () => {
+            if (stopwatchRunning) {
+                // Stop
+                const elapsed = performance.now() - stopwatchStartTime;
+                const elapsedSeconds = elapsed / 1000;
+                stopwatchRunning = false;
+                if (stopwatchAnimationFrame) {
+                    cancelAnimationFrame(stopwatchAnimationFrame);
+                }
+                btnStopwatchToggle.textContent = 'Start';
+                btnStopwatchToggle.classList.remove('btn-stop');
+                btnStopwatchToggle.classList.add('btn-start');
+
+                // Record the measurement
+                try {
+                    await fetch('/api/velocity/time', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            stripe: selectedStripe,
+                            time_seconds: elapsedSeconds
+                        })
+                    });
+                    velocityMeasurements[selectedStripe] = elapsedSeconds;
+                    updateMeasurementDisplay();
+                    selectNextUnrecordedStripe();
+                } catch (error) {
+                    console.error('Failed to record velocity time:', error);
+                }
+            } else {
+                // Start
+                stopwatchStartTime = performance.now();
+                stopwatchRunning = true;
+                btnStopwatchToggle.textContent = 'Stop';
+                btnStopwatchToggle.classList.remove('btn-start');
+                btnStopwatchToggle.classList.add('btn-stop');
+                updateStopwatchDisplay();
+            }
+        });
+
+        // Reset stopwatch
+        btnStopwatchReset.addEventListener('click', () => {
+            if (stopwatchRunning) {
+                stopwatchRunning = false;
+                if (stopwatchAnimationFrame) {
+                    cancelAnimationFrame(stopwatchAnimationFrame);
+                }
+                btnStopwatchToggle.textContent = 'Start';
+                btnStopwatchToggle.classList.remove('btn-stop');
+                btnStopwatchToggle.classList.add('btn-start');
+            }
+            stopwatchTimeDisplay.textContent = '00:00.000';
+        });
+
+        // Stripe selection
+        stripeButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                stripeButtons.forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedStripe = btn.dataset.stripe;
+                // Reset stopwatch when changing stripe
+                btnStopwatchReset.click();
+            });
+        });
+
+        // Select next unrecorded stripe
+        function selectNextUnrecordedStripe() {
+            const stripes = ['left', 'middle', 'right'];
+            for (const stripe of stripes) {
+                if (velocityMeasurements[stripe] === null) {
+                    stripeButtons.forEach(btn => btn.classList.remove('selected'));
+                    document.getElementById(`stripe-${stripe}`).classList.add('selected');
+                    selectedStripe = stripe;
+                    btnStopwatchReset.click();
+                    return;
+                }
+            }
+        }
+
+        // Update measurement display
+        function updateMeasurementDisplay() {
+            ['left', 'middle', 'right'].forEach(stripe => {
+                const card = document.getElementById(`measurement-${stripe}`);
+                const valueEl = document.getElementById(`value-${stripe}`);
+                const velocityEl = document.getElementById(`velocity-${stripe}`);
+                const clearBtn = document.getElementById(`clear-${stripe}`);
+                const stripeBtn = document.getElementById(`stripe-${stripe}`);
+
+                if (velocityMeasurements[stripe] !== null) {
+                    valueEl.textContent = formatStopwatchTime(velocityMeasurements[stripe] * 1000);
+                    // Calculate and display velocity for this stripe
+                    if (velocityStripeWidth > 0 && velocityMeasurements[stripe] > 0) {
+                        const stripeVelocity = velocityStripeWidth / velocityMeasurements[stripe];
+                        velocityEl.textContent = stripeVelocity.toFixed(2) + ' px/s';
+                    } else {
+                        velocityEl.textContent = '-- px/s';
+                    }
+                    card.classList.add('has-value');
+                    clearBtn.disabled = false;
+                    stripeBtn.classList.add('recorded');
+                } else {
+                    valueEl.textContent = '--:--';
+                    velocityEl.textContent = '-- px/s';
+                    card.classList.remove('has-value');
+                    clearBtn.disabled = true;
+                    stripeBtn.classList.remove('recorded');
+                }
+            });
+
+            // Calculate average velocity if all measurements are complete
+            const validMeasurements = Object.values(velocityMeasurements).filter(v => v !== null);
+            if (validMeasurements.length > 0 && velocityStripeWidth > 0) {
+                const avgTime = validMeasurements.reduce((a, b) => a + b, 0) / validMeasurements.length;
+                const measuredVelocity = velocityStripeWidth / avgTime;
+                avgVelocitySpan.textContent = measuredVelocity.toFixed(2);
+                avgVelocityText.style.display = 'block';
+            } else {
+                avgVelocityText.style.display = 'none';
+            }
+        }
+
+        // Clear handlers
+        ['left', 'middle', 'right'].forEach(stripe => {
+            document.getElementById(`clear-${stripe}`).addEventListener('click', async () => {
+                try {
+                    await fetch(`/api/velocity/time/${stripe}`, { method: 'DELETE' });
+                    velocityMeasurements[stripe] = null;
+                    updateMeasurementDisplay();
+                } catch (error) {
+                    console.error('Failed to clear velocity time:', error);
+                }
+            });
+        });
+
+        // Setup velocity measurement when entering step 4
+        async function setupVelocityMeasurement() {
+            try {
+                // First setup the display
+                const setupResponse = await fetch('/api/velocity/setup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                const setupData = await setupResponse.json();
+
+                if (setupData.status === 'ok') {
+                    velocityStripeWidth = setupData.stripe_width_pixels;
+                    velocityPixelsPerSecond = setupData.pixels_per_second;
+                    expectedCrossingSpan.textContent = setupData.expected_crossing_seconds;
+                    stripeWidthSpan.textContent = velocityStripeWidth;
+                }
+
+                // Load existing measurements
+                const velocityResponse = await fetch('/api/velocity');
+                const velocityData = await velocityResponse.json();
+
+                velocityMeasurements.left = velocityData.left_time_seconds;
+                velocityMeasurements.middle = velocityData.middle_time_seconds;
+                velocityMeasurements.right = velocityData.right_time_seconds;
+                updateMeasurementDisplay();
+
+                // Select first unrecorded stripe
+                selectNextUnrecordedStripe();
+
+            } catch (error) {
+                console.error('Failed to setup velocity measurement:', error);
+            }
+        }
     </script>
 </body>
 </html>

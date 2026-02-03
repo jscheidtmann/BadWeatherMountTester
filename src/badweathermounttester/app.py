@@ -33,6 +33,7 @@ class Application:
         self.server.on_simulation_skip(self._on_simulation_skip)
         self.server.on_simulation_seek(self._on_simulation_seek)
         self.server.set_simulation_status_getter(self._get_simulation_status)
+        self.server.on_velocity_setup(self._on_velocity_setup)
 
     def _on_client_connect(self) -> None:
         """Handle client connection."""
@@ -48,12 +49,14 @@ class Application:
         # Step 1: Configure -> LOCATOR
         # Step 2: Align -> ALIGN (horizontal lines)
         # Step 3: Calibrate -> CALIBRATION
-        # Step 4: Measure -> SIMULATION
+        # Step 4: Velocity -> VELOCITY_MEASURE
+        # Step 5: Measure -> SIMULATION
         mode_map = {
             1: DisplayMode.LOCATOR,
             2: DisplayMode.ALIGN,
             3: DisplayMode.CALIBRATION,
-            4: DisplayMode.SIMULATION,
+            4: DisplayMode.VELOCITY_MEASURE,
+            5: DisplayMode.SIMULATION,
         }
         if mode in mode_map:
             self.display.set_mode(mode_map[mode])
@@ -64,8 +67,15 @@ class Application:
                 self.display.set_calibration_points(points)
                 self._update_calibration_ellipse()
 
-            # When entering simulation mode, initialize calibration points and ellipse
+            # When entering velocity measurement mode, initialize calibration points and ellipse
             if mode == 4:
+                points = [(p[0], p[1]) for p in self.config.calibration.points]
+                self.display.set_calibration_points(points)
+                ellipse = fit_ellipse(self.config.calibration.points)
+                self.display.set_calibration_ellipse(ellipse)
+
+            # When entering simulation mode, initialize calibration points and ellipse
+            if mode == 5:
                 points = [(p[0], p[1]) for p in self.config.calibration.points]
                 self.display.set_calibration_points(points)
                 ellipse = fit_ellipse(self.config.calibration.points)
@@ -107,6 +117,13 @@ class Application:
     def _on_calibration_select(self, index: int) -> None:
         """Handle calibration point selection."""
         self.display.set_calibration_selected_index(index)
+
+    def _on_velocity_setup(self, pixels_per_second: float) -> None:
+        """Handle velocity measurement setup."""
+        # Make sure ellipse is set from calibration points
+        ellipse = fit_ellipse(self.config.calibration.points)
+        self.display.set_calibration_ellipse(ellipse)
+        self.display.setup_velocity_measurement(pixels_per_second)
 
     def _on_simulation_setup(self, x_start: int, x_end: int, pixels_per_second: float) -> None:
         """Handle simulation setup."""

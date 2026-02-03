@@ -55,6 +55,17 @@ class CalibrationConfig:
     is_complete: bool = False
 
 
+@dataclass
+class VelocityMeasurementConfig:
+    """Configuration for velocity measurement results."""
+
+    left_time_seconds: float | None = None
+    middle_time_seconds: float | None = None
+    right_time_seconds: float | None = None
+    stripe_width_pixels: int = 0
+    is_complete: bool = False
+
+
 # Default path for setup configuration
 DEFAULT_SETUP_PATH = Path("setup.yml")
 
@@ -68,6 +79,7 @@ class AppConfig:
     server: ServerConfig = field(default_factory=ServerConfig)
     camera: CameraConfig = field(default_factory=CameraConfig)
     calibration: CalibrationConfig = field(default_factory=CalibrationConfig)
+    velocity: VelocityMeasurementConfig = field(default_factory=VelocityMeasurementConfig)
 
     def to_dict(self) -> dict:
         """Convert configuration to a dictionary."""
@@ -99,6 +111,13 @@ class AppConfig:
             "calibration": {
                 "points": self.calibration.points,
                 "is_complete": self.calibration.is_complete,
+            },
+            "velocity": {
+                "left_time_seconds": self.velocity.left_time_seconds,
+                "middle_time_seconds": self.velocity.middle_time_seconds,
+                "right_time_seconds": self.velocity.right_time_seconds,
+                "stripe_width_pixels": self.velocity.stripe_width_pixels,
+                "is_complete": self.velocity.is_complete,
             },
         }
 
@@ -137,6 +156,11 @@ class AppConfig:
             for key, value in data["calibration"].items():
                 if hasattr(config.calibration, key):
                     setattr(config.calibration, key, value)
+
+        if "velocity" in data:
+            for key, value in data["velocity"].items():
+                if hasattr(config.velocity, key):
+                    setattr(config.velocity, key, value)
 
     @classmethod
     def load(cls, path: Path) -> "AppConfig":

@@ -36,11 +36,18 @@ def parse_args(config: dict) -> argparse.Namespace:
         help=f"Latitude in degrees (default from setup.yml: {mount.get('latitude', 51.0)})",
     )
     parser.add_argument(
-        "-o",
-        "--offset",
+        "-or",
+        "--offsetRA",
         type=float,
         default=mount.get("telescope_offset_m", 0.27),
-        help=f"Telescope offset from rotation axis (default from setup.yml: {mount.get('telescope_offset_m', 0.27)})",
+        help=f"Telescope offset from RA/rotation axis (default from setup.yml: {mount.get('telescope_offset_m', 0.27)})",
+    )
+    parser.add_argument(
+        "-od",
+        "--offsetDec",
+        type=float,
+        default=mount.get("telescope_offset_m", 0.27),
+        help=f"Telescope offset from Dec axis (default from setup.yml: {mount.get('telescope_offset_dec_m', -0.03)})",
     )
     parser.add_argument(
         "--start",
@@ -115,7 +122,7 @@ config = load_config()
 args = parse_args(config)
 
 dec_str = f", Declination: {args.dec}°" if args.dec is not None else ""
-print(f"Latitude: {args.lat}°, Offset: {args.offset}m, Start: {args.start}°, Stop: {args.stop}°{dec_str}")
+print(f"Latitude: {args.lat}°, Offset RA: {args.offsetRA}m, Offset Dec: {args.offsetDec}m, Start: {args.start}°, Stop: {args.stop}°{dec_str}")
 
 lat = math.radians(args.lat)
 dec = math.radians(args.dec) if args.dec is not None else None
@@ -128,7 +135,7 @@ rot_axis = np.array((0, math.cos(lat), -math.sin(lat)))
 # Telescope is affixed off-axis to mount
 #  - First component of offset vector is offset from RA-axis (in direction of observer)
 #  - Second component is offset from Dec axis, which is zero here (negative is in direction of floor)
-o = np.array((args.offset, 0, 0))
+o = np.array((args.offsetRA, args.offsetDec, 0))
 
 # Line of sight direction
 # if lat+dec = 90°, pointing straight to the screen.
@@ -304,4 +311,7 @@ ax4.grid(True)
 
 fig2.tight_layout()
 
-plt.show()
+try:
+    plt.show()
+except KeyboardInterrupt:
+    pass 

@@ -131,7 +131,19 @@ Repeat Steps 1 and 2 until you have alignment points spanning the whole distance
 
 BWMT will display an ellipse fit below the screen in the webbroswer. This will in the next step be used to simulate a star corssing the screen.
 
-At last, move the mount to the left of the screen, then press `next`, to show the simulated star.
+At last, move the mount to the left of the screen, then press `next`, to start measuring the velocity of your mount.
+
+### Measuring velocity on screen
+
+The next simulator display shows three areas, at which we are going to measure the velocity of the mount. Each area consists of a vertical stripe, one at the left, one in the middle and one to the right. The width of the stripes are chosen such, 
+that the mount will take approximately 3 min to cross it. The web page shows three entry fields, one for each stripe and a stop watch
+
+Now move the mount to the left of the outer strip, start tracking with the bullseye overlay active on the screen and press "Start" once the bullseye center enters the left stripe. Press stop, when it leaves the stripe. 
+The time it took to cross the stripe is displayed on the web page. Now using **ONLY** movements in RA, move to the middle stripe and measure there. Then repeat this procedure with the right-hand stripe. 
+
+If you want to re-measure a stripe, click the clear button next to the corresponding entry field. Starting and stopping the stop watch will then put that measurement into this field. 
+
+After measuring the mounts velocity at each location, press `next`.
 
 ### Measuring a guiding run
 

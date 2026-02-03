@@ -162,6 +162,8 @@ class WebServer:
         self._on_simulation_skip_callback: Optional[Callable[[float], None]] = None
         self._on_simulation_seek_callback: Optional[Callable[[float], None]] = None
         self._get_simulation_status_callback: Optional[Callable[[], dict]] = None
+        self._on_velocity_setup_callback: Optional[Callable[[float], None]] = None
+        self._get_velocity_stripe_width_callback: Optional[Callable[[], int]] = None
 
     def _setup_routes(self) -> None:
         """Set up Flask routes."""
@@ -560,7 +562,7 @@ class WebServer:
             x_start = min(x_coords)
             x_end = max(x_coords)
 
-            # Calculate pixels per second based on sidereal rate
+            # Calculate theoretical pixels per second based on sidereal rate
             # Sidereal rate is 15 arcsec/second
             # Pixel pitch in arcsec = (pixel_pitch_mm / distance_m / 1000) * 206265
             screen_width_mm = self.config.display.screen_width_mm
@@ -572,14 +574,35 @@ class WebServer:
 
             pixel_pitch_mm = screen_width_mm / screen_width_px
             pixel_pitch_arcsec = (pixel_pitch_mm / (distance_m * 1000)) * 206265
-            pixels_per_second = 15.0 / pixel_pitch_arcsec  # 15 arcsec/sec sidereal rate
+            calculated_pixels_per_second = 15.0 / pixel_pitch_arcsec  # 15 arcsec/sec sidereal rate
 
             # Reduce velocity by cos(90° - latitude) = sin(latitude)
             # At higher latitudes, stars move more slowly across the sky
             latitude = abs(self.config.mount.latitude)
             if latitude != 0:
                 latitude_factor = np.cos(np.radians(90.0 - latitude))
-                pixels_per_second *= latitude_factor
+                calculated_pixels_per_second *= latitude_factor
+
+            # Check if we have measured velocity data to use instead
+            velocity_source = "calculated"
+            pixels_per_second = calculated_pixels_per_second
+
+            if (self.config.velocity.is_complete
+                    and self.config.velocity.stripe_width_pixels > 0
+                    and self.config.velocity.left_time_seconds is not None
+                    and self.config.velocity.middle_time_seconds is not None
+                    and self.config.velocity.right_time_seconds is not None):
+                # Calculate average measured velocity from the three stripe crossings
+                stripe_width = self.config.velocity.stripe_width_pixels
+                avg_time = (
+                    self.config.velocity.left_time_seconds
+                    + self.config.velocity.middle_time_seconds
+                    + self.config.velocity.right_time_seconds
+                ) / 3.0
+                if avg_time > 0:
+                    measured_pixels_per_second = stripe_width / avg_time
+                    pixels_per_second = measured_pixels_per_second
+                    velocity_source = "measured"
 
             if self._on_simulation_setup_callback:
                 self._on_simulation_setup_callback(x_start, x_end, pixels_per_second)
@@ -592,6 +615,8 @@ class WebServer:
                 "x_start": x_start,
                 "x_end": x_end,
                 "pixels_per_second": round(pixels_per_second, 4),
+                "calculated_pixels_per_second": round(calculated_pixels_per_second, 4),
+                "velocity_source": velocity_source,
                 "total_seconds": round(total_time, 1),
             })
 
@@ -654,6 +679,117 @@ class WebServer:
                 "complete": False,
             })
 
+        @self.app.route("/api/velocity", methods=["GET"])
+        def get_velocity():
+            """Get current velocity measurements."""
+            return jsonify({
+                "left_time_seconds": self.config.velocity.left_time_seconds,
+                "middle_time_seconds": self.config.velocity.middle_time_seconds,
+                "right_time_seconds": self.config.velocity.right_time_seconds,
+                "stripe_width_pixels": self.config.velocity.stripe_width_pixels,
+                "is_complete": self.config.velocity.is_complete,
+            })
+
+        @self.app.route("/api/velocity/setup", methods=["POST"])
+        def velocity_setup():
+            """Set up velocity measurement display."""
+            # Calculate pixels per second based on sidereal rate
+            screen_width_mm = self.config.display.screen_width_mm
+            screen_width_px = self.config.display.screen_width
+            distance_m = self.config.mount.distance_to_screen_m
+
+            if screen_width_mm <= 0 or screen_width_px <= 0 or distance_m <= 0:
+                return jsonify({"error": "Invalid display/mount configuration"}), 400
+
+            pixel_pitch_mm = screen_width_mm / screen_width_px
+            pixel_pitch_arcsec = (pixel_pitch_mm / (distance_m * 1000)) * 206265
+            pixels_per_second = 15.0 / pixel_pitch_arcsec  # 15 arcsec/sec sidereal rate
+
+            # Reduce velocity by cos(90° - latitude) = sin(latitude)
+            latitude = abs(self.config.mount.latitude)
+            if latitude != 0:
+                latitude_factor = np.cos(np.radians(90.0 - latitude))
+                pixels_per_second *= latitude_factor
+
+            # Calculate stripe width for ~3 minutes crossing time
+            stripe_width = int(pixels_per_second * 180)
+            if stripe_width < 50:
+                stripe_width = 50
+
+            # Store in config
+            self.config.velocity.stripe_width_pixels = stripe_width
+            self.config.save_yaml(self.setup_path)
+
+            if self._on_velocity_setup_callback:
+                self._on_velocity_setup_callback(pixels_per_second)
+
+            return jsonify({
+                "status": "ok",
+                "pixels_per_second": round(pixels_per_second, 4),
+                "stripe_width_pixels": stripe_width,
+                "expected_crossing_seconds": round(stripe_width / pixels_per_second, 1) if pixels_per_second > 0 else 0,
+            })
+
+        @self.app.route("/api/velocity/time", methods=["POST"])
+        def record_velocity_time():
+            """Record a velocity measurement time."""
+            data = request.get_json()
+            if not data:
+                return jsonify({"error": "No data provided"}), 400
+
+            stripe = data.get("stripe")
+            time_seconds = data.get("time_seconds")
+
+            if stripe not in ["left", "middle", "right"]:
+                return jsonify({"error": "Invalid stripe (must be left, middle, or right)"}), 400
+
+            if time_seconds is None or time_seconds < 0:
+                return jsonify({"error": "Invalid time_seconds"}), 400
+
+            # Store the measurement
+            if stripe == "left":
+                self.config.velocity.left_time_seconds = float(time_seconds)
+            elif stripe == "middle":
+                self.config.velocity.middle_time_seconds = float(time_seconds)
+            elif stripe == "right":
+                self.config.velocity.right_time_seconds = float(time_seconds)
+
+            # Check if all measurements are complete
+            self.config.velocity.is_complete = (
+                self.config.velocity.left_time_seconds is not None
+                and self.config.velocity.middle_time_seconds is not None
+                and self.config.velocity.right_time_seconds is not None
+            )
+
+            self.config.save_yaml(self.setup_path)
+
+            return jsonify({
+                "status": "ok",
+                "stripe": stripe,
+                "time_seconds": time_seconds,
+                "is_complete": self.config.velocity.is_complete,
+            })
+
+        @self.app.route("/api/velocity/time/<stripe>", methods=["DELETE"])
+        def clear_velocity_time(stripe: str):
+            """Clear a velocity measurement time."""
+            if stripe not in ["left", "middle", "right"]:
+                return jsonify({"error": "Invalid stripe"}), 400
+
+            # Clear the measurement
+            if stripe == "left":
+                self.config.velocity.left_time_seconds = None
+            elif stripe == "middle":
+                self.config.velocity.middle_time_seconds = None
+            elif stripe == "right":
+                self.config.velocity.right_time_seconds = None
+
+            # Update is_complete flag
+            self.config.velocity.is_complete = False
+            self.config.save_yaml(self.setup_path)
+
+            return jsonify({"status": "ok", "stripe": stripe})
+
     def on_connect(self, callback: Callable[[], None]) -> None:
         """Set callback for when a client connects."""
         self._on_connect_callback = callback
@@ -705,6 +841,14 @@ class WebServer:
     def set_simulation_status_getter(self, callback: Callable[[], dict]) -> None:
         """Set callback to get simulation status."""
         self._get_simulation_status_callback = callback
+
+    def on_velocity_setup(self, callback: Callable[[float], None]) -> None:
+        """Set callback for velocity measurement setup (pixels_per_second)."""
+        self._on_velocity_setup_callback = callback
+
+    def set_velocity_stripe_width_getter(self, callback: Callable[[], int]) -> None:
+        """Set callback to get velocity stripe width."""
+        self._get_velocity_stripe_width_callback = callback
 
     def get_network_address(self) -> str:
         """Get the network address for clients to connect to."""

@@ -65,6 +65,7 @@ class DisplayMode(Enum):
     LOCATOR = auto()
     ALIGN = auto()  # Horizontal lines for alignment
     CALIBRATION = auto()
+    VELOCITY_MEASURE = auto()  # Velocity measurement with vertical stripes
     SIMULATION = auto()
 
 
@@ -110,6 +111,9 @@ class SimulatorDisplay:
         self.beep_end_triggered: bool = False  # Track if end beep was played
         # Logo surface (loaded in init)
         self.logo: Optional[pygame.Surface] = None
+        # Velocity measurement state
+        self.velocity_stripe_width: int = 0  # Width of each stripe in pixels
+        self.velocity_pixels_per_second: float = 0.0  # Calculated velocity
 
     def init(self) -> None:
         """Initialize pygame and create the display."""
@@ -335,6 +339,23 @@ class SimulatorDisplay:
             # Paused - set stored elapsed time directly
             self.simulation_elapsed = elapsed_seconds
 
+    def setup_velocity_measurement(self, pixels_per_second: float) -> None:
+        """Set up velocity measurement display with calculated stripe width.
+
+        Args:
+            pixels_per_second: The calculated sidereal velocity in pixels/second
+        """
+        self.velocity_pixels_per_second = pixels_per_second
+        # Calculate stripe width for ~3 minutes (180 seconds) crossing time
+        self.velocity_stripe_width = int(pixels_per_second * 180)
+        # Ensure minimum width of 50 pixels
+        if self.velocity_stripe_width < 50:
+            self.velocity_stripe_width = 50
+
+    def get_velocity_stripe_width(self) -> int:
+        """Get the current velocity stripe width."""
+        return self.velocity_stripe_width
+
     def _ellipse_y_from_x(self, x: float, use_upper_arc: Optional[bool] = None) -> Optional[float]:
         """Calculate y coordinate on ellipse for given x using the conic equation.
 
@@ -456,6 +477,8 @@ class SimulatorDisplay:
             self._render_align()
         elif self.mode == DisplayMode.CALIBRATION:
             self._render_calibration()
+        elif self.mode == DisplayMode.VELOCITY_MEASURE:
+            self._render_velocity_measure()
         elif self.mode == DisplayMode.SIMULATION:
             self._render_simulation()
 
@@ -719,6 +742,96 @@ class SimulatorDisplay:
         instr = font_small.render("Move mouse on web UI to position crosshair, click to record point", True, (200, 200, 200))
         instr_rect = instr.get_rect(center=(width // 2, height - 30))
         self.screen.blit(instr, instr_rect)
+
+    def _render_velocity_measure(self) -> None:
+        """Render the velocity measurement screen with three vertical stripes."""
+        if not self.screen:
+            return
+
+        width = self.config.screen_width
+        height = self.config.screen_height
+
+        # Draw the fitted ellipse trace from calibration as reference (dim)
+        if self.calibration_ellipse and "coeffs" in self.calibration_ellipse:
+            A, B, C, D, E, F = self.calibration_ellipse["coeffs"]
+            center_y = self.calibration_ellipse.get("center_y", 0)
+
+            # Determine which arc to use based on calibration points
+            if self.calibration_points:
+                points_above = sum(1 for p in self.calibration_points if p[1] < center_y)
+                use_upper_arc = points_above > len(self.calibration_points) / 2
+            else:
+                use_upper_arc = True
+
+            # Draw ellipse trace (dim gray)
+            pygame.draw.aaline  # for smoother line
+            prev_point = None
+            for x in range(0, width, 2):
+                qa = C
+                qb = B * x + E
+                qc = A * x * x + D * x + F
+                discriminant = qb * qb - 4 * qa * qc
+
+                if discriminant >= 0 and abs(qa) > 1e-10:
+                    sqrt_disc = math.sqrt(discriminant)
+                    y1 = (-qb + sqrt_disc) / (2 * qa)
+                    y2 = (-qb - sqrt_disc) / (2 * qa)
+                    y = min(y1, y2) if use_upper_arc else max(y1, y2)
+
+                    if 0 <= y <= height:
+                        current_point = (int(x), int(y))
+                        if prev_point:
+                            pygame.draw.line(self.screen, (40, 40, 40), prev_point, current_point, 1)
+                        prev_point = current_point
+                else:
+                    prev_point = None
+
+        stripe_width = int(self.velocity_stripe_width)
+        if stripe_width < 50:
+            stripe_width = 50  # Minimum visible width
+
+        # Calculate stripe left edges: flush left, centered, flush right
+        stripe_left_edges = [
+            0,                              # Left stripe flush with left edge
+            (width - stripe_width) // 2,    # Middle stripe centered
+            width - stripe_width,           # Right stripe flush with right edge
+        ]
+        stripe_labels = ["LEFT", "MIDDLE", "RIGHT"]
+
+        # Stripe color (gray for B/W camera)
+        stripe_color = (80, 80, 80)
+        label_color = (200, 200, 200)
+
+        # Large fonts readable from 5m distance
+        font_large = pygame.font.Font(None, 96)
+        font_medium = pygame.font.Font(None, 64)
+
+        for i, (left_edge, label) in enumerate(zip(stripe_left_edges, stripe_labels)):
+            # Draw vertical stripe
+            rect = pygame.Rect(left_edge, 0, stripe_width, height)
+            pygame.draw.rect(self.screen, stripe_color, rect)
+
+            # Draw label - left-aligned for LEFT, right-aligned for RIGHT, centered for MIDDLE
+            label_surface = font_large.render(label, True, label_color)
+            if i == 0:  # LEFT stripe - left-aligned
+                label_rect = label_surface.get_rect(left=left_edge + 10, top=30)
+            elif i == 2:  # RIGHT stripe - right-aligned
+                label_rect = label_surface.get_rect(right=left_edge + stripe_width - 10, top=30)
+            else:  # MIDDLE stripe - centered
+                center_x = left_edge + stripe_width // 2
+                label_rect = label_surface.get_rect(centerx=center_x, top=30)
+            self.screen.blit(label_surface, label_rect)
+
+            # Draw stripe width info below label (same alignment as label)
+            width_text = f"{stripe_width}px"
+            width_surface = font_medium.render(width_text, True, (150, 150, 150))
+            if i == 0:  # LEFT stripe
+                width_rect = width_surface.get_rect(left=left_edge + 10, top=label_rect.bottom + 10)
+            elif i == 2:  # RIGHT stripe
+                width_rect = width_surface.get_rect(right=left_edge + stripe_width - 10, top=label_rect.bottom + 10)
+            else:  # MIDDLE stripe
+                width_rect = width_surface.get_rect(centerx=center_x, top=label_rect.bottom + 10)
+            self.screen.blit(width_surface, width_rect)
 
     def _render_simulation(self) -> None:
         """Render the simulated star moving along the ellipse curve."""
