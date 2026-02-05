@@ -5,6 +5,8 @@ import sys
 from pathlib import Path
 
 from badweathermounttester import __version__
+from typing import Optional, List, Tuple
+
 from badweathermounttester.config import AppConfig, DEFAULT_SETUP_PATH
 from badweathermounttester.display import SimulatorDisplay, DisplayMode
 from badweathermounttester.server import WebServer, fit_ellipse
@@ -125,12 +127,13 @@ class Application:
         self.display.set_calibration_ellipse(ellipse)
         self.display.setup_velocity_measurement(pixels_per_second)
 
-    def _on_simulation_setup(self, x_start: int, x_end: int, pixels_per_second: float) -> None:
+    def _on_simulation_setup(self, x_start: int, x_end: int, pixels_per_second: float,
+                             velocity_profile: Optional[List[Tuple[float, float]]] = None) -> None:
         """Handle simulation setup."""
         # Make sure ellipse is set from calibration points
         ellipse = fit_ellipse(self.config.calibration.points)
         self.display.set_calibration_ellipse(ellipse)
-        self.display.setup_simulation(x_start, x_end, pixels_per_second)
+        self.display.setup_simulation(x_start, x_end, pixels_per_second, velocity_profile)
 
     def _on_simulation_start(self) -> None:
         """Handle simulation start."""

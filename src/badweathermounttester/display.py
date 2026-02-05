@@ -100,6 +100,10 @@ class SimulatorDisplay:
         self.simulation_x_start: int = 0
         self.simulation_x_end: int = 0
         self.simulation_pixels_per_second: float = 1.0  # Will be calculated from sidereal rate
+        # Variable velocity lookup tables (for interpolated measured velocities)
+        self.simulation_lookup_xs: Optional[np.ndarray] = None
+        self.simulation_lookup_ts: Optional[np.ndarray] = None
+        self.simulation_total_time: float = 0.0
         # duration of each simulation step in seconds
         self.simu_render: Optional[float] = None
         # Audio/beep state
@@ -267,8 +271,18 @@ class SimulatorDisplay:
         if 0 <= index < len(self.calibration_points):
             self.calibration_points[index] = (x, y)
 
-    def setup_simulation(self, x_start: int, x_end: int, pixels_per_second: float) -> None:
-        """Set up simulation parameters."""
+    def setup_simulation(self, x_start: int, x_end: int, pixels_per_second: float,
+                         velocity_profile: Optional[List[Tuple[float, float]]] = None) -> None:
+        """Set up simulation parameters.
+
+        Args:
+            x_start: Starting x position in pixels
+            x_end: Ending x position in pixels
+            pixels_per_second: Constant velocity (used as fallback or when no profile)
+            velocity_profile: Optional list of (x_center, velocity) tuples for variable speed.
+                            When provided, a quadratic polynomial is fit and used to create
+                            a lookup table mapping x-positions to cumulative elapsed times.
+        """
         self.simulation_x_start = x_start
         self.simulation_x_end = x_end
         self.simulation_pixels_per_second = pixels_per_second
@@ -276,6 +290,31 @@ class SimulatorDisplay:
         self.simulation_start_time = None
         self.simulation_elapsed = 0.0
         self.reset_beep_state()
+
+        if velocity_profile is not None and len(velocity_profile) >= 3:
+            # Fit quadratic polynomial through measured velocity points
+            profile_xs = np.array([p[0] for p in velocity_profile])
+            profile_vs = np.array([p[1] for p in velocity_profile])
+            coeffs = np.polyfit(profile_xs, profile_vs, 2)
+
+            # Create dense x grid from x_start to x_end
+            lookup_xs = np.linspace(float(x_start), float(x_end), 1000)
+            # Evaluate velocity at each x, clamp to minimum 0.01 px/s
+            lookup_vs = np.maximum(np.polyval(coeffs, lookup_xs), 0.01)
+
+            # Compute cumulative time: dt[i] = dx / avg_velocity between points
+            dx = np.diff(lookup_xs)
+            avg_vs = (lookup_vs[:-1] + lookup_vs[1:]) / 2.0
+            dt = dx / avg_vs
+            lookup_ts = np.concatenate(([0.0], np.cumsum(dt)))
+
+            self.simulation_lookup_xs = lookup_xs
+            self.simulation_lookup_ts = lookup_ts
+            self.simulation_total_time = float(lookup_ts[-1])
+        else:
+            self.simulation_lookup_xs = None
+            self.simulation_lookup_ts = None
+            self.simulation_total_time = 0.0
 
     def start_simulation(self) -> None:
         """Start or resume the simulation."""
@@ -299,11 +338,22 @@ class SimulatorDisplay:
         self.simulation_elapsed = 0.0
         self.reset_beep_state()
 
+    def _get_total_time(self) -> float:
+        """Get the total simulation time in seconds."""
+        if self.simulation_lookup_ts is not None:
+            return self.simulation_total_time
+        total_distance = self.simulation_x_end - self.simulation_x_start
+        return total_distance / self.simulation_pixels_per_second if self.simulation_pixels_per_second > 0 else 0
+
+    def _x_from_elapsed(self, elapsed: float) -> float:
+        """Get the x position from elapsed time."""
+        if self.simulation_lookup_ts is not None and self.simulation_lookup_xs is not None:
+            return float(np.interp(elapsed, self.simulation_lookup_ts, self.simulation_lookup_xs))
+        return self.simulation_x_start + elapsed * self.simulation_pixels_per_second
+
     def skip_simulation(self, seconds: float) -> None:
         """Skip the simulation forward or backward by the given number of seconds."""
-        # Calculate total time for clamping
-        total_distance = self.simulation_x_end - self.simulation_x_start
-        total_time = total_distance / self.simulation_pixels_per_second if self.simulation_pixels_per_second > 0 else 0
+        total_time = self._get_total_time()
 
         if self.simulation_running and self.simulation_start_time is not None:
             # Currently running - adjust start time
@@ -325,9 +375,7 @@ class SimulatorDisplay:
 
     def seek_simulation(self, elapsed_seconds: float) -> None:
         """Seek the simulation to a specific elapsed time."""
-        # Calculate total time for clamping
-        total_distance = self.simulation_x_end - self.simulation_x_start
-        total_time = total_distance / self.simulation_pixels_per_second if self.simulation_pixels_per_second > 0 else 0
+        total_time = self._get_total_time()
 
         # Clamp to valid range
         elapsed_seconds = max(0.0, min(elapsed_seconds, total_time))
@@ -416,7 +464,7 @@ class SimulatorDisplay:
             }
 
         total_distance = self.simulation_x_end - self.simulation_x_start
-        total_time = total_distance / self.simulation_pixels_per_second if self.simulation_pixels_per_second > 0 else 0
+        total_time = self._get_total_time()
 
         # Get elapsed time: from start_time if running, from stored elapsed if paused
         if self.simulation_running and self.simulation_start_time is not None:
@@ -424,8 +472,8 @@ class SimulatorDisplay:
         else:
             elapsed = self.simulation_elapsed
 
-        current_x = self.simulation_x_start + elapsed * self.simulation_pixels_per_second
-        current_x = min(current_x, self.simulation_x_end)
+        current_x = self._x_from_elapsed(elapsed)
+        current_x = min(current_x, float(self.simulation_x_end))
 
         # Calculate y from ellipse
         y = self._ellipse_y_from_x(current_x)
