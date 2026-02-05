@@ -963,7 +963,7 @@
                 <div class="simulation-info">
                     <p>{{ _('Elapsed:') }} <strong id="elapsed-time">0:00</strong> | {{ _('Total:') }} <strong id="total-time">--:--</strong></p>
                     <p id="velocity-source-info" style="font-size: 0.85em; margin-top: 4px;">
-                        {{ _('Velocity:') }} <strong id="sim-velocity">--</strong> px/s
+                        {{ _('Velocity:') }} <strong id="sim-current-velocity">--</strong> px/s
                         (<span id="velocity-source-label">--</span>)
                     </p>
                 </div>
@@ -1886,6 +1886,11 @@
 
             // Disable skip back if at start
             btnSkipBack.disabled = (status.elapsed_seconds || 0) <= 0;
+
+            // Update current velocity display
+            if (status.current_velocity !== undefined) {
+                simCurrentVelocitySpan.textContent = status.current_velocity.toFixed(4);
+            }
         }
 
         // Poll simulation status
@@ -1908,7 +1913,7 @@
         }
 
         // Velocity source display elements
-        const simVelocitySpan = document.getElementById('sim-velocity');
+        const simCurrentVelocitySpan = document.getElementById('sim-current-velocity');
         const velocitySourceLabel = document.getElementById('velocity-source-label');
 
         // Setup simulation when entering step 5
@@ -1928,13 +1933,13 @@
                     countdownTime.textContent = formatTime(data.total_seconds);
                     btnPlayPause.disabled = false;
 
-                    // Display velocity and source
-                    simVelocitySpan.textContent = data.pixels_per_second;
-                    if (data.velocity_source === 'measured') {
-                        velocitySourceLabel.textContent = 'measured';
+                    // Display velocity source
+                    simCurrentVelocitySpan.textContent = data.pixels_per_second.toFixed(4);
+                    if (data.velocity_source === 'measured_interpolated') {
+                        velocitySourceLabel.textContent = 'interpolated';
                         velocitySourceLabel.style.color = '#4caf50';  // Green for measured
                     } else {
-                        velocitySourceLabel.textContent = 'calculated';
+                        velocitySourceLabel.textContent = 'estimated';
                         velocitySourceLabel.style.color = '#aaa';  // Gray for calculated
                     }
                 } else {

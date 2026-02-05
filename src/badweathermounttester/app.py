@@ -50,9 +50,9 @@ class Application:
         # Map UI step numbers to display modes
         # Step 1: Configure -> LOCATOR
         # Step 2: Align -> ALIGN (horizontal lines)
-        # Step 3: Calibrate -> CALIBRATION
-        # Step 4: Velocity -> VELOCITY_MEASURE
-        # Step 5: Measure -> SIMULATION
+        # Step 3: Calibrate -> CALIBRATION (add, update, remove points)
+        # Step 4: Velocity -> VELOCITY_MEASURE (measure velocity on screen)
+        # Step 5: Measure -> SIMULATION (simulate star movement for mount to track)
         mode_map = {
             1: DisplayMode.LOCATOR,
             2: DisplayMode.ALIGN,

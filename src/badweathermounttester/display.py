@@ -103,6 +103,7 @@ class SimulatorDisplay:
         # Variable velocity lookup tables (for interpolated measured velocities)
         self.simulation_lookup_xs: Optional[np.ndarray] = None
         self.simulation_lookup_ts: Optional[np.ndarray] = None
+        self.simulation_lookup_vs: Optional[np.ndarray] = None
         self.simulation_total_time: float = 0.0
         # duration of each simulation step in seconds
         self.simu_render: Optional[float] = None
@@ -310,10 +311,12 @@ class SimulatorDisplay:
 
             self.simulation_lookup_xs = lookup_xs
             self.simulation_lookup_ts = lookup_ts
+            self.simulation_lookup_vs = lookup_vs
             self.simulation_total_time = float(lookup_ts[-1])
         else:
             self.simulation_lookup_xs = None
             self.simulation_lookup_ts = None
+            self.simulation_lookup_vs = None
             self.simulation_total_time = 0.0
 
     def start_simulation(self) -> None:
@@ -350,6 +353,14 @@ class SimulatorDisplay:
         if self.simulation_lookup_ts is not None and self.simulation_lookup_xs is not None:
             return float(np.interp(elapsed, self.simulation_lookup_ts, self.simulation_lookup_xs))
         return self.simulation_x_start + elapsed * self.simulation_pixels_per_second
+
+    def _velocity_from_elapsed(self, elapsed: float) -> float:
+        """Get the instantaneous velocity (px/s) at the given elapsed time."""
+        if (self.simulation_lookup_ts is not None
+                and self.simulation_lookup_xs is not None
+                and self.simulation_lookup_vs is not None):
+            return float(np.interp(elapsed, self.simulation_lookup_ts, self.simulation_lookup_vs))
+        return self.simulation_pixels_per_second
 
     def skip_simulation(self, seconds: float) -> None:
         """Skip the simulation forward or backward by the given number of seconds."""
@@ -479,6 +490,8 @@ class SimulatorDisplay:
         y = self._ellipse_y_from_x(current_x)
         current_y = y if y is not None else self.calibration_ellipse.get("center_y", 0)
 
+        current_velocity = self._velocity_from_elapsed(elapsed)
+
         progress = (current_x - self.simulation_x_start) / total_distance * 100 if total_distance > 0 else 100
         remaining = max(0, total_time - elapsed)
         complete = bool(current_x >= self.simulation_x_end)
@@ -495,6 +508,7 @@ class SimulatorDisplay:
             "total_seconds": round(total_time, 1),
             "current_x": current_x,
             "current_y": current_y,
+            "current_velocity": round(current_velocity, 4),
             "complete": complete,
         }
 
