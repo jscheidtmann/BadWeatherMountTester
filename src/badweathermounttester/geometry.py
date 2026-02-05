@@ -9,18 +9,21 @@ import yaml
 from mpl_toolkits.mplot3d import Axes3D
 
 
-def load_config() -> dict:
-    """Load configuration from setup.yml."""
-    config_path = Path(__file__).parent.parent.parent / "setup.yml"
-    if not config_path.exists():
-        config_path = Path("setup.yml")
+def load_config(config_file: str | None = None) -> dict:
+    """Load configuration from setup.yml or specified file."""
+    if config_file:
+        config_path = Path(config_file)
+    else:
+        config_path = Path(__file__).parent.parent.parent / "setup.yml"
+        if not config_path.exists():
+            config_path = Path("setup.yml")
     if config_path.exists():
         with open(config_path, "r") as f:
             return yaml.safe_load(f)
     return {}
 
 
-def parse_args(config: dict) -> argparse.Namespace:
+def parse_args(config: dict, config_file: str | None = None) -> argparse.Namespace:
     """Parse command line arguments with defaults from config."""
     mount = config.get("mount", {})
     display = config.get("display", {})
@@ -28,6 +31,12 @@ def parse_args(config: dict) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="geometry",
         description="Visualize telescope mount geometry and rotation",
+    )
+    parser.add_argument(
+        "-c", "--config",
+        type=str,
+        default=config_file,
+        help="Path to configuration file (default: setup.yml)",
     )
     parser.add_argument(
         "--lat",
@@ -46,8 +55,8 @@ def parse_args(config: dict) -> argparse.Namespace:
         "-od",
         "--offsetDec",
         type=float,
-        default=mount.get("telescope_offset_m", 0.27),
-        help=f"Telescope offset from Dec axis (default from setup.yml: {mount.get('telescope_offset_dec_m', -0.03)})",
+        default=mount.get("telescope_offset_dec_m", -0.015),
+        help=f"Telescope offset from Dec axis (default from setup.yml: {mount.get('telescope_offset_dec_m', -0.015)})",
     )
     parser.add_argument(
         "--start",
@@ -86,6 +95,18 @@ def parse_args(config: dict) -> argparse.Namespace:
         default=display.get("screen_height_mm", 293.0) / 1000.0,
         help=f"Screen height (default from setup.yml: {display.get('screen_height_mm', 325.0)}m)",
     )
+    parser.add_argument(
+        "--screen-width-px",
+        type=int,
+        default=display.get("screen_width", 1920),
+        help=f"Screen width in pixels (default from setup.yml: {display.get('screen_width', 1920)})",
+    )
+    parser.add_argument(
+        "--screen-width-mm",
+        type=float,
+        default=display.get("screen_width_mm", 520.0),
+        help=f"Screen width in mm (default from setup.yml: {display.get('screen_width_mm', 520.0)})",
+    )
     return parser.parse_args()
 
 
@@ -118,8 +139,14 @@ def rotate(v, axis, angle):
 ########
 # Preparations
 ########
-config = load_config()
-args = parse_args(config)
+# First pass: parse just --config to determine which config file to load
+pre_parser = argparse.ArgumentParser(add_help=False)
+pre_parser.add_argument("-c", "--config", type=str, default=None)
+pre_args, _ = pre_parser.parse_known_args()
+
+# Load config from specified file or default
+config = load_config(pre_args.config)
+args = parse_args(config, pre_args.config)
 
 dec_str = f", Declination: {args.dec}°" if args.dec is not None else ""
 print(f"Latitude: {args.lat}°, Offset RA: {args.offsetRA}m, Offset Dec: {args.offsetDec}m, Start: {args.start}°, Stop: {args.stop}°{dec_str}")
@@ -282,29 +309,37 @@ angular_step_deg = abs(stop_angle - start_angle) / (n_samples - 1)
 angular_step_arcsec = angular_step_deg * 3600
 sidereal_rate = 15.041  # arcsec/sec
 time_per_step_s = angular_step_arcsec / sidereal_rate
-velocities_mm_s = [length / time_per_step_s / 1000.0 for length in segment_lengths]
-x_velocities_mm_s = [dx / time_per_step_s / 1000.0 for dx in x_displacements]
+velocities_mm_s = [length / time_per_step_s * 1000.0 for length in segment_lengths]
+x_velocities_mm_s = [dx / time_per_step_s * 1000.0 for dx in x_displacements]
 
-ax3.plot(velocities_mm_s, 'r.-', label='Total velocity (mm/s)')
+# Convert X velocity to px/s using screen configuration
+pixels_per_mm = args.screen_width_px / args.screen_width_mm
+x_velocities_px_s = [v * pixels_per_mm for v in x_velocities_mm_s]
 
-ax4.plot(x_velocities_mm_s, 'b.-', label='X velocity (mm/s)')
+# Create percentage x-axis (0% to 100%)
+n_velocity_samples = len(velocities_mm_s)
+percent_x = [i * 100.0 / (n_velocity_samples - 1) for i in range(n_velocity_samples)]
+
+ax3.plot(percent_x, velocities_mm_s, 'r.-', label='Total velocity (mm/s)')
+
+ax4.plot(percent_x, x_velocities_px_s, 'b.-', label='X velocity (px/s)')
 
 # Calculate and plot sidereal velocity at this distance for comparison
 # Convert to rad/s: 15.041 * (pi/180) / 3600 rad/s
 sidereal_rate_rad_s = sidereal_rate * math.pi / (180 * 3600)  # rad/s
 # Velocity = angular_velocity * distance
-sidereal_velocity_mm_s = sidereal_rate_rad_s * abs(args.distance) / 1000.0 * math.cos(dec if dec is not None else 0)
+sidereal_velocity_mm_s = sidereal_rate_rad_s * abs(args.distance) * 1000.0 * math.cos(dec if dec is not None else 0)
 ax3.axhline(y=sidereal_velocity_mm_s, color='green', linestyle='--',
-            label=f'Sidereal velocity: {sidereal_velocity_mm_s:.4f} mm/s')
+            label=f'Sidereal velocity: {sidereal_velocity_mm_s:.4g} mm/s')
 
-ax3.set_xlabel("Sample")
+ax3.set_xlabel("Progress (%)")
 ax3.set_ylabel("Velocity (mm/s)")
 ax3.set_title("Velocity of line of sight on screen")
 ax3.legend()
 ax3.grid(True)
 
-ax4.set_xlabel("Sample")
-ax4.set_ylabel("X Velocity (mm/s)")
+ax4.set_xlabel("Progress (%)")
+ax4.set_ylabel("X Velocity (px/s)")
 ax4.set_title("X velocity (horizontal) on screen")
 ax4.legend()
 ax4.grid(True)
@@ -314,4 +349,4 @@ fig2.tight_layout()
 try:
     plt.show()
 except KeyboardInterrupt:
-    pass 
+    pass
