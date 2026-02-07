@@ -1,5 +1,7 @@
 # Bad Weather Mount Tester
 
+[![Python application](https://github.com/jscheidtmann/BadWeatherMountTester/actions/workflows/python-app.yml/badge.svg?branch=main)](https://github.com/jscheidtmann/BadWeatherMountTester/actions/workflows/python-app.yml)
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/BWMT_logo_w.svg">
   <source media="(prefers-color-scheme: light)" srcset="docs/BWMT_logo_b.svg">
