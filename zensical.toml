@@ -1,0 +1,12 @@
+[project]
+site_name = "Bad Weather Mount Tester"
+site_url = "https://jscheidtmann.github.io/BadWeatherMountTester/"
+site_description = "Test telescope mount periodic error indoors using a simulated star on a monitor"
+site_author = "Jens Scheidtmann"
+copyright = "&copy; 2026 Jens Scheidtmann and contributors"
+repo_url = "https://github.com/jscheidtmann/BadWeatherMountTester"
+
+nav = [
+  { "Home" = "index.md" },
+  { "Manual" = "manual.md" },
+]

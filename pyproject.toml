@@ -39,6 +39,7 @@ dev = [
     "pytest-cov>=4.0.0",
     "ruff>=0.1.0",
     "babel>=2.14.0",
+    "zensical>=0.0.21",
 ]
 
 [project.urls]
@@ -63,6 +64,7 @@ dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
     "ruff>=0.1.0",
+    "zensical>=0.0.21",
 ]
 
 [tool.pytest.ini_options]
