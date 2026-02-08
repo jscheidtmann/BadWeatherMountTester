@@ -920,8 +920,10 @@
 
                 <div class="velocity-info" id="velocity-info">
                     <p>{{ _('Stripe width:') }} <strong id="stripe-width">--</strong> px | {{ _('Expected:') }} <strong id="expected-crossing">--</strong>s</p>
-                    <p class="calculated-velocity" id="max-velocity-text" style="display: none;">
-                        {{ _('Max measured velocity:') }} <strong id="max-velocity">--</strong> px/s
+                    <p class="calculated-velocity" id="velocity-stats-text" style="display: none;">
+                        {{ _('Min:') }} <strong id="min-velocity">--</strong> |
+                        {{ _('Avg:') }} <strong id="avg-velocity">--</strong> |
+                        {{ _('Max:') }} <strong id="max-velocity">--</strong> px/s
                     </p>
                 </div>
             </div>
@@ -2136,7 +2138,9 @@
         const stripeButtons = document.querySelectorAll('.stripe-btn');
         const expectedCrossingSpan = document.getElementById('expected-crossing');
         const stripeWidthSpan = document.getElementById('stripe-width');
-        const maxVelocityText = document.getElementById('max-velocity-text');
+        const velocityStatsText = document.getElementById('velocity-stats-text');
+        const minVelocitySpan = document.getElementById('min-velocity');
+        const avgVelocitySpan = document.getElementById('avg-velocity');
         const maxVelocitySpan = document.getElementById('max-velocity');
 
         // Format time as MM:SS.mmm
@@ -2267,16 +2271,20 @@
                 }
             });
 
-            // Calculate max velocity if all measurements are complete
-            // Max velocity = min time (velocity = distance/time)
+            // Calculate min, avg, max velocity from valid measurements
+            // velocity = distance/time, so max velocity = min time, min velocity = max time
             const validMeasurements = Object.values(velocityMeasurements).filter(v => v !== null);
             if (validMeasurements.length > 0 && velocityStripeWidth > 0) {
-                const minTime = Math.min(...validMeasurements);
-                const measuredVelocity = velocityStripeWidth / minTime;
-                maxVelocitySpan.textContent = measuredVelocity.toFixed(3);
-                maxVelocityText.style.display = 'block';
+                const velocities = validMeasurements.map(t => velocityStripeWidth / t);
+                const minVelocity = Math.min(...velocities);
+                const avgVelocity = velocities.reduce((a, b) => a + b, 0) / velocities.length;
+                const maxVelocity = Math.max(...velocities);
+                minVelocitySpan.textContent = minVelocity.toFixed(3);
+                avgVelocitySpan.textContent = avgVelocity.toFixed(3);
+                maxVelocitySpan.textContent = maxVelocity.toFixed(3);
+                velocityStatsText.style.display = 'block';
             } else {
-                maxVelocityText.style.display = 'none';
+                velocityStatsText.style.display = 'none';
             }
         }
 
