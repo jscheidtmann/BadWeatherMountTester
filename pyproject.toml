@@ -31,6 +31,7 @@ dependencies = [
     "PyYAML>=6.0.0",
     "numpy>=1.24.0",
     "waitress>=3.0.0",
+    "matplotlib>=3.10.8",
 ]
 
 [project.optional-dependencies]
@@ -49,6 +50,7 @@ Issues = "https://github.com/jscheidtmann/BadWeatherMountTester/issues"
 
 [project.scripts]
 bwmt = "badweathermounttester.app:main"
+geometry = "badweathermounttester.geometry:main"
 
 [build-system]
 requires = ["hatchling"]
