@@ -8,5 +8,13 @@ repo_url = "https://github.com/jscheidtmann/BadWeatherMountTester"
 
 nav = [
   { "Home" = "index.md" },
+  { "Prerequisits" = "prerequisits.md" },
   { "Manual" = "manual.md" },
+]
+
+[project.theme]
+features = [
+  "navigation",
+  "navigation.indexes",
+  "navigation.instant"
 ]

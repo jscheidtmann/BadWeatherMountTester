@@ -1,21 +1,6 @@
-# Manual
+# Bad Weather Mount Tester Manual
 
-## How does Bad Weather Mount Tester work?
-
-You use a small computer to simulate a star moving across a monitor, you record this movement using a guiding application. As the monitor is very regular, one is able to measure the
-periodic error of your mount any time any place, given the place is large enough and there's a roof on top.
-
-## Setting up
-
-This manual uses PHD2 as guiding program, but other guiding programs should provide similar functionality. You can use other guiding programs of your choice,
-but you need to check how the given functionality of PHD2 is implemented in your software.
-
-What you need:
-
-1. Your (new) mount, with your guiding gear and a computer attached to it (the Astro Computer)
-2. A spare computer with monitor (the Simulator)
-3. At least 5 m of space between them. (Ok, you can do with 3.5 m, but then accuracy will suffer)
-
+## Setting up 
 ### Setting up the Simulator
 
 - Make sure the Simulator is on the same network / WiFi as the Astro Computer and that this network is connected to the internet.
@@ -54,6 +39,7 @@ You will be asked to provide some background information to BWMT through the web
   This is information that the manufacturer of your mount provides
 
 In PHD2:
+
 - Create a new guiding profile with the focal length displayed and the binning recommended by BWMT.
   (The guide scope is not focused to infinity now, and we need to compensate for that to have PHD2 display correct data)
 - Disable multi-star guiding, as we will be using one simulated star.
@@ -61,7 +47,7 @@ In PHD2:
 
 Next will be orienting mount and screen.
 
-### Placing BWMT dead south of the mount (Northern Hemisphere)
+## Placing BWMT dead south of the mount (Northern Hemisphere)
 
 > [!NOTE]
 > For Southern hemisphere the same procedure applies but the mount will be moving right-to-left instead of left-to-right. And North and South will be exchanged.
