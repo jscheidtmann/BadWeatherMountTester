@@ -4,7 +4,12 @@ site_url = "https://jscheidtmann.github.io/BadWeatherMountTester/"
 site_description = "Test telescope mount periodic error indoors using a simulated star on a monitor"
 site_author = "Jens Scheidtmann"
 copyright = "&copy; 2026 Jens Scheidtmann and contributors"
-repo_url = "https://github.com/jscheidtmann/BadWeatherMountTester"
+repo_url = "https://github.com/jscheidtmann/BadWeatherMountTester/tree/main/docs"
+
+extra_javascript = [
+    "javascripts/mathjax.js",
+    "https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"
+]
 
 nav = [
   { "Home" = "index.md" },
@@ -12,9 +17,27 @@ nav = [
   { "Manual" = "manual.md" },
 ]
 
+[project.markdown_extensions.admonition]
+[project.markdown_extensions.footnotes]
+[project.markdown_extensions.pymdownx.details]
+[project.markdown_extensions.pymdownx.caret]
+[project.markdown_extensions.pymdownx.keys]
+[project.markdown_extensions.pymdownx.mark]
+[project.markdown_extensions.pymdownx.tilde]
+
+[project.markdown_extensions.pymdownx.arithmatex]
+generic = true
+
+[project.markdown_extensions.pymdownx.superfences]
+custom_fences = [
+  { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" }
+]
+
 [project.theme]
 features = [
   "navigation",
+  "navigation.tracking",
   "navigation.indexes",
-  "navigation.instant"
+  "navigation.instant",
+  "content.footnote.tooltips"
 ]

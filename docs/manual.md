@@ -47,20 +47,25 @@ In PHD2:
 
 Next will be orienting mount and screen.
 
-## Placing BWMT dead south of the mount (Northern Hemisphere)
+## Aligning Mount and Screen
 
-> [!NOTE]
-> For Southern hemisphere the same procedure applies but the mount will be moving right-to-left instead of left-to-right. And North and South will be exchanged.
+### Placing BWMT dead south of the mount (Northern Hemisphere)
 
-Starting from home position, and using PHD2's calibration assistant, slew the mount to point at the screen. For this you have to enter the negative value of `(90° - Latitude)` into Dec
-and then let it slew the mount. Adjust the RA value that it chooses up or down, so that the guide scope takes a nice view at the screen. Focus the guide scope on the screen.
+!!! note
+    For Southern hemisphere the same procedure applies but the mount will be moving right-to-left instead of left-to-right. And North and South will be exchanged.
 
-If you're not hitting the middle line (where all arrows are pointing to the left), adjust the height of your mount or the height of your simulator screen. A few 10th of pixels difference are ok.
+Starting from home position, and using PHD2's calibration assistant, slew the mount to point at the screen: Open `Tool` > `Calibration Assistant`. Enter the negative value of `(90° - Latitude)` into Dec
+and then let it slew the mount, by pressing ``. Adjust the RA value that it chooses up or down, so that the guide scope takes a nice view at the screen. The default value of 5° before meridian should 
+already be at the left-hand side of the screen. Focus the guide scope on the screen.
+
+Using **only** movements in RA, follow the arrows on the screen, until you arrive at the left-hand side of the screen. Now press `Next` in the simulator. 
+
+If you're not hitting the middle line (The red line), adjust the physical height of your mount or the height of your simulator screen. A few pixel difference are ok.
 
 Now we will move the mount back and forth in RA repeatedly to position the screen dead south of the mount:
 
 If during the following procedure the sharpness of the image on left and right hand side is extremely different, orient the screen so, that it is perpendicular to your guide scope.
-The best place to adjust focus is at 25% or 75% of the screen from left-to-right, there are vertical lines on the screen to find that position.
+The best place to adjust focus is at 25% or 75% of the screen from left-to-right, on the "Configure" screen are vertical lines to find that position.
 
 If your mount performs a meridian flip in between, check the meridian flip settings in your mount and adjust these so,
 that a meridian flip is avoided and does not interfere with setting up BWMT. Then restart the procedure after these adjustments.
@@ -77,9 +82,9 @@ on both sides of the screen. A few pixel difference from left to right is ok.
 
 Repeat this procedure until you're satisfied, that a symmetric arc will be traced on the monitor when fully moving from left-to-right. Then press `next`.
 
-> [!WARNING]
-> In this version the velocity that the star traces is calculated and valid for this geometry.
-> If you use different orientations of the mount the velocity might not match and PHD2 might loose the star.
+!!! warning
+    In this version the velocity that the star traces is calculated and valid for this geometry.
+    If you use different orientations of the mount the velocity might not match and PHD2 might loose the star.
 
 Move the mount to the left hand side of the screen and press `next`.
 
@@ -165,23 +170,23 @@ If the figures are inconsistent and diverging from each other much:
 - Check a different focus setting of the guide scope
 - Increase the distance between mount and Simulator screen
 
-> [!NOTE]
-> **Dec values may be different!**
->
-> The Dec values in this chosen geometry are roughly parallel to the vertical lines of the screen. Due to screen updates usually going top down, noise in that direction might be much higher than noise in RA direction.
-> This does not matter for measuring the periodic error of the mount.
+!!! note 
+    **Dec values may be different!**
+
+    The Dec values in this chosen geometry are roughly parallel to the vertical lines of the screen. Due to screen updates usually going top down, noise in that direction might be much higher than noise in RA direction.
+    This does not matter for measuring the periodic error of the mount.
 
 #### Measurement: Guiding
 
-> [!IMPORTANT]
-> At the moment southern hemisphere mode is not supported yet.
+!!! important
+    At the moment southern hemisphere mode is not supported yet.
 
-> [!WARNING]
-> During measurement avoid crossing the line of sight and walking around the mount and screen!
-> Else PHD2 might loose the simulated guide star and stop guiding.
->
-> Also do not walk next to the mount or the simulator screen, as depending on the floor you're measuring this on, your weight will create vibrations or changes of the floor that might travel to the mount or screen and
-> create excursions.
+!!! warning
+    During measurement avoid crossing the line of sight and walking around the mount and screen!
+    Else PHD2 might loose the simulated guide star and stop guiding.
+    
+    Also do not walk next to the mount or the simulator screen, as depending on the floor you're measuring this on, your weight will create vibrations or changes of the floor that might travel to the mount or screen and
+    create excursions.
 
 Now return the simulation back to 0% by clicking the "back to start" button, and rotate the guide scope back to point at the simulated star.
 
