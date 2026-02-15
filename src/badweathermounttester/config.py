@@ -17,17 +17,40 @@ class MountConfig:
     main_period_seconds: float = 480.0  # 8 minutes default for typical worm gear
 
 
+# Screen size presets
+SCREEN_SIZE_PRESETS = {
+    "640x480": (640, 480),
+    "vga": (640, 480),
+    "hd": (1280, 720),
+    "720p": (1280, 720),
+    "fhd": (1920, 1080),
+    "1080p": (1920, 1080),
+    "4k": (3840, 2160),
+    "2160p": (3840, 2160),
+    "custom": None,  # Use screen_width and screen_height directly
+}
+
+
 @dataclass
 class DisplayConfig:
     """Configuration for the display/simulator."""
 
     fullscreen: bool = True
+    screen_size: str = "fhd"  # Preset: vga, hd/720p, fhd/1080p, 4k/2160p, or custom
     screen_width: int = 1920
     screen_height: int = 1080
     screen_width_mm: float = 527.0  # Physical screen width in mm (default: 24" monitor)
     star_size: float = 3.0  # Full Width at Half Maximum of simulated star in pixels
     star_brightness: int = 255
     target_y_ratio: float = 0.5  # Vertical position ratio for target crosshair (0=top, 1=bottom)
+
+    def apply_screen_size_preset(self) -> None:
+        """Apply screen size preset to screen_width and screen_height."""
+        preset = self.screen_size.lower()
+        if preset in SCREEN_SIZE_PRESETS:
+            dimensions = SCREEN_SIZE_PRESETS[preset]
+            if dimensions is not None:
+                self.screen_width, self.screen_height = dimensions
 
 
 @dataclass
@@ -92,6 +115,7 @@ class AppConfig:
             },
             "display": {
                 "fullscreen": self.display.fullscreen,
+                "screen_size": self.display.screen_size,
                 "screen_width": self.display.screen_width,
                 "screen_height": self.display.screen_height,
                 "screen_width_mm": self.display.screen_width_mm,
@@ -171,6 +195,7 @@ class AppConfig:
         data = json.loads(path.read_text())
         config = cls()
         cls._apply_dict(config, data)
+        config.display.apply_screen_size_preset()
         return config
 
     @classmethod
@@ -185,4 +210,5 @@ class AppConfig:
 
         config = cls()
         cls._apply_dict(config, data)
+        config.display.apply_screen_size_preset()
         return config

@@ -10,6 +10,7 @@ mount:
   declination_deg: -38.0
 display:
   fullscreen: false
+  screen_size: hd
   screen_width: 1920
   screen_height: 1200
   screen_width_mm: 520.0
@@ -18,7 +19,7 @@ display:
   target_y_ratio: 0.5
 server:
   host: 0.0.0.0
-  port: 5000
+  port: 5050
 camera:
   pixel_size_um: 3.75
   width_px: 1280

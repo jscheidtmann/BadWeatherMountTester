@@ -219,13 +219,24 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--port",
         type=int,
-        default=5000,
-        help="Web server port (default: 5000)",
+        default=None,
+        help="Web server port (overrides setup.yml)",
     )
     parser.add_argument(
         "--windowed",
         action="store_true",
         help="Run in windowed mode instead of fullscreen",
+    )
+    parser.add_argument(
+        "--fullscreen",
+        action="store_true",
+        help="Run in fullscreen mode (overrides setup.yml)",
+    )
+    parser.add_argument(
+        "--screen-size",
+        type=str,
+        default=None,
+        help="Screen size preset: 640x480/vga, hd/720p, fhd/1080p (default), 4k/2160p, custom",
     )
     return parser.parse_args()
 
@@ -248,6 +259,11 @@ def main() -> int:
         config.server.port = args.port
     if args.windowed:
         config.display.fullscreen = False
+    if args.fullscreen:
+        config.display.fullscreen = True
+    if args.screen_size:
+        config.display.screen_size = args.screen_size
+        config.display.apply_screen_size_preset()
 
     # Run the application
     app = Application(config, args.setup)
