@@ -56,8 +56,8 @@ Next will be orienting mount and screen.
 !!! note
     For Southern hemisphere the same procedure applies but the mount will be moving right-to-left instead of left-to-right. And North and South will be exchanged.
 
-Starting from home position, and using PHD2's calibration assistant, slew the mount to point at the screen: Open `Tool` > `Calibration Assistant`. Enter the negative value of `(90° - Latitude)` into Dec
-and then let it slew the mount, by pressing ``. Adjust the RA value that it chooses up or down, so that the guide scope takes a nice view at the screen. The default value of 5° before meridian should 
+Starting from home position, and using PHD2's calibration assistant, slew the mount to point at the screen: Open `Tool` > `Drift Align`. Enter the negative value of `(90° - Latitude)` into Dec
+and then let it slew the mount, by pressing `Slew`. Adjust the RA value, so that the guide scope takes a nice view at the screen. A value of 5° before meridian should 
 already be at the left-hand side of the screen. Focus the guide scope on the screen.
 
 Using **only** movements in RA, follow the arrows on the screen, until you arrive at the left-hand side of the screen. Now press `Next` in the simulator. 
@@ -72,7 +72,11 @@ The best place to adjust focus is at 25% or 75% of the screen from left-to-right
 If your mount performs a meridian flip in between, check the meridian flip settings in your mount and adjust these so,
 that a meridian flip is avoided and does not interfere with setting up BWMT. Then restart the procedure after these adjustments.
 
-First, using the mount controls in your mount's driver, locate the left side of the monitor on the guide scope's picture. The picture displayed on the screen shows arrows,
+## Alignment Procedure 
+
+First make sure you're on the alignment tab in BWMT's web page. 
+
+First, using the mount controls in your mount's driver, locate the left side of the monitor on the guide scope's picture (If you followed the manual so far, you should already be there). The picture displayed on the screen shows arrows,
 that point you into the right corner of the screen. Just follow the arrows. When you have reached the destination indicated by a cross in the picture press `next` in the webbrowser.
 The webbrowser will display horizontol lines and a pixel scale on each side of the screen.
 
@@ -85,7 +89,7 @@ on both sides of the screen. A few pixel difference from left to right is ok.
 Repeat this procedure until you're satisfied, that a symmetric arc will be traced on the monitor when fully moving from left-to-right. Then press `next`.
 
 !!! warning
-    In this version the velocity that the star traces is calculated and valid for this geometry.
+    In the current version the velocity that the star traces is calculated and valid for this geometry.
     If you use different orientations of the mount the velocity might not match and PHD2 might loose the star.
 
 Move the mount to the left hand side of the screen and press `next`.
