@@ -1,6 +1,9 @@
 # Bad Weather Mount Tester Manual
 
 ## Setting up 
+
+Make sure you can startup BWMT as described here, before setting up the gear (can save a lot of walking).
+
 ### Setting up the Simulator
 
 - Make sure the Simulator is on the same network / WiFi as the Astro Computer and that this network is connected to the internet.
@@ -16,8 +19,6 @@
 - Make sure the Astro Computer is on the same network / WiFi as the Simulator
 - Open up a web browser on your astro computer and enter the network address displayed on the Simulator's screen.
 - The simulator will then change the display to its locator screen, that will help you find the exact location on the screen with your guide scope.
-
-Make sure you can startup BWMT as described here, before setting up the gear (can save a lot of walking).
 
 ### Setting up your astro gear
 
