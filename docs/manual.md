@@ -6,7 +6,8 @@
 - Make sure the Simulator is on the same network / WiFi as the Astro Computer and that this network is connected to the internet.
 - Install python 3.10 or later on it and check that it works:
 - Open a terminal on the Simulator and run `python --version`, the number displayed should at least be 3.10.
-- Then run `pip install BadWeatherMountTester` in the terminal. This installs the Bad Weather Mount Tester on it (both client and server)
+- Then run `pip install BadWeatherMountTester` in the terminal. This installs the Bad Weather Mount Tester on it (both client and server).
+  For other options, how to in stall consult the section "Installation Options"
 - Then run `python -m BadWeatherMountTester`. The program will open and show it's logo, display "Waiting for a connection" and its network address.
 - Use a spirit level to position the screen level horizontally and vertically. The screens middle pixel should be pointing to the mount.
 
