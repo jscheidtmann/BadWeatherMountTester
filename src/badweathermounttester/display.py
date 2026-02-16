@@ -551,16 +551,16 @@ class SimulatorDisplay:
         if not self.screen:
             return
 
-        font_small = pygame.font.Font(None, 36)
-        font_connect = pygame.font.Font(None, 120)  # Large font for "Connect to" info
+        # Scale font sizes based on screen height
+        font_small = pygame.font.Font(None, max(20, int(self.config.screen_height * 0.03)))
 
         # Title - dynamically sized to span screen width
         title_text = "Bad Weather Mount Tester"
-        margin = 20  # Small margin on each side
+        margin = int(self.config.screen_width * 0.02)  # 2% margin on each side
         target_width = self.config.screen_width - 2 * margin
 
         # Start with a base font size and calculate the needed size
-        base_size = 72
+        base_size = max(36, int(self.config.screen_height * 0.067))
         base_font = pygame.font.Font(None, base_size)
         base_title = base_font.render(title_text, True, (255, 255, 255))
         base_width = base_title.get_width()
@@ -569,7 +569,8 @@ class SimulatorDisplay:
         title_font_size = int(base_size * target_width / base_width)
         font_large = pygame.font.Font(None, title_font_size)
         title = font_large.render(title_text, True, (255, 255, 255))
-        title_rect = title.get_rect(center=(self.config.screen_width // 2, 100))
+        title_y = int(self.config.screen_height * 0.1)  # 10% from top
+        title_rect = title.get_rect(center=(self.config.screen_width // 2, title_y))
         self.screen.blit(title, title_rect)
 
         # Logo - centered on screen
@@ -591,17 +592,31 @@ class SimulatorDisplay:
         instructions = font_small.render(
             "Press ESC to exit", True, (150, 150, 150)
         )
+        instr_y = self.config.screen_height - int(self.config.screen_height * 0.05)  # 5% from bottom
         instr_rect = instructions.get_rect(
-            center=(self.config.screen_width // 2, self.config.screen_height - 30)
+            center=(self.config.screen_width // 2, instr_y)
         )
         self.screen.blit(instructions, instr_rect)
 
-        # Network address - just above instructions
+        # Network address - just above instructions, dynamically sized to fit screen
         if self.network_address:
-            addr_text = font_connect.render(
-                f"Connect to: {self.network_address}", True, (100, 255, 100)
-            )
-            addr_rect = addr_text.get_rect(center=(self.config.screen_width // 2, self.config.screen_height - 100))
+            connect_text = f"Connect to: {self.network_address}"
+            # Start with a base font size and calculate the needed size
+            connect_base_size = max(36, int(min(self.config.screen_height, self.config.screen_width) * 0.11))
+            connect_base_font = pygame.font.Font(None, connect_base_size)
+            connect_base = connect_base_font.render(connect_text, True, (100, 255, 100))
+            connect_base_width = connect_base.get_width()
+
+            # If text is too wide, scale it down to fit
+            if connect_base_width > target_width:
+                connect_font_size = int(connect_base_size * target_width / connect_base_width)
+                font_connect = pygame.font.Font(None, connect_font_size)
+            else:
+                font_connect = connect_base_font
+
+            addr_text = font_connect.render(connect_text, True, (100, 255, 100))
+            addr_y = self.config.screen_height - int(self.config.screen_height * 0.18)  # 18% from bottom
+            addr_rect = addr_text.get_rect(center=(self.config.screen_width // 2, addr_y))
             self.screen.blit(addr_text, addr_rect)
 
     def _draw_arrow(self, x: int, y: int, target_x: int, target_y: int,
