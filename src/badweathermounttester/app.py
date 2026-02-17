@@ -127,8 +127,13 @@ class Application:
         self.display.set_calibration_ellipse(ellipse)
         self.display.setup_velocity_measurement(pixels_per_second)
 
-    def _on_simulation_setup(self, x_start: int, x_end: int, pixels_per_second: float,
-                             velocity_profile: Optional[List[Tuple[float, float]]] = None) -> None:
+    def _on_simulation_setup(
+        self,
+        x_start: int,
+        x_end: int,
+        pixels_per_second: float,
+        velocity_profile: Optional[List[Tuple[float, float]]] = None,
+    ) -> None:
         """Handle simulation setup."""
         # Make sure ellipse is set from calibration points
         ellipse = fit_ellipse(self.config.calibration.points)

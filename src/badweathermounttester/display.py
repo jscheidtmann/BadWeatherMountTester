@@ -22,8 +22,9 @@ from badweathermounttester.config import DisplayConfig
 LOGO_PATH = Path(__file__).parent / "static" / "BWMT_logo_w.png"
 
 
-def generate_beep_sound(frequency: int = 880, duration_ms: int = 150,
-                        sample_rate: int = 44100, volume: float = 0.3) -> pygame.mixer.Sound:
+def generate_beep_sound(
+    frequency: int = 880, duration_ms: int = 150, sample_rate: int = 44100, volume: float = 0.3
+) -> pygame.mixer.Sound:
     """Generate a beep sound as a sine wave.
 
     Args:
@@ -131,9 +132,7 @@ class SimulatorDisplay:
             self.config.screen_width = info.current_w
             self.config.screen_height = info.current_h
         else:
-            self.screen = pygame.display.set_mode(
-                (self.config.screen_width, self.config.screen_height)
-            )
+            self.screen = pygame.display.set_mode((self.config.screen_width, self.config.screen_height))
 
         self.clock = pygame.time.Clock()
         self.running = True
@@ -272,8 +271,13 @@ class SimulatorDisplay:
         if 0 <= index < len(self.calibration_points):
             self.calibration_points[index] = (x, y)
 
-    def setup_simulation(self, x_start: int, x_end: int, pixels_per_second: float,
-                         velocity_profile: Optional[List[Tuple[float, float]]] = None) -> None:
+    def setup_simulation(
+        self,
+        x_start: int,
+        x_end: int,
+        pixels_per_second: float,
+        velocity_profile: Optional[List[Tuple[float, float]]] = None,
+    ) -> None:
         """Set up simulation parameters.
 
         Args:
@@ -356,9 +360,11 @@ class SimulatorDisplay:
 
     def _velocity_from_elapsed(self, elapsed: float) -> float:
         """Get the instantaneous velocity (px/s) at the given elapsed time."""
-        if (self.simulation_lookup_ts is not None
-                and self.simulation_lookup_xs is not None
-                and self.simulation_lookup_vs is not None):
+        if (
+            self.simulation_lookup_ts is not None
+            and self.simulation_lookup_xs is not None
+            and self.simulation_lookup_vs is not None
+        ):
             return float(np.interp(elapsed, self.simulation_lookup_ts, self.simulation_lookup_vs))
         return self.simulation_pixels_per_second
 
@@ -589,13 +595,9 @@ class SimulatorDisplay:
             self.screen.blit(scaled_logo, logo_rect)
 
         # Instructions at bottom
-        instructions = font_small.render(
-            "Press ESC to exit", True, (150, 150, 150)
-        )
+        instructions = font_small.render("Press ESC to exit", True, (150, 150, 150))
         instr_y = self.config.screen_height - int(self.config.screen_height * 0.05)  # 5% from bottom
-        instr_rect = instructions.get_rect(
-            center=(self.config.screen_width // 2, instr_y)
-        )
+        instr_rect = instructions.get_rect(center=(self.config.screen_width // 2, instr_y))
         self.screen.blit(instructions, instr_rect)
 
         # Network address - just above instructions, dynamically sized to fit screen
@@ -619,8 +621,15 @@ class SimulatorDisplay:
             addr_rect = addr_text.get_rect(center=(self.config.screen_width // 2, addr_y))
             self.screen.blit(addr_text, addr_rect)
 
-    def _draw_arrow(self, x: int, y: int, target_x: int, target_y: int,
-                    size: int = 10, color: Tuple[int, int, int] = (255, 255, 255)) -> None:
+    def _draw_arrow(
+        self,
+        x: int,
+        y: int,
+        target_x: int,
+        target_y: int,
+        size: int = 10,
+        color: Tuple[int, int, int] = (255, 255, 255),
+    ) -> None:
         """Draw a small arrow at (x, y) pointing toward (target_x, target_y)."""
         if not self.screen:
             return
@@ -793,7 +802,7 @@ class SimulatorDisplay:
 
         # Draw calibration points as crosshairs
         for i, (px, py) in enumerate(self.calibration_points):
-            is_selected = (i == self.calibration_selected_index)
+            is_selected = i == self.calibration_selected_index
             color = selected_color if is_selected else point_color
             size = 12 if is_selected else 8
             self._draw_crosshair(px, py, size=size, color=color)
@@ -815,7 +824,9 @@ class SimulatorDisplay:
 
         # Instructions at bottom
         font_small = pygame.font.Font(None, 28)
-        instr = font_small.render("Move mouse on web UI to position crosshair, click to record point", True, (200, 200, 200))
+        instr = font_small.render(
+            "Move mouse on web UI to position crosshair, click to record point", True, (200, 200, 200)
+        )
         instr_rect = instr.get_rect(center=(width // 2, height - 30))
         self.screen.blit(instr, instr_rect)
 
@@ -868,9 +879,9 @@ class SimulatorDisplay:
 
         # Calculate stripe left edges: flush left, centered, flush right
         stripe_left_edges = [
-            0,                              # Left stripe flush with left edge
-            (width - stripe_width) // 2,    # Middle stripe centered
-            width - stripe_width,           # Right stripe flush with right edge
+            0,  # Left stripe flush with left edge
+            (width - stripe_width) // 2,  # Middle stripe centered
+            width - stripe_width,  # Right stripe flush with right edge
         ]
         stripe_base_labels = ["LEFT ", "MIDDLE ", "RIGHT "]
 

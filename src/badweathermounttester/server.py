@@ -37,7 +37,7 @@ def fit_ellipse(points: List[List[int]]) -> Optional[Dict]:
     try:
         # Build design matrix for general conic: Ax² + Bxy + Cy² + Dx + Ey + F = 0
         # We use the constraint that it's an ellipse by using the direct least squares method
-        D1 = np.vstack([x*x, x*y, y*y]).T
+        D1 = np.vstack([x * x, x * y, y * y]).T
         D2 = np.vstack([x, y, np.ones_like(x)]).T
 
         S1 = D1.T @ D1
@@ -85,7 +85,7 @@ def fit_ellipse(points: List[List[int]]) -> Optional[Dict]:
         # Using formulas from conic section theory
         num = 2 * (A * E * E + C * D * D - B * D * E + (B * B - 4 * A * C) * F)
         term1 = A + C
-        term2 = np.sqrt((A - C) ** 2 + B ** 2)
+        term2 = np.sqrt((A - C) ** 2 + B**2)
 
         denom_a = (B * B - 4 * A * C) * (term2 - (A + C))
         denom_b = (B * B - 4 * A * C) * (-term2 - (A + C))
@@ -282,7 +282,9 @@ class WebServer:
                 pixel_pitch_arcsec = 0
 
             # Duration in minutes
-            duration_minutes = pixel_pitch_arcsec * screen_width_px / 15.0 / 60.0  # Assuming 15 arcsec/sec sidereal rate and convert to minutes
+            duration_minutes = (
+                pixel_pitch_arcsec * screen_width_px / 15.0 / 60.0
+            )  # Assuming 15 arcsec/sec sidereal rate and convert to minutes
 
             # Adjust for latitude: star moves slower by factor cos(90° - latitude) = sin(latitude)
             latitude = abs(self.config.mount.latitude)
@@ -324,12 +326,14 @@ class WebServer:
             if self._on_config_update_callback:
                 self._on_config_update_callback(self.config)
 
-            return jsonify({
-                "status": "ok",
-                "field": field,
-                "value": value,
-                "calculated": _calculate_all_values(),
-            })
+            return jsonify(
+                {
+                    "status": "ok",
+                    "field": field,
+                    "value": value,
+                    "calculated": _calculate_all_values(),
+                }
+            )
 
         @self.app.route("/api/config/camera/<field>", methods=["PATCH"])
         def update_camera_field(field: str):
@@ -356,12 +360,14 @@ class WebServer:
             if self._on_config_update_callback:
                 self._on_config_update_callback(self.config)
 
-            return jsonify({
-                "status": "ok",
-                "field": field,
-                "value": value,
-                "calculated": _calculate_all_values(),
-            })
+            return jsonify(
+                {
+                    "status": "ok",
+                    "field": field,
+                    "value": value,
+                    "calculated": _calculate_all_values(),
+                }
+            )
 
         @self.app.route("/api/config/display/<field>", methods=["PATCH"])
         def update_display_field(field: str):
@@ -385,12 +391,14 @@ class WebServer:
             if self._on_config_update_callback:
                 self._on_config_update_callback(self.config)
 
-            return jsonify({
-                "status": "ok",
-                "field": field,
-                "value": value,
-                "calculated": _calculate_all_values(),
-            })
+            return jsonify(
+                {
+                    "status": "ok",
+                    "field": field,
+                    "value": value,
+                    "calculated": _calculate_all_values(),
+                }
+            )
 
         @self.app.route("/api/mode", methods=["POST"])
         def set_mode():
@@ -435,10 +443,7 @@ class WebServer:
             self.config.save_yaml(self.setup_path)
 
             # Find the new index of the added point after sorting
-            new_index = next(
-                i for i, p in enumerate(self.config.calibration.points)
-                if p[0] == x and p[1] == y
-            )
+            new_index = next(i for i, p in enumerate(self.config.calibration.points) if p[0] == x and p[1] == y)
 
             if self._on_calibration_click_callback:
                 self._on_calibration_click_callback(x, y)
@@ -446,26 +451,30 @@ class WebServer:
             # Compute ellipse fit if enough points
             ellipse_params = fit_ellipse(self.config.calibration.points)
 
-            return jsonify({
-                "status": "ok",
-                "x": x,
-                "y": y,
-                "points": self.config.calibration.points,
-                "count": len(self.config.calibration.points),
-                "new_index": new_index,
-                "ellipse": ellipse_params,
-            })
+            return jsonify(
+                {
+                    "status": "ok",
+                    "x": x,
+                    "y": y,
+                    "points": self.config.calibration.points,
+                    "count": len(self.config.calibration.points),
+                    "new_index": new_index,
+                    "ellipse": ellipse_params,
+                }
+            )
 
         @self.app.route("/api/calibration/points", methods=["GET"])
         def get_calibration_points():
             """Get all calibration points."""
             ellipse_params = fit_ellipse(self.config.calibration.points)
-            return jsonify({
-                "points": self.config.calibration.points,
-                "count": len(self.config.calibration.points),
-                "is_complete": self.config.calibration.is_complete,
-                "ellipse": ellipse_params,
-            })
+            return jsonify(
+                {
+                    "points": self.config.calibration.points,
+                    "count": len(self.config.calibration.points),
+                    "is_complete": self.config.calibration.is_complete,
+                    "ellipse": ellipse_params,
+                }
+            )
 
         @self.app.route("/api/calibration/reset", methods=["DELETE"])
         def reset_calibration():
@@ -494,12 +503,14 @@ class WebServer:
                 self._on_calibration_click_callback(-2, index)
 
             ellipse_params = fit_ellipse(self.config.calibration.points)
-            return jsonify({
-                "status": "ok",
-                "points": self.config.calibration.points,
-                "count": len(self.config.calibration.points),
-                "ellipse": ellipse_params,
-            })
+            return jsonify(
+                {
+                    "status": "ok",
+                    "points": self.config.calibration.points,
+                    "count": len(self.config.calibration.points),
+                    "ellipse": ellipse_params,
+                }
+            )
 
         @self.app.route("/api/calibration/point/<int:index>", methods=["PATCH"])
         def update_calibration_point(index: int):
@@ -529,13 +540,15 @@ class WebServer:
                 self._on_calibration_click_callback(-3, index)  # -3 signals point update
 
             ellipse_params = fit_ellipse(self.config.calibration.points)
-            return jsonify({
-                "status": "ok",
-                "index": index,
-                "point": self.config.calibration.points[index],
-                "points": self.config.calibration.points,
-                "ellipse": ellipse_params,
-            })
+            return jsonify(
+                {
+                    "status": "ok",
+                    "index": index,
+                    "point": self.config.calibration.points[index],
+                    "points": self.config.calibration.points,
+                    "ellipse": ellipse_params,
+                }
+            )
 
         @self.app.route("/api/calibration/select", methods=["POST"])
         def select_calibration_point():
@@ -588,18 +601,32 @@ class WebServer:
             pixels_per_second = calculated_pixels_per_second
             velocity_profile = None
 
-            if (self.config.velocity.is_complete
-                    and self.config.velocity.stripe_width_pixels > 0
-                    and self.config.velocity.left_time_seconds is not None
-                    and self.config.velocity.middle_time_seconds is not None
-                    and self.config.velocity.right_time_seconds is not None):
+            if (
+                self.config.velocity.is_complete
+                and self.config.velocity.stripe_width_pixels > 0
+                and self.config.velocity.left_time_seconds is not None
+                and self.config.velocity.middle_time_seconds is not None
+                and self.config.velocity.right_time_seconds is not None
+            ):
                 stripe_width = self.config.velocity.stripe_width_pixels
                 screen_width = self.config.display.screen_width
 
                 # Compute per-stripe velocities at stripe center positions
-                v_left = stripe_width / self.config.velocity.left_time_seconds if self.config.velocity.left_time_seconds > 0 else 0
-                v_mid = stripe_width / self.config.velocity.middle_time_seconds if self.config.velocity.middle_time_seconds > 0 else 0
-                v_right = stripe_width / self.config.velocity.right_time_seconds if self.config.velocity.right_time_seconds > 0 else 0
+                v_left = (
+                    stripe_width / self.config.velocity.left_time_seconds
+                    if self.config.velocity.left_time_seconds > 0
+                    else 0
+                )
+                v_mid = (
+                    stripe_width / self.config.velocity.middle_time_seconds
+                    if self.config.velocity.middle_time_seconds > 0
+                    else 0
+                )
+                v_right = (
+                    stripe_width / self.config.velocity.right_time_seconds
+                    if self.config.velocity.right_time_seconds > 0
+                    else 0
+                )
 
                 # Stripe center x-positions (same layout as display.py)
                 x_left = stripe_width / 2.0
@@ -622,15 +649,17 @@ class WebServer:
                 total_distance = x_end - x_start
                 total_time = total_distance / pixels_per_second if pixels_per_second > 0 else 0
 
-            return jsonify({
-                "status": "ok",
-                "x_start": x_start,
-                "x_end": x_end,
-                "pixels_per_second": round(pixels_per_second, 4),
-                "calculated_pixels_per_second": round(calculated_pixels_per_second, 4),
-                "velocity_source": velocity_source,
-                "total_seconds": round(total_time, 1),
-            })
+            return jsonify(
+                {
+                    "status": "ok",
+                    "x_start": x_start,
+                    "x_end": x_end,
+                    "pixels_per_second": round(pixels_per_second, 4),
+                    "calculated_pixels_per_second": round(calculated_pixels_per_second, 4),
+                    "velocity_source": velocity_source,
+                    "total_seconds": round(total_time, 1),
+                }
+            )
 
         @self.app.route("/api/simulation/velocity", methods=["GET"])
         def simulation_velocity():
@@ -665,18 +694,32 @@ class WebServer:
             velocity_source = "calculated"
             pixels_per_second = calculated_pixels_per_second
 
-            if (self.config.velocity.is_complete
-                    and self.config.velocity.stripe_width_pixels > 0
-                    and self.config.velocity.left_time_seconds is not None
-                    and self.config.velocity.middle_time_seconds is not None
-                    and self.config.velocity.right_time_seconds is not None):
+            if (
+                self.config.velocity.is_complete
+                and self.config.velocity.stripe_width_pixels > 0
+                and self.config.velocity.left_time_seconds is not None
+                and self.config.velocity.middle_time_seconds is not None
+                and self.config.velocity.right_time_seconds is not None
+            ):
                 stripe_width = self.config.velocity.stripe_width_pixels
                 screen_width = self.config.display.screen_width
 
                 # Compute per-stripe velocities at stripe center positions
-                v_left = stripe_width / self.config.velocity.left_time_seconds if self.config.velocity.left_time_seconds > 0 else 0
-                v_mid = stripe_width / self.config.velocity.middle_time_seconds if self.config.velocity.middle_time_seconds > 0 else 0
-                v_right = stripe_width / self.config.velocity.right_time_seconds if self.config.velocity.right_time_seconds > 0 else 0
+                v_left = (
+                    stripe_width / self.config.velocity.left_time_seconds
+                    if self.config.velocity.left_time_seconds > 0
+                    else 0
+                )
+                v_mid = (
+                    stripe_width / self.config.velocity.middle_time_seconds
+                    if self.config.velocity.middle_time_seconds > 0
+                    else 0
+                )
+                v_right = (
+                    stripe_width / self.config.velocity.right_time_seconds
+                    if self.config.velocity.right_time_seconds > 0
+                    else 0
+                )
 
                 # Stripe center x-positions
                 x_left = stripe_width / 2.0
@@ -701,14 +744,16 @@ class WebServer:
                 total_distance = x_end - x_start
                 total_time = total_distance / pixels_per_second if pixels_per_second > 0 else 0
 
-            return jsonify({
-                "x_start": x_start,
-                "x_end": x_end,
-                "pixels_per_second": round(pixels_per_second, 4),
-                "calculated_pixels_per_second": round(calculated_pixels_per_second, 4),
-                "velocity_source": velocity_source,
-                "total_seconds": round(total_time, 1),
-            })
+            return jsonify(
+                {
+                    "x_start": x_start,
+                    "x_end": x_end,
+                    "pixels_per_second": round(pixels_per_second, 4),
+                    "calculated_pixels_per_second": round(calculated_pixels_per_second, 4),
+                    "velocity_source": velocity_source,
+                    "total_seconds": round(total_time, 1),
+                }
+            )
 
         @self.app.route("/api/simulation/start", methods=["POST"])
         def simulation_start():
@@ -761,24 +806,28 @@ class WebServer:
             if self._get_simulation_status_callback:
                 status = self._get_simulation_status_callback()
                 return jsonify(status)
-            return jsonify({
-                "running": False,
-                "progress": 0,
-                "elapsed_seconds": 0,
-                "remaining_seconds": 0,
-                "complete": False,
-            })
+            return jsonify(
+                {
+                    "running": False,
+                    "progress": 0,
+                    "elapsed_seconds": 0,
+                    "remaining_seconds": 0,
+                    "complete": False,
+                }
+            )
 
         @self.app.route("/api/velocity", methods=["GET"])
         def get_velocity():
             """Get current velocity measurements."""
-            return jsonify({
-                "left_time_seconds": self.config.velocity.left_time_seconds,
-                "middle_time_seconds": self.config.velocity.middle_time_seconds,
-                "right_time_seconds": self.config.velocity.right_time_seconds,
-                "stripe_width_pixels": self.config.velocity.stripe_width_pixels,
-                "is_complete": self.config.velocity.is_complete,
-            })
+            return jsonify(
+                {
+                    "left_time_seconds": self.config.velocity.left_time_seconds,
+                    "middle_time_seconds": self.config.velocity.middle_time_seconds,
+                    "right_time_seconds": self.config.velocity.right_time_seconds,
+                    "stripe_width_pixels": self.config.velocity.stripe_width_pixels,
+                    "is_complete": self.config.velocity.is_complete,
+                }
+            )
 
         @self.app.route("/api/velocity/setup", methods=["POST"])
         def velocity_setup():
@@ -813,12 +862,16 @@ class WebServer:
             if self._on_velocity_setup_callback:
                 self._on_velocity_setup_callback(pixels_per_second)
 
-            return jsonify({
-                "status": "ok",
-                "pixels_per_second": round(pixels_per_second, 4),
-                "stripe_width_pixels": stripe_width,
-                "expected_crossing_seconds": round(stripe_width / pixels_per_second, 1) if pixels_per_second > 0 else 0,
-            })
+            return jsonify(
+                {
+                    "status": "ok",
+                    "pixels_per_second": round(pixels_per_second, 4),
+                    "stripe_width_pixels": stripe_width,
+                    "expected_crossing_seconds": round(stripe_width / pixels_per_second, 1)
+                    if pixels_per_second > 0
+                    else 0,
+                }
+            )
 
         @self.app.route("/api/velocity/time", methods=["POST"])
         def record_velocity_time():
@@ -853,12 +906,14 @@ class WebServer:
 
             self.config.save_yaml(self.setup_path)
 
-            return jsonify({
-                "status": "ok",
-                "stripe": stripe,
-                "time_seconds": time_seconds,
-                "is_complete": self.config.velocity.is_complete,
-            })
+            return jsonify(
+                {
+                    "status": "ok",
+                    "stripe": stripe,
+                    "time_seconds": time_seconds,
+                    "is_complete": self.config.velocity.is_complete,
+                }
+            )
 
         @self.app.route("/api/velocity/time/<stripe>", methods=["DELETE"])
         def clear_velocity_time(stripe: str):

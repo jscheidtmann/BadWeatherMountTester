@@ -33,7 +33,8 @@ def parse_args(config: dict, config_file: str | None = None) -> argparse.Namespa
         description="Visualize telescope mount geometry and rotation",
     )
     parser.add_argument(
-        "-c", "--config",
+        "-c",
+        "--config",
         type=str,
         default=config_file,
         help="Path to configuration file (default: setup.yml)",
@@ -111,11 +112,13 @@ def parse_args(config: dict, config_file: str | None = None) -> argparse.Namespa
 
 
 def set_axes_equal(ax):
-    limits = np.array([
-        ax.get_xlim3d(),
-        ax.get_ylim3d(),
-        ax.get_zlim3d(),
-    ])
+    limits = np.array(
+        [
+            ax.get_xlim3d(),
+            ax.get_ylim3d(),
+            ax.get_zlim3d(),
+        ]
+    )
     centers = np.mean(limits, axis=1)
     radius = 0.5 * np.max(np.abs(limits[:, 1] - limits[:, 0]))
 
@@ -126,14 +129,12 @@ def set_axes_equal(ax):
 
 def rotate(v, axis, angle):
     # ensure unit vector
-    if abs(np.linalg.norm(axis)-1.0) > 1e-3:
+    if abs(np.linalg.norm(axis) - 1.0) > 1e-3:
         axis = axis / np.linalg.norm(axis)
 
     v = np.array(v)
 
-    return (v * math.cos(angle) +
-            np.cross(axis, v) * math.sin(angle) +
-            axis * np.dot(axis, v) * (1 - math.cos(angle)))
+    return v * math.cos(angle) + np.cross(axis, v) * math.sin(angle) + axis * np.dot(axis, v) * (1 - math.cos(angle))
 
 
 def main():
@@ -150,7 +151,9 @@ def main():
     args = parse_args(config, pre_args.config)
 
     dec_str = f", Declination: {args.dec}°" if args.dec is not None else ""
-    print(f"Latitude: {args.lat}°, Offset RA: {args.offsetRA}m, Offset Dec: {args.offsetDec}m, Start: {args.start}°, Stop: {args.stop}°{dec_str}")
+    print(
+        f"Latitude: {args.lat}°, Offset RA: {args.offsetRA}m, Offset Dec: {args.offsetDec}m, Start: {args.start}°, Stop: {args.stop}°{dec_str}"
+    )
 
     lat = math.radians(args.lat)
     dec = math.radians(args.dec) if args.dec is not None else None
@@ -169,19 +172,18 @@ def main():
     # if lat+dec = 90°, pointing straight to the screen.
     d = np.array((0, 1, 0))
     if dec is not None:
-        d = np.array((0, math.cos(math.radians(90)-lat+dec), math.sin(math.radians(90)-lat+dec)))
+        d = np.array((0, math.cos(math.radians(90) - lat + dec), math.sin(math.radians(90) - lat + dec)))
 
     # Parameter range for drawing each line (one directional only, starting at Dec axis position)
     r = args.distance
     t = np.linspace(0, r, 100)
 
     fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
+    ax = fig.add_subplot(111, projection="3d")
 
     # Plot rotation axis for clarity
     axis_line = rot_axis[None, :] * np.linspace(-r, r, 2)[:, None]
-    ax.plot(axis_line[:, 0], axis_line[:, 1], axis_line[:, 2],
-            color='green', linewidth=2, label="Rotation axis")
+    ax.plot(axis_line[:, 0], axis_line[:, 1], axis_line[:, 2], color="green", linewidth=2, label="Rotation axis")
 
     # Plot origin
     ax.scatter(0, 0, 0, color="black", label="Origin")
@@ -246,7 +248,7 @@ def main():
     ]
     corners = np.array(corners)
 
-    ax.plot(corners[:, 0], corners[:, 1], corners[:, 2], color='blue', linewidth=2, label="Screen")
+    ax.plot(corners[:, 0], corners[:, 1], corners[:, 2], color="blue", linewidth=2, label="Screen")
 
     ax.set_xlabel("X")
     ax.set_ylabel("Y")
@@ -283,11 +285,11 @@ def main():
             intersections_y.append(y)
 
     # Plot Intersections
-    ax2.plot(intersections_x, intersections_y, 'b.-')
+    ax2.plot(intersections_x, intersections_y, "b.-")
     ax2.set_xlabel("Screen X / m (horizontal)")
     ax2.set_ylabel("Screen Y / m (vertical)")
     ax2.set_title("Line of sight on Simulator Screen")
-    ax2.set_aspect('equal')
+    ax2.set_aspect("equal")
     ax2.grid(True)
 
     # Calculate segment lengths and x displacements
@@ -317,17 +319,21 @@ def main():
     n_velocity_samples = len(velocities_mm_s)
     percent_x = [i * 100.0 / (n_velocity_samples - 1) for i in range(n_velocity_samples)]
 
-    ax3.plot(percent_x, velocities_mm_s, 'r.-', label='Total velocity (mm/s)')
+    ax3.plot(percent_x, velocities_mm_s, "r.-", label="Total velocity (mm/s)")
 
-    ax4.plot(percent_x, x_velocities_px_s, 'b.-', label='X velocity (px/s)')
+    ax4.plot(percent_x, x_velocities_px_s, "b.-", label="X velocity (px/s)")
 
     # Calculate and plot sidereal velocity at this distance for comparison
     # Convert to rad/s: 15.041 * (pi/180) / 3600 rad/s
     sidereal_rate_rad_s = sidereal_rate * math.pi / (180 * 3600)  # rad/s
     # Velocity = angular_velocity * distance
     sidereal_velocity_mm_s = sidereal_rate_rad_s * abs(args.distance) * 1000.0 * math.cos(dec if dec is not None else 0)
-    ax3.axhline(y=sidereal_velocity_mm_s, color='green', linestyle='--',
-                label=f'Sidereal velocity: {sidereal_velocity_mm_s:.4g} mm/s')
+    ax3.axhline(
+        y=sidereal_velocity_mm_s,
+        color="green",
+        linestyle="--",
+        label=f"Sidereal velocity: {sidereal_velocity_mm_s:.4g} mm/s",
+    )
 
     ax3.set_xlabel("Progress (%)")
     ax3.set_ylabel("Velocity (mm/s)")
