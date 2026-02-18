@@ -1,6 +1,6 @@
 # Bad Weather Mount Tester Manual
 
-## Setting up
+## Configure BWMT and your gear
 
 Make sure you can startup BWMT as described here, before setting up the gear (can save a lot of walking).
 
@@ -41,70 +41,134 @@ Make sure you can startup BWMT as described here, before setting up the gear (ca
 - Place the simulator and its monitor in a distance approximately 5 m dead south of your mount (on northern hemisphere,
   dead north on southern hemisphere). With "dead south" we mean, that when standing north of the mount (where the
   polarscope is pointing to), looking south along the RA axis, that line will hit the middle of the screen of the
-  simulator. The extension of the axis of the guidescope (how you would be looking through, but reversed) will hit the
-  ground somwhere between your mount and the simulator's screen. We will fine tune that in one of the next steps.
-- Now start BWMT on the simulator (see above) and connect to the Simulator using a web browser on your Astro Computer.
-  BWMT will display a screen full of arrows.
-- Point the guidescope to have a good look at the simulator's screen and focus
-  it, using what is displayed by BWMT on the screen.
+  simulator. We will fine tune that in one of the next steps.
+- Now start BWMT on the simulator and connect to the Simulator using a web browser on your Astro Computer using the
+  connection string that is displayed on the simulator screen. BWMT will display a screen full of arrows on the
+  simulator screen (see Figure 2) and the web page will display the configuration screen.
+- Fill in all information in the configuration screen (see figure below):
 
-That's it, you're mostly set to go. Now follow the instructions displayed in the web browser. You will be asked to
-provide some background information to BWMT through the web browser then configure PHD2 correctly:
+<figure markdown="span">
+  ![Configuration screen with information that need to be entered into BWMT](BWMT_web_configure.png)
+  <figcaption>Figure 3: The configuration screen of BWMT's web interface. TODO - fix wording</figcaption>
+</figure>
 
-- Enter the latitude that your mount is configured for into BWMT
-- Enter the focal length of your guide scope and the distance between mount and simulator screen
-- Enter the guide camera's sensor information, i.e. the number of pixels in width and heigth and the pixel pitch
-- Enter the mount's main period into the web application. (For worm gear mounts: How long does it take to have the worm
-- rotate once?).
-  This is information that the manufacturer of your mount provides
+Enter the appropriate values for your setup into the configuration screen. First enter the **Mount Configuration**:
 
-In PHD2:
+- **Latitude (degrees)**: What is the latitude your mount is configured for? Enter a decimal values such as 51.5 (you
+  can use both "." and "," as decimal points) Convert from sexagesimal degree (dd° mm') as follows: dd + mm / 60.
+- **Guide Scope Focal Length (mm)**: Use the effective length of your guide scope, i. e. if you're using a guide scope
+  of 420mm and a reducer of x0.5, enter 210. Use mm as unit.
+- **Distance to Screen (m)**: Rotate the RA-axis, so that the Dec-axis is level. Provide the distance from the Dec
+  rotational axis to the screen.
+- **Mount main period**: Provide the mounts main period, i.e. for a worm drive mount that is tracking at sidereal
+  rate, the time it takes the worm gear to rotate once. (At the moment this value is optional and for informational
+  purposes only)
 
-- Create a new guiding profile with the focal length displayed and the binning recommended by BWMT. (The guide scope is
-  not focused to infinity now, and we need to compensate for that to have PHD2 display correct data)
-- Disable multi-star guiding, as we will be using one simulated star.
-- Start looping in PHD2. From the `View` menu enable the bullseye overlay in the camera display in PHD2.
+Now enter the **Guide Camera** Information:
 
-Next will be orienting mount and screen.
+- **Pixel Size (micrometer)**: What is the size of a pixel in µm? We assume square pixels.
+- **Width (pixels)**: How many pixels are there in horizontal direction?
+- **Height (pixels)**: How many pixels are there in vertical direction?
+
+At last enter **Screen** information:
+
+- **Simulator Screen Width**: Use a ruler and measure the width of the display area of the screen, i.e. the distance
+  from the left-most to the right most pixel.
+
+In the **Calculated Values** section, BWMT displays the following infos:
+
+- **Effective FL for PHD2**: This is the effective focal length you need to configure in PHD2's guiding profile. Since
+  your guide scope is focused on the simulator screen at close range (typically 5 m) rather than at infinity, the
+  effective focal length differs from the actual focal length. BWMT calculates this using the lens equation:
+  `effective_fl = (focal_length × distance) / (distance - focal_length)`. This ensures that PHD2 displays correct
+  arcsecond measurements during guiding.
+
+- **Recommended Binning**: This value indicates the optimal camera binning to use in PHD2. BWMT calculates this so that
+  one binned camera pixel corresponds to approximately 10 simulator screen pixels, ensuring smooth star profiles and
+  reliable guiding. If the recommended binning is higher than 1, configure your camera accordingly in PHD2 to achieve
+  better star detection.
+
+- **Measurement Duration**: This shows the estimated time (in minutes) it will take for the mount to traverse the entire
+  simulator screen at sidereal tracking rate (15 arcsec/second). The calculation accounts for the angular width of the
+  screen as seen from the mount's position and adjusts for your latitude, since stars move slower across the sky the
+  further you are from the equator (by a factor of cos(90° - latitude)). This is a coarse estimate, as the value depends
+  on the exact geometry of how your guidescope is in relation to the RA-axis.
+
+- **Area on Simulator**: This displays the physical dimensions (width × height in mm) of the area on the simulator
+  screen that your guide camera can see through the guide scope. BWMT calculates this from your camera's sensor size and
+  the effective focal length using the lens equation for near-focus imaging. This helps you verify that your field of
+  view is appropriately sized for the measurements.
+
+Now we are good to go and need to setup PHD2. So follow the instructions that are displayed on the simulator
+screen, which provide a reminder, if you're not looking at this manual
+
+### Setting up PHD2
+
+Open PHD2 on your astro computer and **create a new profile** using the <u>New Profile Wizard</u>. How to do this
+depends on the brand of your mount and guidescope. Please consult [PHD2
+documentation](https://openphdguiding.org/man/Basic_use.htm#New_profile_wizard) in how to do this.
+
+In advanced settings in PHD2, disable multi-star guiding, as we will use a single simulated star. 
+
+Then connect to your guidescope and mount and start looping. If your mount is not yet in home position, move it to home
+position, i.e. the guidescope should point along the RA axis to where the polar scope would be pointing, if you were
+outside. It is important to always start from the home position, so that PHD2 and the mount driver have a reference
+position, providing orientation.
+
+Now open "Tools" > "Drift Align", and have PHD2 command the mount to slew to the simulator screen:
+
+- Enter -5 into the "Slew To" boxes for "Meridian Offset" and
+- 90° - Latitude for "Declination (deg)".
+
+Press "Slew". The mount should now point roughly at the simulator screen. If it doesn't adjust the values in the "Drift
+Align" dialog and press "Slew" again. Check your mount driver, that PHD2 did not enable sidereal tracking. If it did,
+disable tracking. Focus your guidescope on the screen. As it is not pointing at infinity anymore, you may need to add
+extensions to reach focus position.
+
+In PHD2 enable the Bullseye overlay. Using **only movements in RA** with the mount control buttons in your mount driver, follow the
+arrows to point the mount at left side of the scrren. Once you're there you've mastered the first step. Press `next`to enter the
+alignment screen.
 
 ## Aligning Mount and Screen
 
-### Placing BWMT dead south of the mount (Northern Hemisphere)
+For the next step you need to be in the "Align" screen:
 
-!!! note For Southern hemisphere the same procedure applies but the mount will be moving right-to-left instead of
-    left-to-right. And North and South will be exchanged.
+<figure markdown="span">
+  ![BWMTs display for alignment shows horizontal lines. In the middle of a screen is a red 'zero' line. Then parallel to that horizontal
+  lines in a distance of 50 pixel are displayed.](BWMT_align.png)
+  <figcaption>Figure 4: Simulator screen displayed for Alignment</figcaptoin>
+</figure>
 
-Starting from home position, and using PHD2's calibration assistant, slew the mount to point at the screen: Open `Tool`
-> `Drift Align`. Enter the negative value of `(90° - Latitude)` into Dec and then let it slew the mount, by pressing
-`Slew`. Adjust the RA value, so that the guide scope takes a nice view at the screen. A value of 5° before meridian
-should
-already be at the left-hand side of the screen. Focus the guide scope on the screen.
+### Adjusting height of Screen and Mount
 
-Using **only** movements in RA, follow the arrows on the screen, until you arrive at the left-hand side of the screen.
-Now press `Next` in the simulator.
+Now that you're pointing at the left side of the screen, adjust the height of mount and screen such, that while the guidescope
+is nearly horizontal from the slew (executed with "Drift Align" above), it is pointing at the middle of the screen, indicated by the
+red line and a display of 'zero' on right- and left-hand-side.
 
-If you're not hitting the middle line (The red line), adjust the physical height of your mount or the height of your
-simulator screen. A few pixel difference are ok.
+For this coarsely adjust the height of your mount first, then use the screens height adjustment, if present.
+Last, for fine adjustment, use the mount control buttons in your mount driver software.
 
-Now we will move the mount back and forth in RA repeatedly to position the screen dead south of the mount:
+## Placing BWMT dead south of the mount
+
+!!! note
+    The following text was written for northern hemisphere. For Southern hemisphere the same procedure applies but the mount 
+    will be moving right-to-left instead of left-to-right and North and South will be exchanged.
+
+Now we will move the mount back and forth in RA repeatedly to position the screen dead south of the mount.
 
 If during the following procedure the sharpness of the image on left and right hand side is extremely different, orient
 the screen so, that it is perpendicular to your guide scope. The best place to adjust focus is at 25% or 75% of the
-screen from left-to-right, on the "Configure" screen are vertical lines to find that position.
+screen from left-to-right, on the "Configure" screen there are vertical lines to find that position.
 
 If your mount performs a meridian flip in between, check the meridian flip settings in your mount and adjust these so,
 that a meridian flip is avoided and does not interfere with setting up BWMT. Then restart the procedure after these
 adjustments.
 
-## Alignment Procedure
-
-First make sure you're on the alignment tab in BWMT's web page.
+### Alignment Procedure
 
 First, using the mount controls in your mount's driver, locate the left side of the monitor on the guide scope's picture
-(If you followed the manual so far, you should already be there). The picture displayed on the screen shows arrows, that
-point you into the right corner of the screen. Just follow the arrows. When you have reached the destination indicated
-by a cross in the picture press `next` in the webbrowser. The webbrowser will display horizontol lines and a pixel scale
-on each side of the screen.
+(If you followed the manual so far, you should already be there). The simulator screen will display horizontol lines and
+a pixel scale on each side of the screen.
 
 Using the bullseye displayed by PHD2, center the zero-line in the bullseye (at first this does not have to be
 pixel-perfect) using your driver's mount control.
@@ -118,13 +182,14 @@ difference from left to right is ok.
 Repeat this procedure until you're satisfied, that a symmetric arc will be traced on the monitor when fully moving from
 left-to-right. Then press `next`.
 
-!!! warning 
-    In the current version the velocity that the star traces is calculated and valid for this geometry. If you
-    use different orientations of the mount the velocity might not match and PHD2 might loose the star.
+Move the mount to the left hand side of the screen and press `next`. You're now in the "Calibrate" tab
 
-Move the mount to the left hand side of the screen and press `next`.
+## Calibrating the simulator
 
-### Setting up the trace line
+<figure markdown="span">
+  ![BWMT Calibration Screen](BWMT_calibration.png)
+  <figcaption>Figure 5: The Calibration Screen</figcaption>
+</figure>
 
 Now we will trace the mount's location accross the screen, to setup the average path that the mount takes across the
 screen. This entails:
@@ -133,16 +198,23 @@ screen. This entails:
 2. Moving the scope in RA for a few pixels
 3. Repeating 1 and 2 until all the screen is crossed.
 
-Step 1: BWMT displays on the webpage a scaled down picture of the screen. When hovering with the mouse, a cross is
-displayed on the simulator screen at the location of the mouse. Looking at PHD2's guide scope picture, move the mouse so
-that the cross is displayed in the middle of the bullseye, that PHD2 is overlaying on the picture. Right click to place
-the first alignment point. Using curser keys, adjust to the cross to be at the center of the bullseye. The keys only
-work, if the cursor is hovering on the picture.
+**Step 1**: BWMT displays on the webpage a scaled down picture of the screen ("Calibration Preview"). When hovering with
+the mouse, a cross is displayed on the simulator screen at the location of the mouse. Looking at PHD2's guide scope
+picture, move the mouse so that the cross is displayed in the middle of the bullseye, that PHD2 is overlaying on the
+picture. Right click to place the first alignment point. Using curser keys, adjust to the cross to be at the center of
+the bullseye. The keys only work, if the cursor is hovering on the picture.
 
-Step 2: Using **ONLY** the RA axis, move the mount to the right, so that you can still see the previous alignment point.
+<figure markdown="span">
+  a) ![]() b) ![]() c) ![]()
+  <figcaption>Figure 6: Steps to create a calibration point. a) Hovering with the mouse on the calibration preview,
+  displays a crosshair on the simulator screen. b) left-click with the mouse creates a calibration point. c) fine
+  adjustment is possible using cursor keys or s,d,f and e.
+</figure>
+
+**Step 2**: Using **ONLY** the RA axis, move the mount to the right, so that you can still see the previous alignment point.
 Then repeat step 1.
 
-Step 3 .. N: Repeat Steps 1 and 2 until you have alignment points spanning the whole distance on the screen from left to
+**Step 3 .. N**: Repeat Steps 1 and 2 until you have alignment points spanning the whole distance on the screen from left to
 right.
 
 BWMT will display an ellipse fit below the screen in the webbroswer. This will in the next step be used to simulate a
@@ -150,7 +222,7 @@ star corssing the screen.
 
 At last, move the mount to the left of the screen, then press `next`, to start measuring the velocity of your mount.
 
-### Measuring velocity on screen
+## Measuring on Screen Velocity
 
 The next simulator display shows three areas, at which we are going to measure the velocity of the mount. Each area
 consists of a vertical stripe, one at the left, one in the middle and one to the right. The width of the stripes are
@@ -167,9 +239,11 @@ the stop watch will then put that measurement into this field.
 
 After measuring the mounts velocity at each location, press `next`.
 
-### Measuring a guiding run
+## Qualification of Measurement Setup
 
-#### Preparing measurement
+## Measuring a guiding run
+
+### Preparing measurement
 
 BWMT will on left hand side (northern hemisphere, right hand side on southern hemisphere), where you placed the first
 alignment point, display a simulated star. This star will have a gaussian profile that is sampled at the positions of
@@ -201,6 +275,7 @@ If you have difficulties to get a smooth star profile, consider:
 
 Start looping in PHD2, then by moving the mount **ONLY** in RA, center the simulated star in PHD2's display. Click on
 the star and press "Begin Guiding" in PHD2. PHD2 will complain that that this is a bad location for a calibration but
+measure what you want.
 start calibration anyway. The calibration should run through successfully and PHD2 will start guiding. Check your mount
 driver, if PHD2 started tracking. If it did, stop tracking.
 
@@ -211,7 +286,7 @@ vibrations of the building) will also move the camera and screen relative to eac
 the order of µm, which is 1/60th of a hair and we are trying to measure movements on the order of a few arcsec (1 arcsec
 is the diameter of 1 Euro coin at 4.8 km distance). Anyway, the values displayed are usually 1/10th of the pixel scale
 of the guide scope. Depending on which periodic error you want to measure, make sure this figure is small enough to
-measure what you want.
+- Increase the distance between mount and Simulator screen
 
 Then move the simulated star to the 25% mark. For this you can click on the progress bar in the web application and use
 the "fast backward" and "fast forward" buttons. If you lost the position of the guide camera, press back to display the
@@ -224,7 +299,6 @@ If the figures are inconsistent and diverging from each other much:
 
 - Check orientations of guide scope and Simulator screen
 - Check a different focus setting of the guide scope
-- Increase the distance between mount and Simulator screen
 
 !!! note 
     **Dec values may be different!**
