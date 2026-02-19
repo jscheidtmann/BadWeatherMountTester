@@ -10,8 +10,14 @@ import math
 import time
 from pathlib import Path
 
+import warnings
+
 import numpy as np
-import pygame
+
+# Suppress pkg_resources deprecation warning from pygame's internal pkgdata module
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore", message="pkg_resources is deprecated", category=UserWarning)
+    import pygame
 from enum import Enum, auto
 from dataclasses import dataclass
 from typing import Optional, Tuple, List, Dict

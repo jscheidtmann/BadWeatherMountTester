@@ -84,9 +84,9 @@ In the **Calculated Values** section, BWMT displays the following infos:
   arcsecond measurements during guiding.
 
 - **Recommended Binning**: This value indicates the optimal camera binning to use in PHD2. BWMT calculates this so that
-  one binned camera pixel corresponds to approximately 10 simulator screen pixels, ensuring smooth star profiles and
-  reliable guiding. If the recommended binning is higher than 1, configure your camera accordingly in PHD2 to achieve
-  better star detection.
+  one binned camera pixel has approximately the same angular resolution (arcsec/px) as one simulator screen pixel. If
+  the recommended binning is higher than 1, configure your camera accordingly in PHD2. If that binning is not availabe,
+  choose the most closely matching one, that is available.
 
 - **Measurement Duration**: This shows the estimated time (in minutes) it will take for the mount to traverse the entire
   simulator screen at sidereal tracking rate (15 arcsec/second). The calculation accounts for the angular width of the

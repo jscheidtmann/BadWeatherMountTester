@@ -1136,12 +1136,12 @@
 
             // Camera and display dependent calculations
             if (effectiveFL > 0 && cameraConfig.pixel_size_um > 0 && dist > 0 && screenWidthPx > 0) {
-                // Binning: 10 camera pixel should match ~1 simulator pixel
+                // Binning: match camera arcsec/px to screen arcsec/px
                 // Camera pixel projected onto screen = (pixel_size_um * dist) / effective_fl mm
                 // Screen pixel size = screen_width_mm / screen_width_px mm
                 const cameraPixelOnScreen = (cameraConfig.pixel_size_um * dist) / effectiveFL;
                 const screenPixelSize = screenWidthMm / screenWidthPx;
-                const recommendedBinning = Math.max(1, Math.round(screenPixelSize / 10.0 / cameraPixelOnScreen));
+                const recommendedBinning = Math.max(1, Math.round(screenPixelSize / cameraPixelOnScreen));
                 binningSpan.textContent = recommendedBinning;
 
                 // Area on simulator (physical size in mm)

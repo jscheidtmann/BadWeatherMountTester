@@ -240,10 +240,10 @@ class WebServer:
             else:
                 camera_resolution_arcsec = 0
 
-            # Binning calculation: 1 camera pixel should match ~10 simulator pixel
+            # Binning calculation: match camera arcsec/px to screen arcsec/px
             # Camera pixel projected onto screen = (pixel_size_um * dist) / effective_fl mm
-            # Screen pixel size = screen_width_mm / screen_width mm
-            # binning = screen_pixel_size / camera_pixel_projected
+            # Screen pixel size = screen_width_mm / screen_width_px mm
+            # binning = screen_pixel_size / camera_pixel_on_screen
             screen_width_mm = self.config.display.screen_width_mm
             screen_width_px = self.config.display.screen_width
             pixel_size_um = self.config.camera.pixel_size_um
@@ -251,7 +251,7 @@ class WebServer:
             if effective_fl > 0 and pixel_size_um > 0 and dist > 0 and screen_width_px > 0:
                 camera_pixel_on_screen = (pixel_size_um * dist) / effective_fl  # mm
                 screen_pixel_size = screen_width_mm / screen_width_px  # mm
-                recommended_binning = max(1, round(screen_pixel_size / 10.0 / camera_pixel_on_screen))
+                recommended_binning = max(1, round(screen_pixel_size / camera_pixel_on_screen))
             else:
                 recommended_binning = 1
 
