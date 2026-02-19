@@ -1,6 +1,7 @@
 
 -[ ] Remove code duplicates between web server and javascript
 -[ ] Check velocity calculation: calibration points start and end vs. locations of measured velocities
+-[ ] Add more tests
 -[ ] Better formatting of figures (only centered at the moment)
 -[ ] Support southern hemisphere
 -[ ] Make geometry.py available as a separate page of the web server.  

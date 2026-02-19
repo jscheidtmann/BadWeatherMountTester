@@ -1,6 +1,6 @@
 [project]
 name = "badweathermounttester"
-version = "0.1.0"
+version = "0.8.0"
 description = "Test telescope mount periodic error indoors using a simulated star on a monitor"
 readme = "README.md"
 license = "GPL-3.0-or-later"
@@ -10,7 +10,7 @@ authors = [
 ]
 keywords = ["astronomy", "telescope", "mount", "periodic error", "guiding", "PHD2"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Environment :: X11 Applications",
     "Environment :: Win32 (MS Windows)",
     "Environment :: MacOS X",
