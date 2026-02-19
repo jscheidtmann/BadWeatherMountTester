@@ -300,7 +300,7 @@ Then repeat step 1.
 right.
 
 BWMT will display an ellipse fit below the screen in the webbrowser. This will in the next step be used to simulate a
-star corssing the screen.
+star crossing the screen.
 
 <figure markdown="span">
   ![All calibration points set](BWMT_calibration_complete.png)
@@ -310,6 +310,11 @@ star corssing the screen.
 At last, move the mount to the left of the screen, then press `next`, to start measuring the velocity of your mount.
 
 ## Measuring on Screen Velocity
+
+!!! info
+    
+    You probably know about sidereal, lunar and solar tracking velocities. These velocities apply in the
+    case where the telescope is directly mounted to the intersection point of conic sections. 
 
 The next simulator display shows three areas, at which we are going to measure the velocity of the mount. Each area
 consists of a vertical stripe, one at the left, one in the middle and one to the right. The width of the stripes are

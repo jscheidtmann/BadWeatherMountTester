@@ -16,6 +16,9 @@ Using this program you can test the periodic error of your mount any time, any p
 You use a small computer to simulate a star moving across a monitor, you record this movement using a guiding application. As the monitor is very regular, 
 one is able to measure the periodic error of your mount any time any place, given the place is large enough and there's a roof on top.
 
+!!! important
+    At the moment southern hemisphere mode is not supported yet.
+
 ## What is Bad Weather Mount Tester trying to achieve?
 
 Using relatively inexpensive materials (your mount, your guidescope, a comptuer and a screen), we are trying to do a **precision measurement**: We are trying to 
