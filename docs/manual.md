@@ -108,26 +108,68 @@ Open PHD2 on your astro computer and **create a new profile** using the <u>New P
 depends on the brand of your mount and guidescope. Please consult [PHD2
 documentation](https://openphdguiding.org/man/Basic_use.htm#New_profile_wizard) in how to do this.
 
-In advanced settings in PHD2, disable multi-star guiding, as we will use a single simulated star. 
+In advanced settings in PHD2 (the "brain"), disable multi-star guiding, as we will use a single simulated star: 
+
+<figure markdown="span">
+  ![PHD2 Advanced Setting Dialog > Guiding: Multistar Guiding is disables](PHD2_disable_multistarguiding.png)
+  <figcaption>Figure X: In PHD2's "Advanced Settings" > "Guiding" disable "Use multiple stars".</figcaption>
+</figure>
+
 
 Then connect to your guidescope and mount and start looping. If your mount is not yet in home position, move it to home
 position, i.e. the guidescope should point along the RA axis to where the polar scope would be pointing, if you were
 outside. It is important to always start from the home position, so that PHD2 and the mount driver have a reference
 position, providing orientation.
 
-Now open "Tools" > "Drift Align", and have PHD2 command the mount to slew to the simulator screen:
+<figure markdown="span">
+  ![Home Position of a Mount](BWMT_home_position.jpg)
+  <figcaption>Figure X: In "Home" position, the scope points along the RA axis to the celestial pole.</figcaption>
+</figure>
 
-- Enter -5 into the "Slew To" boxes for "Meridian Offset" and
-- 90° - Latitude for "Declination (deg)".
+Now open "Tools" > "Calibration Assistant", and have PHD2 command the mount to slew to the simulator screen:
 
-Press "Slew". The mount should now point roughly at the simulator screen. If it doesn't adjust the values in the "Drift
-Align" dialog and press "Slew" again. Check your mount driver, that PHD2 did not enable sidereal tracking. If it did,
-disable tracking. Focus your guidescope on the screen. As it is not pointing at infinity anymore, you may need to add
-extensions to reach focus position.
+- Enter 5 into the "Calibration Location" > "Meridian offset (degrees)" box and
+- 90° - Latitude for "Declination".
 
-In PHD2 enable the Bullseye overlay. Using **only movements in RA** with the mount control buttons in your mount driver, follow the
-arrows to point the mount at left side of the scrren. Once you're there you've mastered the first step. Press `next`to enter the
-alignment screen.
+Click "Slew". 
+
+<figure markdown="span">
+  ![Use the PHD Calibration Assistant to slew the mount to the screen](PHD2_CalibrationAssistant.png)
+  <figcaption>Figure X: Enter (90°-Latitute) into the "Declination" filed. Adjust "Meridian Offset" to roughly point on the 
+  left-hand-side of the screen. Check the "Pointing" field to determine the side of pier.</figcaption>
+</figure>
+
+The mount should now point roughly at the simulator screen. If it doesn't adjust the values in the "Calibration
+Assistant" dialog and press "Slew" again. 
+
+<figure markdown="span">
+  ![Guide scope pointing at the simulator screen](BWMT_scope_pointing_at_screen.jpg)
+  <figcaption>Figure X: The scope points roughly at the simulator screen's left-hand-side.</figcaption>
+</figure>
+
+Check your mount driver, because PHD2 enabled sidereal tracking. **Disable tracking**, if it is 
+enabled. Then click "Cancel" in the Calibration Assistant. Start looping in PHD2 and focus your guidescope on the screen. 
+As it is not pointing at infinity, you may need to add extensions to reach focus position.
+
+<figure markdown="span">
+  ![Extensions will almost certainly be necessary to focus](BWMT_extensions.jpg)
+  <figcaption>Figure X: You will almost certainly need to add extensions to get into focus (The scope is a 70/420 with a x0.5 Reducer).</figcaption>
+</figure>
+
+<figure markdown="span">
+  ![Focus achieved](BWMT_focus_achieved.png)
+  <figcaption>Figure X: Focus achieved on the simulator screen, from with-in PHD2.</figcaption>
+</figure>
+
+In PHD2 enable the Bullseye overlay from "View" > "Bullseye". Using **only movements in RA** with the mount control buttons in your mount driver, follow the
+arrows to point the mount at left side of the screen. Once you're there you've mastered the first step. 
+
+<figure markdown="span">
+  ![LHS of screen, at ideal heigth](BWMT_ideal_height.png)
+  <figcaption>Figure X: Left-hand-side of screen, in ideal height.</figcaption>
+</figure>
+
+Press `next`to go to the alignment screen.
 
 ## Aligning Mount and Screen
 
@@ -147,6 +189,13 @@ red line and a display of 'zero' on right- and left-hand-side.
 
 For this coarsely adjust the height of your mount first, then use the screens height adjustment, if present.
 Last, for fine adjustment, use the mount control buttons in your mount driver software.
+
+<figure markdown="span">
+  ![Height was adjusted](BWMT_left-hand-side.png)
+  <figcaption>Figure X: Height was adjusted and guidescope is pointing at the middle of the aligment screen (left-hand-side).
+  </figcaption>
+</figure>
+
 
 ## Placing BWMT dead south of the mount
 
@@ -179,15 +228,25 @@ right-hand-side, you will notice, that it's very problably showing a different l
 mount, rotate it such, that the mount will hit the same horizontal line on both sides of the screen. A few pixel
 difference from left to right is ok.
 
-Repeat this procedure until you're satisfied, that a symmetric arc will be traced on the monitor when fully moving from
-left-to-right. Then press `next`.
+<figure markdown="span">
+  a) 
+  ![BWMT mount aligned left-hand-side](BWMT_left-hand-side.png){width="40%"}
+  b)
+  ![BWMT right-hand-side](BWMT_right-hand-side.png){width="40%"}
+  <figcaption>Figure X: Orientation of screen and guide scope achieved: The bulleye crosses the screen on both a) left-hand-side and b) right-hand-side.</figcaption>
+</figure>
 
-Move the mount to the left hand side of the screen and press `next`. You're now in the "Calibrate" tab
+Repeat this procedure until you're satisfied, that a symmetric arc will be traced on the monitor when fully moving from
+left-to-right. 
+
+Move the mount to the left hand side of the screen and press `next`. 
 
 ## Calibrating the simulator
 
+You should now be in the "Calibrate" tab.
+
 <figure markdown="span">
-  ![BWMT Calibration Screen](BWMT_calibration.png)
+  ![BWMT Calibration Screen](BWMT_web_calibration.png)
   <figcaption>Figure 5: The Calibration Screen</figcaption>
 </figure>
 
@@ -205,20 +264,33 @@ picture. Right click to place the first alignment point. Using curser keys, adju
 the bullseye. The keys only work, if the cursor is hovering on the picture.
 
 <figure markdown="span">
-  a) ![]() b) ![]() c) ![]()
+  a) ![Step 1a: Hover and point crosshar](BWMT_calibration_step1a.png) 
+  b) ![Step 1b: Click to place a calibration point](BWMT_calibration_step1b.png) 
+  c) ![Step 1c: Using cursor keys, place calibration point at center of bullseye](BWMT_calibration_step1c.png)
   <figcaption>Figure 6: Steps to create a calibration point. a) Hovering with the mouse on the calibration preview,
-  displays a crosshair on the simulator screen. b) left-click with the mouse creates a calibration point. c) fine
-  adjustment is possible using cursor keys or s,d,f and e.
+  displays a crosshair on the simulator screen, for coarse positioning, b) left-click with the mouse creates a calibration 
+  point (15 in this case). c) fine adjust position to center crosshair in bullseye using cursor keys or s,d,f and e.
 </figure>
 
 **Step 2**: Using **ONLY** the RA axis, move the mount to the right, so that you can still see the previous alignment point.
 Then repeat step 1.
 
+<figure markdown="span">
+  ![Step 2: move mount to add next calibration point](BWMT_calibration_step2.png) 
+  <figcaption>Figure 6: Move mount to create the next calibration point.</figcaption>
+</figure>
+
+
 **Step 3 .. N**: Repeat Steps 1 and 2 until you have alignment points spanning the whole distance on the screen from left to
 right.
 
-BWMT will display an ellipse fit below the screen in the webbroswer. This will in the next step be used to simulate a
+BWMT will display an ellipse fit below the screen in the webbrowser. This will in the next step be used to simulate a
 star corssing the screen.
+
+<figure markdown="span">
+  ![All calibration points set](BWMT_calibration_complete.png)
+  <figcaption>Figure 6: Repeat calibration steps, to cover the whole simulator screen. This completes the calibration.</figcaption>
+</figure>
 
 At last, move the mount to the left of the screen, then press `next`, to start measuring the velocity of your mount.
 
@@ -226,13 +298,30 @@ At last, move the mount to the left of the screen, then press `next`, to start m
 
 The next simulator display shows three areas, at which we are going to measure the velocity of the mount. Each area
 consists of a vertical stripe, one at the left, one in the middle and one to the right. The width of the stripes are
-chosen such, that the mount will take approximately 3 min to cross it. The web page shows three entry fields, one for
-each stripe and a stop watch
+chosen such, that the mount will take approximately 3 min to cross it. 
+
+<figure markdown="span">
+  ![For measuring velocity three stripes are displayed](BWMT_velocity.png)
+  <figcaption>Figure 6: 3 stripes to measure the velocity, one on left, middle and right.</figcaption>
+</figure>
+
+The web page shows three times, one for each stripe and a stop watch
+
+<figure markdown="span">
+  ![For measuring velocity the web page allows to stop the time to cross the stripes](BWMT_web_velocity.png)
+  <figcaption>Figure 6: The web page to measure on screen velocities. Choose the respective stripe by clicking on "Left", 
+  "Middle" or "Right", then use the Start/Stop, Reset buttons to measure how long it takes the mount to cross the stripe.</figcaption>
+</figure>
 
 Now move the mount to the left of the outer strip, start tracking with the bullseye overlay active on the screen and
 press "Start" once the bullseye center enters the left stripe. Press stop, when it leaves the stripe. The time it took
 to cross the stripe is displayed on the web page. Now using **ONLY** movements in RA, move to the middle stripe and
 measure there. Then repeat this procedure with the right-hand stripe.
+
+<figure markdown="span">
+  ![During a velocity measurement](BWMT_velocity_running.png)
+  <figcaption>Figure 6: While the measurement for the left hand stripe is running. Note that the mount is tracking (Tracking "on").</figcaption>
+</figure>
 
 If you want to re-measure a stripe, click the clear button next to the corresponding entry field. Starting and stopping
 the stop watch will then put that measurement into this field.
