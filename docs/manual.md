@@ -133,7 +133,8 @@ position, providing orientation.
 Now open "Tools" > "Calibration Assistant", and have PHD2 command the mount to slew to the simulator screen:
 
 - Enter 5 into the "Calibration Location" > "Meridian offset (degrees)" box and
-- the "Dec target" value from BWMT's Calculated Values section for "Declination" (this is 90° - Latitude).
+- the "Dec target" value from BWMT's Calculated Values section for "Declination" (this is 90° - Latitude). On northern 
+  hemisphere, you need to enter the negative value, on southern hemisphere use the positive value. 
 
 Click "Slew". 
 
@@ -317,6 +318,9 @@ The web page shows three times, one for each stripe and a stop watch
   "Middle" or "Right", then use the Start/Stop, Reset buttons to measure how long it takes the mount to cross the stripe.</figcaption>
 </figure>
 
+Chose a very short exposure time for your camera. The smallest value, that PHD2 supports is 0.1s. Try to avoid saturation, but
+in principle it doesn't matter. 
+
 Now move the mount to the left of the outer strip, start tracking with the bullseye overlay active on the screen and
 press "Start" once the bullseye center enters the left stripe. Press stop, when it leaves the stripe. The time it took
 to cross the stripe is displayed on the web page. Now using **ONLY** movements in RA, move to the middle stripe and
@@ -330,13 +334,21 @@ measure there. Then repeat this procedure with the right-hand stripe.
 If you want to re-measure a stripe, click the clear button next to the corresponding entry field. Starting and stopping
 the stop watch will then put that measurement into this field.
 
-After measuring the mounts velocity at each location, press `next`.
+After measuring the mounts velocity at each location, press `next`, you're now in the "Measure tab" of the web interface. 
+and the Simulation Controls are displayed. 
+
+
 
 ## Qualification of Measurement Setup
 
-## Measuring a guiding run
+For the following you need to be in the "Measure" tab of the web interface, where simulation control is displayed: 
 
-### Preparing measurement
+<figure markdown="span">
+  ![BWMT Simulation Control](BWMT_measure.png)
+  <figcaption>Figure X: The simulation control.</figcaption>
+</figure>
+
+### Measurement Principle
 
 BWMT will on left hand side (northern hemisphere, right hand side on southern hemisphere), where you placed the first
 alignment point, display a simulated star. This star will have a gaussian profile that is sampled at the positions of
@@ -364,34 +376,109 @@ If you have difficulties to get a smooth star profile, consider:
 - Using a different guide camera with larger pixels
 - Using a different screen, with a better resolution (higher dpi)
 
-#### Measurement: Simulation Quality
+TODO move or cannibalise.
 
-Start looping in PHD2, then by moving the mount **ONLY** in RA, center the simulated star in PHD2's display. Click on
-the star and press "Begin Guiding" in PHD2. PHD2 will complain that that this is a bad location for a calibration but
-measure what you want.
-start calibration anyway. The calibration should run through successfully and PHD2 will start guiding. Check your mount
-driver, if PHD2 started tracking. If it did, stop tracking.
+### Prerequisits for good measurements
 
-Now let PHD2 and the simulation run for a few minutes. Check the "Guide Stats" in PHD2: The RA RMS and Peak should give
-you an indication of how good the measurement will be. This value will not be zero, as the screen's refresh cycle might
-overlap or otherwise influence the values of the guide camera. On the other hand, noise and other influences (e.g.
-vibrations of the building) will also move the camera and screen relative to each other. Remember the pixel scale is on
-the order of µm, which is 1/60th of a hair and we are trying to measure movements on the order of a few arcsec (1 arcsec
-is the diameter of 1 Euro coin at 4.8 km distance). Anyway, the values displayed are usually 1/10th of the pixel scale
-of the guide scope. Depending on which periodic error you want to measure, make sure this figure is small enough to
-- Increase the distance between mount and Simulator screen
+#### Matching Exposure time
 
-Then move the simulated star to the 25% mark. For this you can click on the progress bar in the web application and use
-the "fast backward" and "fast forward" buttons. If you lost the position of the guide camera, press back to display the
+The PHD2 mailing list recommends an exposure time of 1 - 3s, if you've got a worm gear mount and 0.5 - 1s for strain wave gear mounts. Choose
+an exposure time that is fitting to that. You probably will have to add a neutral density filter to your camera or in fron of your guidescope 
+to avoid saturation. 
+
+#### Averaged pixels
+
+As we are imaging the pixels from the simulator screen, we need to make sure that the camera doesn't pick up that pixel structure, but 
+at least averages that pixel structure out. 
+
+Take for example this focused view of the "LEFT" printed along the stripe from the velocity measurement step: 
+
+<figure markdown="span">
+  ![Focused star profile, showing pixel structure of simulator screen](BWMT_pixelstructure.png)
+  <figcaption>Figure X: PHD2's Star Profile tool showing pixels.</figcaption>
+</figure>
+
+As you can see the star profile is ragged, and does not consist of a single "hump" with symmetric appearance. This will then also be the case 
+for the simulated star, but not as pronounced: 
+
+<figure markdown="span">
+  a) 
+  ![Focused star profile, showing pixel structure of simulator screen](BWMT_pixelstructure_star.png)
+  b)
+  ![Unfocused star profile, showing a symmetric structure](BWMT_pixelstructure_unfocused.png)
+  <figcaption>Figure X: PHD2's Star Profile tool showing pixels in a), and a more symmetric profile when unfocused b).</figcaption>
+</figure>
+
+In order to improve the star profile for measurements, you can do the following: 
+
+- Increase distance between mount and simulator screen. Decreases arcsec / px for the simulator screen.
+- Reduce the focal length of your guidescope. Decreases arcsec / px for the guidescope image.
+- unfocus the guidescope. Artifically smears out the pixel structure 
+
+#### Rock solid floor
+
+In my case, I am conducting measurements in an old building that has wooden floors, so that people that are walking next to the mount or
+next to the simulator screen can create excursions of more than 20", i.e. the picture of the simulated star is changing its position by 
+approximately 6 pixels or a distance of 21µm. This is about a 1/3rd of a human hair. 
+
+It may even be the case, that people slamming doors or otherwise introducing energy or vibrations into the house (like bouncing a ball) 
+will be noticed by your measurement setup. 
+
+If you've got the choice, make sure that the floor and furniture the simulator screen is standing on are exremely sturdy. 
+And if possible make sure that these kind of things do not happen during your measurements.
+
+#### Exposure Time and Screen Refresh
+
+BWMT is configured to refresh the screen every 1/60th of a second or equivalently every 0.017 seconds. The exposure time of the guidecam 
+should therefore be different from that rate. 
+
+### Statistical Measurement Error
+
+Let's see, which statistical fluctuations the measurement setup is reporting. These can be: air currents, cables tugging, 
+imbalances in RA and Dec, vibrations present in the building from people or cars driving on the street, the higher temperature of the 
+mount and its lubricants (comparing inside to outside temperatures), fluctuations due to backlash (in Dec), etc. 
+
+In order to measure this we create a situation, where nothing should be changing: We disable all motors and all movements of the simulated star.
+So disable tracking in the mount driver and make sure that the simulation is stopped in BWMT's "Measure" web interface. 
+
+Start looping in PHD2, if it is not already running. Then move the mount **only in RA** to display the simulated star, click on the simulated star
+to select it for guiding and then &lt;SHIFT&gt;-click or click on the "Start Guiding" icon in PHD2. 
+
+Using shift-click you can force a calibration. As we have created a new profile above, a new calibration should be created now. 
+You should force a new calibration, if you have an old one active (PHD2 usually re-uses a good calibration), but you changed the optical train, 
+e.g. by adding a neutral density filter to get into the right exposure range. 
+
+Let it run for a while. Now use PHD2 Log Viewer to have a look at the Log. 
+
+<figure markdown="span">
+  ![BWMT ](BWMT_statistical_error.png)
+  <figcaption>Figure X: Guiding while "nothing is moving". Distance between gray lines is 1". </figcaption>
+</figure>
+
+The things that you can take from this are 
+
+- Even if "nothing is moving", PHD2 recognizes different locations of the simulated guide star
+- The movement looks like a random walk
+- The scatter plot of the selected section is largely symmetric
+- RA RMS is reported to be 0.09px, that means averaging yields measurements that are "good" up to 1/10th of a guidecam pixel. 
+- Dec RMS, is slightly larger at 0.12px
+- Drift is on the order of half of that (where there should be no drift)
+- Polar alignment error is reported to be 1.4' 
+
+Given the same guidecam and guidescope and similar load on the mount, it will be hard to achieve better values than this. 
+
+Repeat this measurement at position 25%, 50%, 75% and 100%. For this you can click on the progress bar in the web application and use
+the "fast backward" and "fast forward" buttons. If you lost the position of the guide camera, press `back` to display the
 alignment points to point your guide scope and locate the simulated star.
 
-Repeat this procedure at 50%, 75% and 100% of the simulation. All these measurements should be congruent and give you
-similar figures for RMS RA.
+All these measurements should be congruent and give you similar figures for RMS RA.
 
 If the figures are inconsistent and diverging from each other much:
 
 - Check orientations of guide scope and Simulator screen
 - Check a different focus setting of the guide scope
+- Check for cable tugging, and
+- Imbalances in RA and Dec
 
 !!! note 
     **Dec values may be different!**
@@ -400,7 +487,28 @@ If the figures are inconsistent and diverging from each other much:
     usually going top down, noise in that direction might be much higher than noise in RA direction.
     This does not matter for measuring the periodic error of the mount.
 
-#### Measurement: Guiding
+## Measuring a guiding run
+
+First we need to have PHD2 optimize it's  guiding parameters using the Guiding Assistant, then we can perform measurements. 
+
+### Guiding Assistant run
+
+Now let's run PHD2's guiding assistant. This switches off guiding and just follows the movement of the stars and directly 
+records the position of the guide star on the camera.
+
+For this to happen, do this: 
+
+- Move to the left of the simulated star and enable tracking in the mount.
+- When the guidecam picture has the star approximately in the center, start simulation in BWMT's web interface.
+- Open up PHD2 "Tools" > "Guiding Assistant", select the simulated star, if it is not already selected, then start guiding.
+- Let "Measure Declination Backlash" enabled, then press "Start".
+- Let it run for at least one full revolution of the worm gear (see "elapsed time" in the top-right table). 
+- Check that time against he remaining simulation time, that is displayed on the simulator screen. 
+- Wait
+- Press "Stop" in the guiding assistant. 
+- Accept all changes that the guiding assistant recommends.
+
+### Measurement: Guiding
 
 !!! important
     At the moment southern hemisphere mode is not supported yet.
@@ -408,21 +516,24 @@ If the figures are inconsistent and diverging from each other much:
 !!! warning During measurement avoid crossing the line of sight and walking around the mount and screen! Else PHD2 might
     loose the simulated guide star and stop guiding.
 
-    Also do not walk next to the mount or the simulator screen, as depending on the floor you're measuring this on, your w
-    eight will create vibrations or changes of the floor that might travel to the mount or screen and
+    Also do not walk next to the mount or the simulator screen, as depending on the floor you're measuring this on, your
+    weight will create vibrations or changes of the floor that might travel to the mount or screen and
     create excursions.
 
-Now return the simulation back to 0% by clicking the "back to start" button, and rotate the guide scope back to point at
+Return the simulation back to 0% by clicking the "back to start" button, and rotate the guide scope back to point at
 the simulated star.
 
 Now it's time to start the simulation:
 
-1. Start the simulation, by clicking on the play button in the webpage.
-2. Using driver's controls start tracking in the mount
+1. Using driver's controls start tracking in the mount
+2. Start the simulation, by clicking on the play button in the webpage.
 3. Start guiding in PHD2
+4. Once the simulation is going to end, first stop guiding in PHD2.
+5. Stop tracking of the mount
 
-BWMT will now display the time left, for the mount to cross the screen. One minute and again 30 seconds before the end
-is reached BWMT will beep. 10 seconds before the end of the simulation a countdown will start and BWMT will beep 10
+BWMT will now display the time left, for the mount to cross the screen. One minute and then again 30 seconds before the end
+is reached BWMT will beep, the screen that is attached to the simulator has a speaker. 
+10 seconds before the end of the simulation a countdown will start and BWMT will beep 10
 times. Use this to stop the mount.
 
 Using **PHD2 Log Viewer** you can now analyse the performance of your mount.
