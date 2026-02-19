@@ -293,6 +293,8 @@ class WebServer:
                 if latitude_factor > 0:
                     duration_minutes /= latitude_factor
 
+            dec_target = - (90.0 - latitude)
+
             return {
                 "effective_focal_length": round(effective_fl, 1),
                 "duration_minutes": round(duration_minutes, 1),
@@ -302,6 +304,7 @@ class WebServer:
                 "area_height_mm": round(area_height_mm, 1),
                 "pixel_pitch_mm": round(pixel_pitch_mm, 3),
                 "pixel_pitch_arcsec": round(pixel_pitch_arcsec, 2),
+                "dec_target": round(dec_target, 1),
             }
 
         @self.app.route("/api/config/mount/<field>", methods=["PATCH"])

@@ -789,19 +789,17 @@
                     <p>{{ _('Measurement duration:') }} ~<strong id="duration">--</strong> {{ _('minutes') }}</p>
                     <p>{{ _('Recommended Binning:') }} <strong id="binning">--</strong>x</p>
                     <p>{{ _('Area on Simulator:') }} <strong id="area-width">--</strong> x <strong id="area-height">--</strong> mm</p>
+                    <p>{{ _('Dec target (90° - Lat):') }} <strong id="dec-target">--</strong>°</p>
                 </div>
             </div>
 
             <div class="card instructions-card">
                 <h2>{{ _('Instructions') }}</h2>
-                <p>{{ _('Fill in the values above, then set up PHD2 as follows:') }}</p>
                 <ol>
-                    <li>{{ _('Create a new guiding profile in PHD2 with the Effective FL and Binning values as listed above.') }}</li>
-                    <li>{{ _('Disable multi-star guiding (we use one simulated star).') }}</li>
-                    <li>{{ _('Start looping in PHD2.') }}</li>
-                    <li>{{ _('From the Tools menu, enable the cross in the camera display.') }}</li>
-                    <li>{{ _('Point the mount at the simulator display, focus and locate the cross, by following the arrows') }}</li>
-                    <li>{{ _('While on the way orient the simulator display such (grid), that you\'re roughly in focus all over the simulator display') }}</li>
+                    <li>{{ _('Fill in your mount, camera and screen values above.') }}</li>
+                    <li>{{ _('In PHD2 create a new profile with the Effective FL and Binning shown above. Disable multi-star guiding.') }}</li>
+                    <li>{{ _('Use PHD2\'s Calibration Assistant to slew the mount to the screen: enter "Dec target" as Declination.') }}</li>
+                    <li>{{ _('Focus and locate the cross on the simulator display, following the arrows.') }}</li>
                 </ol>
                 <p>{{ _('Then press "Next" to start aligning the mount.') }}</p>
             </div>
@@ -811,7 +809,8 @@
         <div class="step-content" id="step-2-content">
             <div class="card instructions-card">
                 <h2>{{ _('Instructions') }}</h2>
-                <p>{{ _('Rotate the mount in Azimuth, so that when going from left-to-right, the red line will be visible when rotating the mount only in RA.') }}</p>
+                <p>{{ _('Using only rotations in RA, move the mount back and forth from left-hand-side to right-hand-side. Use the mount\'s Azimuth adjustment screws, so that the zero line will be crossed on left-hand- and right-hand-side.') }}</p>
+                <p>{{ _('If necessary, adjust Dec slightly.') }}</p>
                 <p>{{ _('Press "Next" when aligned, or "Back" to return to configuration.') }}</p>
             </div>
         </div>
@@ -1035,6 +1034,7 @@
         const binningSpan = document.getElementById('binning');
         const areaWidthSpan = document.getElementById('area-width');
         const areaHeightSpan = document.getElementById('area-height');
+        const decTargetSpan = document.getElementById('dec-target');
         const btnBack = document.getElementById('btn-back');
         const btnNext = document.getElementById('btn-next');
 
@@ -1156,6 +1156,14 @@
                 areaWidthSpan.textContent = '--';
                 areaHeightSpan.textContent = '--';
             }
+
+            // Dec target = 90° - |latitude|
+            const lat = Math.abs(mountConfig.latitude);
+            if (lat > 0) {
+                decTargetSpan.textContent = (90.0 - lat).toFixed(1);
+            } else {
+                decTargetSpan.textContent = '--';
+            }
         }
 
         // Update calculated values from server response
@@ -1181,6 +1189,9 @@
             }
             if (calculated.pixel_pitch_arcsec !== undefined) {
                 pixelPitchArcsecSpan.textContent = calculated.pixel_pitch_arcsec || '--';
+            }
+            if (calculated.dec_target !== undefined) {
+                decTargetSpan.textContent = calculated.dec_target || '--';
             }
         }
 

@@ -99,6 +99,10 @@ In the **Calculated Values** section, BWMT displays the following infos:
   the effective focal length using the lens equation for near-focus imaging. This helps you verify that your field of
   view is appropriately sized for the measurements.
 
+- **Dec target**: This is the declination value to enter into PHD2's Calibration Assistant when slewing the
+  mount to the simulator screen. It is calculated as negative 90° minus your latitude. For example, at latitude 51.5° the Dec
+  target is 38.5°. This points the mount roughly at the simulator screen's elevation above the horizon.
+
 Now we are good to go and need to setup PHD2. So follow the instructions that are displayed on the simulator
 screen, which provide a reminder, if you're not looking at this manual
 
@@ -129,7 +133,7 @@ position, providing orientation.
 Now open "Tools" > "Calibration Assistant", and have PHD2 command the mount to slew to the simulator screen:
 
 - Enter 5 into the "Calibration Location" > "Meridian offset (degrees)" box and
-- 90° - Latitude for "Declination".
+- the "Dec target" value from BWMT's Calculated Values section for "Declination" (this is 90° - Latitude).
 
 Click "Slew". 
 
