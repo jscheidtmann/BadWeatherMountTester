@@ -1,5 +1,8 @@
 # Bad Weather Mount Tester Manual
 
+!!! important
+    At the moment southern hemisphere mode is not supported yet.
+
 ## Configure BWMT and your gear
 
 Make sure you can startup BWMT as described here, before setting up the gear (can save a lot of walking).
@@ -52,7 +55,9 @@ Make sure you can startup BWMT as described here, before setting up the gear (ca
   <figcaption>Figure 3: The configuration screen of BWMT's web interface. TODO - fix wording</figcaption>
 </figure>
 
-Enter the appropriate values for your setup into the configuration screen. First enter the **Mount Configuration**:
+Enter the appropriate values for your setup into the configuration screen. 
+
+First enter the **Mount Configuration**:
 
 - **Latitude (degrees)**: What is the latitude your mount is configured for? Enter a decimal values such as 51.5 (you
   can use both "." and "," as decimal points) Convert from sexagesimal degree (dd° mm') as follows: dd + mm / 60.
@@ -112,13 +117,14 @@ Open PHD2 on your astro computer and **create a new profile** using the <u>New P
 depends on the brand of your mount and guidescope. Please consult [PHD2
 documentation](https://openphdguiding.org/man/Basic_use.htm#New_profile_wizard) in how to do this.
 
-In advanced settings in PHD2 (the "brain"), disable multi-star guiding, as we will use a single simulated star: 
+In advanced settings in PHD2 (the "brain"), disable multi-star guiding, as we will use a single simulated star. You can 
+also disable "Star Mass Detection" and decrease "Mininum Star HFD (pixels)" and increase "Maximum Star HDF (pixels)" as
+shown in this screenshot, but this should work ok for most setups (This would make PHD2 more tolerant for "peculiar" stars): 
 
 <figure markdown="span">
   ![PHD2 Advanced Setting Dialog > Guiding: Multistar Guiding is disables](PHD2_disable_multistarguiding.png)
-  <figcaption>Figure X: In PHD2's "Advanced Settings" > "Guiding" disable "Use multiple stars".</figcaption>
+  <figcaption>Figure 4: In PHD2's "Advanced Settings" > "Guiding" disable "Use multiple stars".</figcaption>
 </figure>
-
 
 Then connect to your guidescope and mount and start looping. If your mount is not yet in home position, move it to home
 position, i.e. the guidescope should point along the RA axis to where the polar scope would be pointing, if you were
@@ -127,20 +133,20 @@ position, providing orientation.
 
 <figure markdown="span">
   ![Home Position of a Mount](BWMT_home_position.jpg)
-  <figcaption>Figure X: In "Home" position, the scope points along the RA axis to the celestial pole.</figcaption>
+  <figcaption>Figure 5: In "Home" position, the scope points along the RA axis to the celestial pole.</figcaption>
 </figure>
 
 Now open "Tools" > "Calibration Assistant", and have PHD2 command the mount to slew to the simulator screen:
 
-- Enter 5 into the "Calibration Location" > "Meridian offset (degrees)" box and
+- Enter 5 into the "Calibration Location" > "Meridian offset (degrees)" box (which is the default) and
 - the "Dec target" value from BWMT's Calculated Values section for "Declination" (this is 90° - Latitude). On northern 
-  hemisphere, you need to enter the negative value, on southern hemisphere use the positive value. 
+  hemisphere, you need to enter a negative value, on southern hemisphere use the positive value. 
 
 Click "Slew". 
 
 <figure markdown="span">
   ![Use the PHD Calibration Assistant to slew the mount to the screen](PHD2_CalibrationAssistant.png)
-  <figcaption>Figure X: Enter (90°-Latitute) into the "Declination" filed. Adjust "Meridian Offset" to roughly point on the 
+  <figcaption>Figure 6: Enter (90°-Latitute) into the "Declination" filed. Adjust "Meridian Offset" to roughly point on the 
   left-hand-side of the screen. Check the "Pointing" field to determine the side of pier.</figcaption>
 </figure>
 
@@ -149,7 +155,7 @@ Assistant" dialog and press "Slew" again.
 
 <figure markdown="span">
   ![Guide scope pointing at the simulator screen](BWMT_scope_pointing_at_screen.jpg)
-  <figcaption>Figure X: The scope points roughly at the simulator screen's left-hand-side.</figcaption>
+  <figcaption>Figure 7: The scope points roughly at the simulator screen's left-hand-side.</figcaption>
 </figure>
 
 Check your mount driver, because PHD2 enabled sidereal tracking. **Disable tracking**, if it is 
@@ -158,12 +164,12 @@ As it is not pointing at infinity, you may need to add extensions to reach focus
 
 <figure markdown="span">
   ![Extensions will almost certainly be necessary to focus](BWMT_extensions.jpg)
-  <figcaption>Figure X: You will almost certainly need to add extensions to get into focus (The scope is a 70/420 with a x0.5 Reducer).</figcaption>
+  <figcaption>Figure 8: You will almost certainly need to add extensions to get into focus (The scope is a 70/420 with a x0.5 Reducer).</figcaption>
 </figure>
 
 <figure markdown="span">
   ![Focus achieved](BWMT_focus_achieved.png)
-  <figcaption>Figure X: Focus achieved on the simulator screen, from with-in PHD2.</figcaption>
+  <figcaption>Figure 9: Focus achieved on the simulator screen, from with-in PHD2.</figcaption>
 </figure>
 
 In PHD2 enable the Bullseye overlay from "View" > "Bullseye". Using **only movements in RA** with the mount control buttons in your mount driver, follow the
@@ -171,7 +177,7 @@ arrows to point the mount at left side of the screen. Once you're there you've m
 
 <figure markdown="span">
   ![LHS of screen, at ideal heigth](BWMT_ideal_height.png)
-  <figcaption>Figure X: Left-hand-side of screen, in ideal height.</figcaption>
+  <figcaption>Figure 10: Left-hand-side of screen, in ideal height.</figcaption>
 </figure>
 
 Press `next`to go to the alignment screen.
@@ -183,7 +189,7 @@ For the next step you need to be in the "Align" screen:
 <figure markdown="span">
   ![BWMTs display for alignment shows horizontal lines. In the middle of a screen is a red 'zero' line. Then parallel to that horizontal
   lines in a distance of 50 pixel are displayed.](BWMT_align.png)
-  <figcaption>Figure 4: Simulator screen displayed for Alignment</figcaptoin>
+  <figcaption>Figure 11: Simulator screen displayed for Alignment</figcaptoin>
 </figure>
 
 ### Adjusting height of Screen and Mount
@@ -197,7 +203,7 @@ Last, for fine adjustment, use the mount control buttons in your mount driver so
 
 <figure markdown="span">
   ![Height was adjusted](BWMT_left-hand-side.png)
-  <figcaption>Figure X: Height was adjusted and guidescope is pointing at the middle of the aligment screen (left-hand-side).
+  <figcaption>Figure 12: Height was adjusted and guidescope is pointing at the middle of the aligment screen (left-hand-side).
   </figcaption>
 </figure>
 
@@ -238,13 +244,14 @@ difference from left to right is ok.
   ![BWMT mount aligned left-hand-side](BWMT_left-hand-side.png){width="40%"}
   b)
   ![BWMT right-hand-side](BWMT_right-hand-side.png){width="40%"}
-  <figcaption>Figure X: Orientation of screen and guide scope achieved: The bulleye crosses the screen on both a) left-hand-side and b) right-hand-side.</figcaption>
+  <figcaption>Figure 13: Orientation of screen and guide scope achieved: The bullseye crosses the center line of the 
+  screen on both a) left-hand-side and b) right-hand-side.</figcaption>
 </figure>
 
 Repeat this procedure until you're satisfied, that a symmetric arc will be traced on the monitor when fully moving from
 left-to-right. 
 
-Move the mount to the left hand side of the screen and press `next`. 
+Move the mount to the left hand side of the simulator screen and press `next`. 
 
 ## Calibrating the simulator
 
@@ -252,7 +259,7 @@ You should now be in the "Calibrate" tab.
 
 <figure markdown="span">
   ![BWMT Calibration Screen](BWMT_web_calibration.png)
-  <figcaption>Figure 5: The Calibration Screen</figcaption>
+  <figcaption>Figure 14: The Calibration Screen</figcaption>
 </figure>
 
 Now we will trace the mount's location accross the screen, to setup the average path that the mount takes across the
@@ -269,12 +276,15 @@ picture. Right click to place the first alignment point. Using curser keys, adju
 the bullseye. The keys only work, if the cursor is hovering on the picture.
 
 <figure markdown="span">
-  a) ![Step 1a: Hover and point crosshar](BWMT_calibration_step1a.png) 
-  b) ![Step 1b: Click to place a calibration point](BWMT_calibration_step1b.png) 
-  c) ![Step 1c: Using cursor keys, place calibration point at center of bullseye](BWMT_calibration_step1c.png)
-  <figcaption>Figure 6: Steps to create a calibration point. a) Hovering with the mouse on the calibration preview,
-  displays a crosshair on the simulator screen, for coarse positioning, b) left-click with the mouse creates a calibration 
-  point (15 in this case). c) fine adjust position to center crosshair in bullseye using cursor keys or s,d,f and e.
+  a) Hovering on the web page, shows a crosshair on both the Calibration Preview (right) and the simulator screen (PHD2 image, left)
+  ![Step 1a: Hover and point crosshar](BWMT_calibration_step1a.png) 
+
+  b) left-click with the mouse creates a calibration point (15 in this case). 
+  ![Step 1b: Click to place a calibration point](BWMT_calibration_step1b.png) 
+
+  c) fine adjust position to center crosshair in bullseye using cursor keys or s,d,f and e.
+  ![Step 1c: Using cursor keys, place calibration point at center of bullseye](BWMT_calibration_step1c.png)
+  <figcaption>Figure 15: Steps to create a calibration point. 
 </figure>
 
 **Step 2**: Using **ONLY** the RA axis, move the mount to the right, so that you can still see the previous alignment point.
@@ -282,7 +292,7 @@ Then repeat step 1.
 
 <figure markdown="span">
   ![Step 2: move mount to add next calibration point](BWMT_calibration_step2.png) 
-  <figcaption>Figure 6: Move mount to create the next calibration point.</figcaption>
+  <figcaption>Figure 16: Move mount to create the next calibration point.</figcaption>
 </figure>
 
 
@@ -294,7 +304,7 @@ star corssing the screen.
 
 <figure markdown="span">
   ![All calibration points set](BWMT_calibration_complete.png)
-  <figcaption>Figure 6: Repeat calibration steps, to cover the whole simulator screen. This completes the calibration.</figcaption>
+  <figcaption>Figure 17: Repeat calibration steps, to cover the whole simulator screen. This completes the calibration.</figcaption>
 </figure>
 
 At last, move the mount to the left of the screen, then press `next`, to start measuring the velocity of your mount.
@@ -307,14 +317,15 @@ chosen such, that the mount will take approximately 3 min to cross it.
 
 <figure markdown="span">
   ![For measuring velocity three stripes are displayed](BWMT_velocity.png)
-  <figcaption>Figure 6: 3 stripes to measure the velocity, one on left, middle and right.</figcaption>
+  <figcaption>Figure 18: 3 stripes to measure the velocity, one on left, middle and right.</figcaption>
 </figure>
 
-The web page shows three times, one for each stripe and a stop watch
+The web page shows three "recorded times", one for each stripe and a stop watch on top. Clicking on "left", "middle" or "right"
+in the stop watch selects the recorded time for that stripe. 
 
 <figure markdown="span">
   ![For measuring velocity the web page allows to stop the time to cross the stripes](BWMT_web_velocity.png)
-  <figcaption>Figure 6: The web page to measure on screen velocities. Choose the respective stripe by clicking on "Left", 
+  <figcaption>Figure 19: The web page to measure on screen velocities. Choose the respective stripe by clicking on "Left", 
   "Middle" or "Right", then use the Start/Stop, Reset buttons to measure how long it takes the mount to cross the stripe.</figcaption>
 </figure>
 
@@ -322,13 +333,14 @@ Chose a very short exposure time for your camera. The smallest value, that PHD2 
 in principle it doesn't matter. 
 
 Now move the mount to the left of the outer strip, start tracking with the bullseye overlay active on the screen and
-press "Start" once the bullseye center enters the left stripe. Press stop, when it leaves the stripe. The time it took
+press "Start" once the bullseye center enters the left stripe. Take care to avoid any reflection of the stripe on the screen casing.
+Press stop, when it leaves the stripe. The time it took
 to cross the stripe is displayed on the web page. Now using **ONLY** movements in RA, move to the middle stripe and
 measure there. Then repeat this procedure with the right-hand stripe.
 
 <figure markdown="span">
   ![During a velocity measurement](BWMT_velocity_running.png)
-  <figcaption>Figure 6: While the measurement for the left hand stripe is running. Note that the mount is tracking (Tracking "on").</figcaption>
+  <figcaption>Figure 20: While the measurement for the left hand stripe is running. Note that the mount is tracking (Tracking "on").</figcaption>
 </figure>
 
 If you want to re-measure a stripe, click the clear button next to the corresponding entry field. Starting and stopping
@@ -337,46 +349,14 @@ the stop watch will then put that measurement into this field.
 After measuring the mounts velocity at each location, press `next`, you're now in the "Measure tab" of the web interface. 
 and the Simulation Controls are displayed. 
 
-
-
 ## Qualification of Measurement Setup
 
 For the following you need to be in the "Measure" tab of the web interface, where simulation control is displayed: 
 
 <figure markdown="span">
-  ![BWMT Simulation Control](BWMT_measure.png)
-  <figcaption>Figure X: The simulation control.</figcaption>
+  ![BWMT Simulation Control](BWMT_web_measure.png)
+  <figcaption>Figure 21: The simulation control.</figcaption>
 </figure>
-
-### Measurement Principle
-
-BWMT will on left hand side (northern hemisphere, right hand side on southern hemisphere), where you placed the first
-alignment point, display a simulated star. This star will have a gaussian profile that is sampled at the positions of
-the pixels. The diameter of this star will be roughly 3 pixels. As the pixel resolution of the screen is fixed, you will
-have to adjust your guide camera and the focus of your guide scope such that the star profile displayes a smooth
-gaussian profile.
-
-Center this "star" in PHD2 and click on it. If you have not displayed the "Star Profile" yet, activate it from the menu
-("View" > "Display Star Profile"). Then adjust camera gain and exposure time so that the star profile is not clipped at
-the top (mesa shape). If you get a ragged profile (stemming from the different pixels simulated star), unfocus slightly.
-Make sure that the star profile does not become too broad. The square displayed by PHD2 around the simulated star should
-always be green and it should not vanish in between. Check the message that is displayed in the Star Profile view, if
-that happens. You may have to adjust PHD2 configuration settings to tell PHD2 to be more tolerant:
-
-1. Disable "Star Mass Detection"
-2. Disable "Use multiple stars"
-3. Up the "Maximum star HFD (pixels)" setting to the max (10)
-
-If you have difficulties to get a smooth star profile, consider:
-
-- Adjusting the distance between scope and simulator screen: The wider the distance the smaller the pixels from the
-  point of view of the guide scope
-- Adjusting the focal length of the guide scope. By choosing a smaller focal length, the size of the displayed pixels
-  will shrink, but your arcsec resolution will suffer
-- Using a different guide camera with larger pixels
-- Using a different screen, with a better resolution (higher dpi)
-
-TODO move or cannibalise.
 
 ### Prerequisits for good measurements
 
@@ -386,7 +366,7 @@ The PHD2 mailing list recommends an exposure time of 1 - 3s, if you've got a wor
 an exposure time that is fitting to that. You probably will have to add a neutral density filter to your camera or in fron of your guidescope 
 to avoid saturation. 
 
-#### Averaged pixels
+#### Get a Good Star Profile (Averaging Pixels)
 
 As we are imaging the pixels from the simulator screen, we need to make sure that the camera doesn't pick up that pixel structure, but 
 at least averages that pixel structure out. 
@@ -395,7 +375,7 @@ Take for example this focused view of the "LEFT" printed along the stripe from t
 
 <figure markdown="span">
   ![Focused star profile, showing pixel structure of simulator screen](BWMT_pixelstructure.png)
-  <figcaption>Figure X: PHD2's Star Profile tool showing pixels.</figcaption>
+  <figcaption>Figure 22: PHD2's Star Profile tool showing pixels.</figcaption>
 </figure>
 
 As you can see the star profile is ragged, and does not consist of a single "hump" with symmetric appearance. This will then also be the case 
@@ -406,13 +386,15 @@ for the simulated star, but not as pronounced:
   ![Focused star profile, showing pixel structure of simulator screen](BWMT_pixelstructure_star.png)
   b)
   ![Unfocused star profile, showing a symmetric structure](BWMT_pixelstructure_unfocused.png)
-  <figcaption>Figure X: PHD2's Star Profile tool showing pixels in a), and a more symmetric profile when unfocused b).</figcaption>
+  <figcaption>Figure 23: PHD2's Star Profile tool showing pixels in a), and a more symmetric profile when unfocused b).</figcaption>
 </figure>
 
 In order to improve the star profile for measurements, you can do the following: 
 
 - Increase distance between mount and simulator screen. Decreases arcsec / px for the simulator screen.
 - Reduce the focal length of your guidescope. Decreases arcsec / px for the guidescope image.
+- Use a different guide camera with larger pixels
+- Use a different screen, with a better resolution (higher dpi)
 - unfocus the guidescope. Artifically smears out the pixel structure 
 
 #### Rock solid floor
@@ -424,8 +406,8 @@ approximately 6 pixels or a distance of 21µm. This is about a 1/3rd of a human 
 It may even be the case, that people slamming doors or otherwise introducing energy or vibrations into the house (like bouncing a ball) 
 will be noticed by your measurement setup. 
 
-If you've got the choice, make sure that the floor and furniture the simulator screen is standing on are exremely sturdy. 
-And if possible make sure that these kind of things do not happen during your measurements.
+If you've got the choice, make sure that the floor your mount in standing on and any furniture the simulator screen is standing on are exremely sturdy. 
+At least (if possible) make sure that these kind of things do not happen during your measurements (people walking around or bouncing balls)
 
 #### Exposure Time and Screen Refresh
 
@@ -433,6 +415,10 @@ BWMT is configured to refresh the screen every 1/60th of a second or equivalentl
 should therefore be different from that rate. 
 
 ### Statistical Measurement Error
+
+When entering the "measurement" tab, BWMT will on left hand side (northern hemisphere, right hand side on southern hemisphere), 
+where you placed the first alignment point, display a simulated star. This star will have a gaussian profile that is sampled at the positions of
+the pixels. The diameter of this star will be roughly 3 pixels. 
 
 Let's see, which statistical fluctuations the measurement setup is reporting. These can be: air currents, cables tugging, 
 imbalances in RA and Dec, vibrations present in the building from people or cars driving on the street, the higher temperature of the 
@@ -452,7 +438,7 @@ Let it run for a while. Now use PHD2 Log Viewer to have a look at the Log.
 
 <figure markdown="span">
   ![BWMT ](BWMT_statistical_error.png)
-  <figcaption>Figure X: Guiding while "nothing is moving". Distance between gray lines is 1". </figcaption>
+  <figcaption>Figure 24: Guiding while "nothing is moving". Distance between gray lines is 1". </figcaption>
 </figure>
 
 The things that you can take from this are 
@@ -460,6 +446,7 @@ The things that you can take from this are
 - Even if "nothing is moving", PHD2 recognizes different locations of the simulated guide star
 - The movement looks like a random walk
 - The scatter plot of the selected section is largely symmetric
+- There was a large excursion, due to people walking in the room (deselected)
 - RA RMS is reported to be 0.09px, that means averaging yields measurements that are "good" up to 1/10th of a guidecam pixel. 
 - Dec RMS, is slightly larger at 0.12px
 - Drift is on the order of half of that (where there should be no drift)
@@ -475,17 +462,10 @@ All these measurements should be congruent and give you similar figures for RMS 
 
 If the figures are inconsistent and diverging from each other much:
 
-- Check orientations of guide scope and Simulator screen
+- Check orientations of Guide Scope and Simulator screen
 - Check a different focus setting of the guide scope
 - Check for cable tugging, and
 - Imbalances in RA and Dec
-
-!!! note 
-    **Dec values may be different!**
-
-    The Dec values in this chosen geometry are roughly parallel to the vertical lines of the screen. Due to screen updates 
-    usually going top down, noise in that direction might be much higher than noise in RA direction.
-    This does not matter for measuring the periodic error of the mount.
 
 ## Measuring a guiding run
 
@@ -508,10 +488,12 @@ For this to happen, do this:
 - Press "Stop" in the guiding assistant. 
 - Accept all changes that the guiding assistant recommends.
 
-### Measurement: Guiding
+!!! bug
+    The velocity, with which the simulator crosses the screen is systematically too high. 
+    The reason for that is at the moment unknown. Any help is appreciated. 
+    If all else fails, a future version will contain a slider to tune velocity up or down.
 
-!!! important
-    At the moment southern hemisphere mode is not supported yet.
+### Measurement: Guiding
 
 !!! warning During measurement avoid crossing the line of sight and walking around the mount and screen! Else PHD2 might
     loose the simulated guide star and stop guiding.

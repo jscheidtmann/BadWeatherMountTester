@@ -1,0 +1,69 @@
+mount:
+  latitude: 51.1167
+  focal_length_mm: 210.0
+  distance_to_screen_m: 3.41
+  main_period_seconds: 480.0
+  telescope_offset_m: 0.27
+  telescope_offset_dec_m: -0.03
+  angle_start_deg: 0.0
+  angle_stop_deg: -10.0
+  declination_deg: -38.0
+display:
+  fullscreen: false
+  screen_size: hd
+  screen_width: 1920
+  screen_height: 1200
+  screen_width_mm: 520.0
+  star_size: 3
+  star_brightness: 255
+  target_y_ratio: 0.5
+server:
+  host: 0.0.0.0
+  port: 5050
+camera:
+  pixel_size_um: 3.75
+  width_px: 1280
+  height_px: 960
+calibration:
+  points:
+  - - 15
+    - 601
+  - - 135
+    - 594
+  - - 246
+    - 584
+  - - 373
+    - 583
+  - - 490
+    - 580
+  - - 593
+    - 578
+  - - 690
+    - 576
+  - - 799
+    - 575
+  - - 957
+    - 574
+  - - 1069
+    - 574
+  - - 1227
+    - 577
+  - - 1328
+    - 579
+  - - 1414
+    - 580
+  - - 1542
+    - 585
+  - - 1671
+    - 590
+  - - 1791
+    - 596
+  - - 1904
+    - 603
+  is_complete: false
+velocity:
+  left_time_seconds: 171.14839999997616
+  middle_time_seconds: 176.7655
+  right_time_seconds: 177.39240000009536
+  stripe_width_pixels: 128
+  is_complete: true
