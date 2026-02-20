@@ -1,0 +1,33 @@
+#!/bin/sh
+# Pre-commit hook: reject JPEG files that contain GPS location data.
+#
+# Activate once per clone with:
+#   git config core.hooksPath .githooks
+
+staged_jpgs=$(git diff --cached --name-only --diff-filter=ACM | grep -iE '\.(jpg|jpeg)$')
+
+[ -z "$staged_jpgs" ] && exit 0
+
+geolocated=$(printf '%s\n' "$staged_jpgs" | uv run python -c "
+import sys
+from PIL import Image
+
+GPS_TAG = 34853
+for path in sys.stdin.read().splitlines():
+    try:
+        exif = Image.open(path)._getexif()
+        if exif and GPS_TAG in exif:
+            print(path)
+    except Exception:
+        pass
+")
+
+if [ -n "$geolocated" ]; then
+    echo "error: commit rejected — the following JPEG files contain GPS location data:"
+    printf '%s\n' "$geolocated" | sed 's/^/  /'
+    echo ""
+    echo "Strip GPS data with:"
+    echo "  uv run python -c \\"
+    echo "    \"from PIL import Image; img = Image.open('<file>'); e = img.getexif(); del e[34853]; img.save('<file>', quality='keep', exif=e.tobytes())\""
+    exit 1
+fi
