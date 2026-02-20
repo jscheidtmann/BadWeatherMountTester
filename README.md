@@ -7,9 +7,9 @@
 [![Dependencies](https://img.shields.io/librariesio/release/pypi/BadWeatherMountTester)](https://libraries.io/pypi/BadWeatherMountTester)
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/BWMT_logo_w.svg">
-  <source media="(prefers-color-scheme: light)" srcset="docs/BWMT_logo_b.svg">
-  <img alt="Bad Weather Mount Tester Logo" src="BWMT_logo_b.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/jscheidtmann/BadWeatherMountTester/tree/main/docs/BWMT_logo_w.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/jscheidtmann/BadWeatherMountTester/tree/main/docs/BWMT_logo_b.svg">
+  <img alt="Bad Weather Mount Tester Logo" src="https://github.com/jscheidtmann/BadWeatherMountTester/tree/main/docs/BWMT_logo_b.svg">
 </picture>
 
 When you buy a new telescope mount, the first things to do is to measure the periodic error, because if the periodic error is really high, you would like to
@@ -21,9 +21,7 @@ Using this program you can test the periodic error of your mount any time, any p
 
 ## Documentation
 
-The full user manual is available in [docs/manual.md](docs/manual.md).
-
-A hosted version of the documentation site is available at <https://jscheidtmann.github.io/BadWeatherMountTester/>.
+The full user manual is available at <https://jscheidtmann.github.io/BadWeatherMountTester/>.
 
 ## How to Install
 
