@@ -13,7 +13,10 @@
       "Bash(python -m flake8:*)",
       "Bash(find:*)",
       "Bash(python -m pytest:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(python3:*)",
+      "Bash(.venv/Scripts/python.exe:*)",
+      "Bash(.venv/bin/python:*)"
     ]
   }
 }
