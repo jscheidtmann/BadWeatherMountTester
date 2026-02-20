@@ -7,9 +7,9 @@
 [![Dependencies](https://img.shields.io/librariesio/release/pypi/BadWeatherMountTester)](https://libraries.io/pypi/BadWeatherMountTester)
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/jscheidtmann/BadWeatherMountTester/tree/main/docs/BWMT_logo_w.svg">
-  <source media="(prefers-color-scheme: light)" srcset="https://github.com/jscheidtmann/BadWeatherMountTester/tree/main/docs/BWMT_logo_b.svg">
-  <img alt="Bad Weather Mount Tester Logo" src="https://github.com/jscheidtmann/BadWeatherMountTester/tree/main/docs/BWMT_logo_b.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/jscheidtmann/BadWeatherMountTester/refs/heads/main/docs/BWMT_logo_w.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/jscheidtmann/BadWeatherMountTester/refs/heads/main/docs/BWMT_logo_b.svg">
+  <img alt="Bad Weather Mount Tester Logo" src="https://raw.githubusercontent.com/jscheidtmann/BadWeatherMountTester/refs/heads/main/docs/BWMT_logo_b.svg">
 </picture>
 
 When you buy a new telescope mount, the first things to do is to measure the periodic error, because if the periodic error is really high, you would like to
