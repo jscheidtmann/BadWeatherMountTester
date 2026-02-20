@@ -1,5 +1,7 @@
 # Bad Weather Mount Tester Manual
 
+This manual documents version 0.8.0 of Bad Weather Mount Tester.
+
 !!! important
     At the moment southern hemisphere mode is not supported yet.
 
@@ -510,7 +512,8 @@ For this to happen, do this:
 
 ### Measurement: Guiding
 
-!!! warning During measurement avoid crossing the line of sight and walking around the mount and screen! Else PHD2 might
+!!! warning 
+    During measurement avoid crossing the line of sight and walking around the mount and screen! Else PHD2 might
     loose the simulated guide star and stop guiding.
 
     Also do not walk next to the mount or the simulator screen, as depending on the floor you're measuring this on, your
