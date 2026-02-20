@@ -9,7 +9,10 @@ from typing import Optional, List, Tuple
 
 from badweathermounttester.config import AppConfig, DEFAULT_SETUP_PATH
 from badweathermounttester.display import SimulatorDisplay, DisplayMode
+from badweathermounttester.logging_setup import get_app_logger, setup_logging
 from badweathermounttester.server import WebServer, fit_ellipse
+
+log = get_app_logger()
 
 
 class Application:
@@ -178,6 +181,7 @@ class Application:
             self.display.set_network_address(network_address)
 
             print(f"BWMT started. Connect to: {network_address}")
+            log.info("BWMT started. Connect to: %s", network_address)
 
             # Main loop
             while self.display.running:
@@ -190,10 +194,12 @@ class Application:
 
         except KeyboardInterrupt:
             print("\nShutting down...")
+            log.info("Shutting down...")
             return 0
 
         except Exception as e:
-            print(f"Error: {e}", file=sys.stderr)
+            print(f"Error: {e}")    
+            log.error("Error: %s", e)
             return 1
 
         finally:
@@ -240,6 +246,12 @@ def parse_args() -> argparse.Namespace:
         help="Run in fullscreen mode (overrides setup.yml)",
     )
     parser.add_argument(
+        "--log-config",
+        type=Path,
+        default=None,
+        help="Path to logging configuration file (INI format)",
+    )
+    parser.add_argument(
         "--screen-size",
         type=str,
         default=None,
@@ -251,6 +263,9 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     """Main entry point."""
     args = parse_args()
+
+    log_file = setup_logging(args.log_config)
+    log.info("Logging to %s", log_file)
 
     # Load or create configuration
     # Priority: --config (JSON) > --setup (YAML) > defaults

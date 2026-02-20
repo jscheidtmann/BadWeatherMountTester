@@ -15,6 +15,17 @@ from flask_babel import Babel  # , gettext as _
 from waitress import serve
 
 from badweathermounttester.config import AppConfig, DEFAULT_SETUP_PATH
+from badweathermounttester.logging_setup import (
+    get_config_logger,
+    get_calibrate_logger,
+    get_velocity_logger,
+    get_simulation_logger,
+)
+
+log_cfg = get_config_logger()
+log_cal = get_calibrate_logger()
+log_vel = get_velocity_logger()
+log_sim = get_simulation_logger()
 
 
 def fit_ellipse(points: List[List[int]]) -> Optional[Dict]:
@@ -333,12 +344,14 @@ class WebServer:
             if self._on_config_update_callback:
                 self._on_config_update_callback(self.config)
 
+            calculated = _calculate_all_values()
+            log_cfg.info("Mount.%s = %s; calculated: %s", field, value, calculated)
             return jsonify(
                 {
                     "status": "ok",
                     "field": field,
                     "value": value,
-                    "calculated": _calculate_all_values(),
+                    "calculated": calculated,
                 }
             )
 
@@ -367,12 +380,14 @@ class WebServer:
             if self._on_config_update_callback:
                 self._on_config_update_callback(self.config)
 
+            calculated = _calculate_all_values()
+            log_cfg.info("Camera.%s = %s; calculated: %s", field, value, calculated)
             return jsonify(
                 {
                     "status": "ok",
                     "field": field,
                     "value": value,
-                    "calculated": _calculate_all_values(),
+                    "calculated": calculated,
                 }
             )
 
@@ -398,12 +413,14 @@ class WebServer:
             if self._on_config_update_callback:
                 self._on_config_update_callback(self.config)
 
+            calculated = _calculate_all_values()
+            log_cfg.info("Display.%s = %s; calculated: %s", field, value, calculated)
             return jsonify(
                 {
                     "status": "ok",
                     "field": field,
                     "value": value,
-                    "calculated": _calculate_all_values(),
+                    "calculated": calculated,
                 }
             )
 
@@ -414,12 +431,14 @@ class WebServer:
             if data is None or "southern" not in data:
                 return jsonify({"error": "Missing 'southern' field"}), 400
 
-            self.config.mount.southern_hemisphere = bool(data["southern"])
+            southern = bool(data["southern"])
+            self.config.mount.southern_hemisphere = southern
             self.config.save_yaml(self.setup_path)
 
             if self._on_config_update_callback:
                 self._on_config_update_callback(self.config)
 
+            log_cfg.info("Hemisphere set to %s", "Southern" if southern else "Northern")
             return jsonify({"status": "ok", "southern_hemisphere": self.config.mount.southern_hemisphere})
 
         @self.app.route("/api/mode", methods=["POST"])
@@ -449,6 +468,15 @@ class WebServer:
 
             return jsonify({"status": "ok", "x": x, "y": y})
 
+        def _ellipse_summary(ep):
+            if ep is None:
+                return "none"
+            return (
+                f"center=({ep['center_x']:.0f},{ep['center_y']:.0f})"
+                f" a={ep['semi_major']:.0f} b={ep['semi_minor']:.0f}"
+                f" angle={ep['angle']:.2f}rad"
+            )
+
         @self.app.route("/api/calibration/click", methods=["POST"])
         def calibration_click():
             """Record a calibration point."""
@@ -472,6 +500,10 @@ class WebServer:
 
             # Compute ellipse fit if enough points
             ellipse_params = fit_ellipse(self.config.calibration.points)
+            log_cal.info(
+                "Point added (%s,%s); total %s; ellipse: %s",
+                x, y, len(self.config.calibration.points), _ellipse_summary(ellipse_params),
+            )
 
             return jsonify(
                 {
@@ -509,6 +541,7 @@ class WebServer:
                 # Notify that calibration was reset by calling with special values
                 self._on_calibration_click_callback(-1, -1)
 
+            log_cal.info("Calibration reset")
             return jsonify({"status": "ok", "points": [], "count": 0})
 
         @self.app.route("/api/calibration/point/<int:index>", methods=["DELETE"])
@@ -525,6 +558,10 @@ class WebServer:
                 self._on_calibration_click_callback(-2, index)
 
             ellipse_params = fit_ellipse(self.config.calibration.points)
+            log_cal.info(
+                "Point #%s deleted; total %s; ellipse: %s",
+                index, len(self.config.calibration.points), _ellipse_summary(ellipse_params),
+            )
             return jsonify(
                 {
                     "status": "ok",
@@ -562,6 +599,11 @@ class WebServer:
                 self._on_calibration_click_callback(-3, index)  # -3 signals point update
 
             ellipse_params = fit_ellipse(self.config.calibration.points)
+            px, py = self.config.calibration.points[index]
+            log_cal.info(
+                "Point #%s moved to (%s,%s); ellipse: %s",
+                index, px, py, _ellipse_summary(ellipse_params),
+            )
             return jsonify(
                 {
                     "status": "ok",
@@ -674,6 +716,11 @@ class WebServer:
             else:
                 total_distance = abs(x_end - x_start)
                 total_time = total_distance / pixels_per_second if pixels_per_second > 0 else 0
+
+            log_sim.info(
+                "Simulation set up; x_start=%s, x_end=%s, px/s=%.4f, total=%.1fs, source=%s",
+                x_start, x_end, pixels_per_second, total_time, velocity_source,
+            )
 
             return jsonify(
                 {
@@ -790,6 +837,7 @@ class WebServer:
             """Start or resume the simulation."""
             if self._on_simulation_start_callback:
                 self._on_simulation_start_callback()
+            log_sim.info("Simulation started")
             return jsonify({"status": "ok"})
 
         @self.app.route("/api/simulation/stop", methods=["POST"])
@@ -797,6 +845,7 @@ class WebServer:
             """Stop/pause the simulation."""
             if self._on_simulation_stop_callback:
                 self._on_simulation_stop_callback()
+            log_sim.info("Simulation paused")
             return jsonify({"status": "ok"})
 
         @self.app.route("/api/simulation/reset", methods=["POST"])
@@ -804,6 +853,7 @@ class WebServer:
             """Reset the simulation to the beginning."""
             if self._on_simulation_reset_callback:
                 self._on_simulation_reset_callback()
+            log_sim.info("Simulation reset")
             return jsonify({"status": "ok"})
 
         @self.app.route("/api/simulation/skip", methods=["POST"])
@@ -816,6 +866,7 @@ class WebServer:
             seconds = float(data["seconds"])
             if self._on_simulation_skip_callback:
                 self._on_simulation_skip_callback(seconds)
+            log_sim.info("Simulation skipped %+.1fs", seconds)
             return jsonify({"status": "ok", "skipped_seconds": seconds})
 
         @self.app.route("/api/simulation/seek", methods=["POST"])
@@ -828,6 +879,7 @@ class WebServer:
             elapsed_seconds = float(data["elapsed_seconds"])
             if self._on_simulation_seek_callback:
                 self._on_simulation_seek_callback(elapsed_seconds)
+            log_sim.info("Simulation seeked to %.1fs", elapsed_seconds)
             return jsonify({"status": "ok", "elapsed_seconds": elapsed_seconds})
 
         @self.app.route("/api/simulation/status", methods=["GET"])
@@ -892,6 +944,10 @@ class WebServer:
             if self._on_velocity_setup_callback:
                 self._on_velocity_setup_callback(pixels_per_second)
 
+            log_vel.info(
+                "Velocity measurement set up; pixels_per_second=%.4f, stripe_width=%s px",
+                pixels_per_second, stripe_width,
+            )
             return jsonify(
                 {
                     "status": "ok",
@@ -935,6 +991,24 @@ class WebServer:
             )
 
             self.config.save_yaml(self.setup_path)
+
+            stripe_width = self.config.velocity.stripe_width_pixels
+            velocity = stripe_width / time_seconds if time_seconds > 0 else 0
+            log_vel.info(
+                "%s stripe crossing time = %.2fs; velocity = %.4f px/s",
+                stripe, time_seconds, velocity,
+            )
+            if self.config.velocity.is_complete and stripe_width > 0:
+                v_left = (stripe_width / self.config.velocity.left_time_seconds
+                          if self.config.velocity.left_time_seconds else 0)
+                v_mid = (stripe_width / self.config.velocity.middle_time_seconds
+                         if self.config.velocity.middle_time_seconds else 0)
+                v_right = (stripe_width / self.config.velocity.right_time_seconds
+                           if self.config.velocity.right_time_seconds else 0)
+                log_vel.info(
+                    "All stripes measured; left=%.4f mid=%.4f right=%.4f px/s",
+                    v_left, v_mid, v_right,
+                )
 
             return jsonify(
                 {

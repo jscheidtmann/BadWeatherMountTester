@@ -23,6 +23,10 @@ from dataclasses import dataclass
 from typing import Optional, Tuple, List, Dict
 
 from badweathermounttester.config import DisplayConfig
+from badweathermounttester.logging_setup import get_app_logger, get_simulation_logger
+
+log_app = get_app_logger()
+log_sim = get_simulation_logger()
 
 # Path to the logo file
 LOGO_PATH = Path(__file__).parent / "static" / "BWMT_logo_w.png"
@@ -128,6 +132,8 @@ class SimulatorDisplay:
         self.velocity_pixels_per_second: float = 0.0  # Calculated velocity
         # Hemisphere
         self.southern_hemisphere: bool = False
+        # Simulation completion logging guard
+        self._simulation_complete_logged: bool = False
 
     def init(self) -> None:
         """Initialize pygame and create the display."""
@@ -160,9 +166,9 @@ class SimulatorDisplay:
             if LOGO_PATH.exists():
                 self.logo = pygame.image.load(str(LOGO_PATH)).convert_alpha()
             else:
-                print(f"Warning: Logo file not found: {LOGO_PATH}")
+                log_app.warning("Logo file not found: %s", LOGO_PATH)
         except pygame.error as e:
-            print(f"Warning: Could not load logo: {e}")
+            log_app.warning("Could not load logo: %s", e)
 
     def _init_audio(self) -> None:
         """Initialize the audio system and play startup beep to test audio."""
@@ -174,7 +180,7 @@ class SimulatorDisplay:
             # Play startup beep to verify audio is working
             self.beep_sound.play()
         except pygame.error as e:
-            print(f"Warning: Could not initialize audio: {e}")
+            log_app.warning("Could not initialize audio: %s", e)
             self.beep_sound = None
             self.beep_end_sound = None
 
@@ -355,6 +361,7 @@ class SimulatorDisplay:
         self.simulation_running = False
         self.simulation_start_time = None
         self.simulation_elapsed = 0.0
+        self._simulation_complete_logged = False
         self.reset_beep_state()
 
     def _get_total_time(self) -> float:
@@ -524,6 +531,9 @@ class SimulatorDisplay:
         if complete:
             self.simulation_running = False
             self.simulation_elapsed = total_time  # Store final elapsed time
+            if not self._simulation_complete_logged:
+                log_sim.info("Simulation completed automatically at elapsed=%.1fs", elapsed)
+                self._simulation_complete_logged = True
 
         return {
             "running": self.simulation_running,
