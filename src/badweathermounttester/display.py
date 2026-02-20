@@ -126,6 +126,8 @@ class SimulatorDisplay:
         # Velocity measurement state
         self.velocity_stripe_width: int = 0  # Width of each stripe in pixels
         self.velocity_pixels_per_second: float = 0.0  # Calculated velocity
+        # Hemisphere
+        self.southern_hemisphere: bool = False
 
     def init(self) -> None:
         """Initialize pygame and create the display."""
@@ -231,6 +233,10 @@ class SimulatorDisplay:
         """Set the network address to display on the waiting screen."""
         self.network_address = address
 
+    def set_southern_hemisphere(self, val: bool) -> None:
+        """Set whether southern hemisphere mode is active."""
+        self.southern_hemisphere = val
+
     def set_mode(self, mode: DisplayMode) -> None:
         """Change the display mode."""
         self.mode = mode
@@ -313,10 +319,10 @@ class SimulatorDisplay:
             # Evaluate velocity at each x, clamp to minimum 0.01 px/s
             lookup_vs = np.maximum(np.polyval(coeffs, lookup_xs), 0.01)
 
-            # Compute cumulative time: dt[i] = dx / avg_velocity between points
+            # Compute cumulative time: dt[i] = |dx| / avg_velocity between points
             dx = np.diff(lookup_xs)
             avg_vs = (lookup_vs[:-1] + lookup_vs[1:]) / 2.0
-            dt = dx / avg_vs
+            dt = np.abs(dx) / avg_vs
             lookup_ts = np.concatenate(([0.0], np.cumsum(dt)))
 
             self.simulation_lookup_xs = lookup_xs
@@ -355,14 +361,15 @@ class SimulatorDisplay:
         """Get the total simulation time in seconds."""
         if self.simulation_lookup_ts is not None:
             return self.simulation_total_time
-        total_distance = self.simulation_x_end - self.simulation_x_start
+        total_distance = abs(self.simulation_x_end - self.simulation_x_start)
         return total_distance / self.simulation_pixels_per_second if self.simulation_pixels_per_second > 0 else 0
 
     def _x_from_elapsed(self, elapsed: float) -> float:
         """Get the x position from elapsed time."""
         if self.simulation_lookup_ts is not None and self.simulation_lookup_xs is not None:
             return float(np.interp(elapsed, self.simulation_lookup_ts, self.simulation_lookup_xs))
-        return self.simulation_x_start + elapsed * self.simulation_pixels_per_second
+        _direction = 1 if self.simulation_x_end >= self.simulation_x_start else -1
+        return self.simulation_x_start + _direction * elapsed * self.simulation_pixels_per_second
 
     def _velocity_from_elapsed(self, elapsed: float) -> float:
         """Get the instantaneous velocity (px/s) at the given elapsed time."""
@@ -475,7 +482,7 @@ class SimulatorDisplay:
 
     def get_simulation_status(self) -> dict:
         """Get current simulation status."""
-        if not self.calibration_ellipse or self.simulation_x_start >= self.simulation_x_end:
+        if not self.calibration_ellipse or self.simulation_x_start == self.simulation_x_end:
             return {
                 "running": False,
                 "progress": 0,
@@ -486,7 +493,8 @@ class SimulatorDisplay:
                 "complete": False,
             }
 
-        total_distance = self.simulation_x_end - self.simulation_x_start
+        _direction = 1 if self.simulation_x_end > self.simulation_x_start else -1
+        total_distance = abs(self.simulation_x_end - self.simulation_x_start)
         total_time = self._get_total_time()
 
         # Get elapsed time: from start_time if running, from stored elapsed if paused
@@ -496,7 +504,11 @@ class SimulatorDisplay:
             elapsed = self.simulation_elapsed
 
         current_x = self._x_from_elapsed(elapsed)
-        current_x = min(current_x, float(self.simulation_x_end))
+        # Clamp to x_end in the direction of travel
+        if _direction > 0:
+            current_x = min(current_x, float(self.simulation_x_end))
+        else:
+            current_x = max(current_x, float(self.simulation_x_end))
 
         # Calculate y from ellipse
         y = self._ellipse_y_from_x(current_x)
@@ -504,9 +516,10 @@ class SimulatorDisplay:
 
         current_velocity = self._velocity_from_elapsed(elapsed)
 
-        progress = (current_x - self.simulation_x_start) / total_distance * 100 if total_distance > 0 else 100
+        distance_traveled = (current_x - self.simulation_x_start) * _direction
+        progress = distance_traveled / total_distance * 100 if total_distance > 0 else 100
         remaining = max(0, total_time - elapsed)
-        complete = bool(current_x >= self.simulation_x_end)
+        complete = bool(_direction * (current_x - self.simulation_x_end) >= 0)
 
         if complete:
             self.simulation_running = False
@@ -722,8 +735,8 @@ class SimulatorDisplay:
         width = self.config.screen_width
         height = self.config.screen_height
 
-        # Target: leftmost column, at configured vertical ratio
-        target_x = 10
+        # Target: leftmost (NH) or rightmost (SH) column, at configured vertical ratio
+        target_x = width - 10 if self.southern_hemisphere else 10
         target_y = int(height * self.config.target_y_ratio)
 
         self._draw_crosshair(target_x, target_y)
@@ -812,9 +825,10 @@ class SimulatorDisplay:
             color = selected_color if is_selected else point_color
             size = 12 if is_selected else 8
             self._draw_crosshair(px, py, size=size, color=color)
-            # Draw point number
+            # Draw point number (inverted for SH so #1 is on the right)
+            num = len(self.calibration_points) - i if self.southern_hemisphere else i + 1
             font = pygame.font.Font(None, 20)
-            label = font.render(str(i + 1), True, color)
+            label = font.render(str(num), True, color)
             self.screen.blit(label, (px + 10, py - 10))
 
         # Draw hover crosshair (larger than point markers)
@@ -889,7 +903,10 @@ class SimulatorDisplay:
             (width - stripe_width) // 2,  # Middle stripe centered
             width - stripe_width,  # Right stripe flush with right edge
         ]
-        stripe_base_labels = ["LEFT ", "MIDDLE ", "RIGHT "]
+        if self.southern_hemisphere:
+            stripe_base_labels = ["RIGHT ", "MIDDLE ", "LEFT "]
+        else:
+            stripe_base_labels = ["LEFT ", "MIDDLE ", "RIGHT "]
 
         # Stripe color (gray for B/W camera)
         stripe_color = (200, 200, 200)

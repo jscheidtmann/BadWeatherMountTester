@@ -183,6 +183,7 @@ class WebServer:
                         "focal_length_mm": self.config.mount.focal_length_mm,
                         "distance_to_screen_m": self.config.mount.distance_to_screen_m,
                         "main_period_seconds": self.config.mount.main_period_seconds,
+                        "southern_hemisphere": self.config.mount.southern_hemisphere,
                     },
                     "display": {
                         "screen_width": self.config.display.screen_width,
@@ -293,7 +294,10 @@ class WebServer:
                 if latitude_factor > 0:
                     duration_minutes /= latitude_factor
 
-            dec_target = - (90.0 - latitude)
+            if self.config.mount.southern_hemisphere:
+                dec_target = 90.0 - latitude
+            else:
+                dec_target = -(90.0 - latitude)
 
             return {
                 "effective_focal_length": round(effective_fl, 1),
@@ -402,6 +406,21 @@ class WebServer:
                     "calculated": _calculate_all_values(),
                 }
             )
+
+        @self.app.route("/api/hemisphere", methods=["POST"])
+        def set_hemisphere():
+            """Set the hemisphere (northern/southern) for mount operation."""
+            data = request.get_json()
+            if data is None or "southern" not in data:
+                return jsonify({"error": "Missing 'southern' field"}), 400
+
+            self.config.mount.southern_hemisphere = bool(data["southern"])
+            self.config.save_yaml(self.setup_path)
+
+            if self._on_config_update_callback:
+                self._on_config_update_callback(self.config)
+
+            return jsonify({"status": "ok", "southern_hemisphere": self.config.mount.southern_hemisphere})
 
         @self.app.route("/api/mode", methods=["POST"])
         def set_mode():
@@ -575,8 +594,12 @@ class WebServer:
                 return jsonify({"error": "Not enough calibration points"}), 400
 
             x_coords = [p[0] for p in self.config.calibration.points]
-            x_start = min(x_coords)
-            x_end = max(x_coords)
+            if self.config.mount.southern_hemisphere:
+                x_start = max(x_coords)
+                x_end = min(x_coords)
+            else:
+                x_start = min(x_coords)
+                x_end = max(x_coords)
 
             # Calculate theoretical pixels per second based on sidereal rate
             # Sidereal rate is 15 arcsec/second
@@ -649,7 +672,7 @@ class WebServer:
                 status = self._get_simulation_status_callback()
                 total_time = status.get("total_seconds", 0)
             else:
-                total_distance = x_end - x_start
+                total_distance = abs(x_end - x_start)
                 total_time = total_distance / pixels_per_second if pixels_per_second > 0 else 0
 
             return jsonify(
@@ -672,8 +695,12 @@ class WebServer:
                 return jsonify({"error": "Not enough calibration points"}), 400
 
             x_coords = [p[0] for p in self.config.calibration.points]
-            x_start = min(x_coords)
-            x_end = max(x_coords)
+            if self.config.mount.southern_hemisphere:
+                x_start = max(x_coords)
+                x_end = min(x_coords)
+            else:
+                x_start = min(x_coords)
+                x_end = max(x_coords)
 
             # Calculate theoretical pixels per second based on sidereal rate
             screen_width_mm = self.config.display.screen_width_mm
@@ -741,10 +768,10 @@ class WebServer:
                 lookup_vs = np.maximum(np.polyval(coeffs, lookup_xs), 0.01)
                 dx = np.diff(lookup_xs)
                 avg_vs = (lookup_vs[:-1] + lookup_vs[1:]) / 2.0
-                dt = dx / avg_vs
+                dt = np.abs(dx) / avg_vs
                 total_time = float(np.sum(dt))
             else:
-                total_distance = x_end - x_start
+                total_distance = abs(x_end - x_start)
                 total_time = total_distance / pixels_per_second if pixels_per_second > 0 else 0
 
             return jsonify(

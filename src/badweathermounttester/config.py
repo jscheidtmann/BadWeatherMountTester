@@ -15,6 +15,7 @@ class MountConfig:
     focal_length_mm: float = 200.0
     distance_to_screen_m: float = 5.0
     main_period_seconds: float = 480.0  # 8 minutes default for typical worm gear
+    southern_hemisphere: bool = False
 
 
 # Screen size presets
@@ -113,6 +114,7 @@ class AppConfig:
                 "focal_length_mm": self.mount.focal_length_mm,
                 "distance_to_screen_m": self.mount.distance_to_screen_m,
                 "main_period_seconds": self.mount.main_period_seconds,
+                "southern_hemisphere": self.mount.southern_hemisphere,
             },
             "display": {
                 "fullscreen": self.display.fullscreen,

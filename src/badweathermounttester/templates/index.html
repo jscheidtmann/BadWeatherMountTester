@@ -695,11 +695,78 @@
             font-size: 1.1em;
             color: #4caf50;
         }
+
+        .hemisphere-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        #hemisphere-label {
+            font-size: 0.9em;
+            color: #aaa;
+            min-width: 190px;
+            text-align: right;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #333;
+            border-radius: 24px;
+            transition: background-color 0.2s;
+        }
+
+        .toggle-slider:before {
+            content: "";
+            position: absolute;
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: #aaa;
+            border-radius: 50%;
+            transition: transform 0.2s;
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background-color: #00d4ff;
+        }
+
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(20px);
+            background-color: #fff;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>{{ _('Bad Weather Mount Tester') }}</h1>
+
+        <div class="hemisphere-toggle">
+            <span id="hemisphere-label">🌍 {{ _('Northern Hemisphere') }}</span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="hemisphere-switch">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
 
         <div class="step-indicator">
             <div class="step active" id="step-1">1. {{ _('Configure') }}</div>
@@ -809,7 +876,7 @@
         <div class="step-content" id="step-2-content">
             <div class="card instructions-card">
                 <h2>{{ _('Instructions') }}</h2>
-                <p>{{ _('Using only rotations in RA, move the mount back and forth from left-hand-side to right-hand-side. Use the mount\'s Azimuth adjustment screws, so that the zero line will be crossed on left-hand- and right-hand-side.') }}</p>
+                <p id="align-direction-text">{{ _('Using only rotations in RA, move the mount back and forth from left-hand-side to right-hand-side. Use the mount\'s Azimuth adjustment screws, so that the zero line will be crossed on left-hand- and right-hand-side.') }}</p>
                 <p>{{ _('If necessary, adjust Dec slightly.') }}</p>
                 <p>{{ _('Press "Next" when aligned, or "Back" to return to configuration.') }}</p>
             </div>
@@ -826,6 +893,7 @@
                     <li>{{ _('Move the mount in RA a few pixels, then repeat steps 1-3.') }}</li>
                     <li>{{ _('Continue until you have traced across the entire screen.') }}</li>
                 </ol>
+                <p id="calibrate-direction-note" style="display:none;"><strong>{{ _('Southern Hemisphere:') }}</strong> {{ _('Trace from right-hand-side to left-hand-side.') }}</p>
                 <p><strong>{{ _('Keyboard:') }}</strong> {{ _('Arrows/S/E/D/F = move 1px | Q/PgUp = previous point | A/PgDn = next point') }}</p>
                 <p>{{ _('The selected point is shown in yellow. New points are auto-selected.') }}</p>
             </div>
@@ -870,7 +938,7 @@
                     <li>{{ _('Three vertical stripes are now displayed on the simulator screen.') }}</li>
                     <li>{{ _('Select a stripe below (Left, Middle, or Right).') }}</li>
                     <li>{{ _('Choose a very short exposure for the camera. At best avoid saturation.') }}</li>
-                    <li>{{ _('Move the mount until the star is about to enter the stripe and enable tracking in the mount.') }}</li>
+                    <li id="velocity-entry-instruction">{{ _('Move the mount until the star is about to enter the stripe and enable tracking in the mount.') }}</li>
                     <li>{{ _('Press Start when the star enters the stripe, Stop when it exits.') }}</li>
                     <li>{{ _('Record the time for each stripe to measure on screen velocity.') }}</li>
                 </ol>
@@ -934,7 +1002,7 @@
             <div class="card instructions-card">
                 <h2>{{ _('Instructions') }}</h2>
                 <ol>
-                    <li>{{ _('Move the mount back to the starting position (left side of screen).') }}</li>
+                    <li id="measure-start-position">{{ _('Move the mount back to the starting position (left side of screen).') }}</li>
                     <li>{{ _('In PHD2, center the simulated star and start guiding.') }}</li>
                     <li>{{ _('Press "Start Simulation" below to begin the star movement.') }}</li>
                     <li>{{ _('Wait until the simulation completes (the star crosses the screen).') }}</li>
@@ -989,6 +1057,8 @@
     <script>
         // State management
         let currentStep = 1;
+        let isSouthern = false;
+
         let mountConfig = {
             latitude: 0,
             focal_length_mm: 200,
@@ -1062,12 +1132,90 @@
                     ...displayConfig,
                     ...data.display
                 };
+                isSouthern = !!data.mount.southern_hemisphere;
+                applyHemisphere();
                 updateInputs();
                 updateCalculations();
             } catch (error) {
                 console.error('Failed to load config:', error);
             }
         }
+
+        function applyHemisphere() {
+            const sw = document.getElementById('hemisphere-switch');
+            const label = document.getElementById('hemisphere-label');
+            if (sw) sw.checked = isSouthern;
+            if (label) {
+                label.textContent = isSouthern
+                    ? '🌍 {{ _("Southern Hemisphere") }}'
+                    : '🌍 {{ _("Northern Hemisphere") }}';
+            }
+
+            // Step 2: align direction text
+            const alignText = document.getElementById('align-direction-text');
+            if (alignText) {
+                alignText.textContent = isSouthern
+                    ? `{{ _("Using only rotations in RA, move the mount back and forth from right-hand-side to left-hand-side. Use the mount's Azimuth adjustment screws, so that the zero line will be crossed on right-hand- and left-hand-side.") }}`
+                    : `{{ _("Using only rotations in RA, move the mount back and forth from left-hand-side to right-hand-side. Use the mount's Azimuth adjustment screws, so that the zero line will be crossed on left-hand- and right-hand-side.") }}`;
+            }
+
+            // Step 3: calibration direction note
+            const calibrateNote = document.getElementById('calibrate-direction-note');
+            if (calibrateNote) {
+                calibrateNote.style.display = isSouthern ? '' : 'none';
+            }
+
+            // Redraw calibration canvas so point numbers update immediately
+            if (typeof drawCalibrationCanvas === 'function') {
+                drawCalibrationCanvas();
+            }
+
+            // Step 4: velocity entry instruction
+            const velocityEntry = document.getElementById('velocity-entry-instruction');
+            if (velocityEntry) {
+                velocityEntry.textContent = isSouthern
+                    ? '{{ _("Move the mount until the star is about to enter the stripe from the right and enable tracking in the mount.") }}'
+                    : '{{ _("Move the mount until the star is about to enter the stripe and enable tracking in the mount.") }}';
+            }
+
+            // Step 4: default selected stripe (only apply when no measurement running)
+            if (typeof selectedStripe !== 'undefined' && typeof stopwatchRunning !== 'undefined' && !stopwatchRunning) {
+                const defaultStripe = isSouthern ? 'right' : 'left';
+                if (selectedStripe === 'left' || selectedStripe === 'right') {
+                    selectedStripe = defaultStripe;
+                    document.querySelectorAll('.stripe-btn').forEach(btn => {
+                        btn.classList.toggle('selected', btn.dataset.stripe === selectedStripe);
+                    });
+                }
+            }
+
+            // Step 5: start position text
+            const measureStart = document.getElementById('measure-start-position');
+            if (measureStart) {
+                measureStart.textContent = isSouthern
+                    ? '{{ _("Move the mount back to the starting position (right side of screen).") }}'
+                    : '{{ _("Move the mount back to the starting position (left side of screen).") }}';
+            }
+
+            // Refresh calculated values (Dec target sign changes with hemisphere)
+            if (typeof updateCalculations === 'function') {
+                updateCalculations();
+            }
+        }
+
+        document.getElementById('hemisphere-switch').addEventListener('change', async function () {
+            isSouthern = this.checked;
+            applyHemisphere();
+            try {
+                await fetch('/api/hemisphere', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ southern: isSouthern })
+                });
+            } catch (error) {
+                console.error('Failed to update hemisphere:', error);
+            }
+        });
 
         function updateInputs() {
             latitudeInput.value = mountConfig.latitude;
@@ -1158,10 +1306,11 @@
                 areaHeightSpan.textContent = '--';
             }
 
-            // Dec target = 90° - |latitude|
+            // Dec target: -(90° - lat) for NH, +(90° - lat) for SH
             const lat = Math.abs(mountConfig.latitude);
             if (lat > 0) {
-                decTargetSpan.textContent = (90.0 - lat).toFixed(1);
+                const decTarget = isSouthern ? (90.0 - lat) : -(90.0 - lat);
+                decTargetSpan.textContent = decTarget.toFixed(1);
             } else {
                 decTargetSpan.textContent = '--';
             }
@@ -1565,10 +1714,11 @@
                 ctx.lineTo(canvasPoint.x, canvasPoint.y + crossSize);
                 ctx.stroke();
 
-                // Draw point number
+                // Draw point number (inverted for SH so #1 is on the right)
+                const displayNumber = isSouthern ? (calibrationPoints.length - index) : (index + 1);
                 ctx.fillStyle = color;
                 ctx.font = isSelected ? 'bold 14px sans-serif' : '12px sans-serif';
-                ctx.fillText((index + 1).toString(), canvasPoint.x + 8, canvasPoint.y - 6);
+                ctx.fillText(displayNumber.toString(), canvasPoint.x + 8, canvasPoint.y - 6);
             });
 
             // Update point count
@@ -2241,7 +2391,7 @@
 
         // Select next unrecorded stripe
         function selectNextUnrecordedStripe() {
-            const stripes = ['left', 'middle', 'right'];
+            const stripes = isSouthern ? ['right', 'middle', 'left'] : ['left', 'middle', 'right'];
             for (const stripe of stripes) {
                 if (velocityMeasurements[stripe] === null) {
                     stripeButtons.forEach(btn => btn.classList.remove('selected'));

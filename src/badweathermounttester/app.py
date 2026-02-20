@@ -19,6 +19,7 @@ class Application:
         self.config = config
         self.setup_path = setup_path
         self.display = SimulatorDisplay(config.display)
+        self.display.set_southern_hemisphere(config.mount.southern_hemisphere)
         self.server = WebServer(config, setup_path)
 
         # Set up callbacks
@@ -44,6 +45,7 @@ class Application:
     def _on_config_update(self, config: AppConfig) -> None:
         """Handle configuration update."""
         self.config = config
+        self.display.set_southern_hemisphere(config.mount.southern_hemisphere)
 
     def _on_mode_change(self, mode: int) -> None:
         """Handle UI mode change from web interface."""
