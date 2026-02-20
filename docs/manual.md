@@ -1,9 +1,6 @@
 # Bad Weather Mount Tester Manual
 
-This manual documents version 0.8.0 of Bad Weather Mount Tester.
-
-!!! important
-    At the moment southern hemisphere mode is not supported yet.
+This manual documents version 0.9.0 of Bad Weather Mount Tester.
 
 ## Configure BWMT and your gear
 
@@ -107,8 +104,11 @@ In the **Calculated Values** section, BWMT displays the following infos:
   view is appropriately sized for the measurements.
 
 - **Dec target**: This is the declination value to enter into PHD2's Calibration Assistant when slewing the mount to the
-  simulator screen. It is calculated as negative 90° minus your latitude. For example, at latitude 51.5° the Dec target
-  is 38.5°. This points the mount roughly at the simulator screen's elevation above the horizon.
+  simulator screen. It is calculated as -(90° - latitude) for the northern hemisphere. For example, at latitude 51.5°
+  the Dec target is -38.5°. This points the mount roughly at the simulator screen's elevation above the horizon.
+
+!!! tip "Southern hemisphere"
+    The Dec target is positive: +(90° - |latitude|). For example, at latitude 34°S the Dec target is +56°.
 
 Now we are good to go and need to setup PHD2. So follow the instructions that are displayed on the simulator
 screen, which provide a reminder, if you're not looking at this manual
@@ -145,6 +145,10 @@ Now open "Tools" > "Calibration Assistant", and have PHD2 command the mount to s
 - the "Dec target" value from BWMT's Calculated Values section for "Declination" (this is 90° - Latitude). On northern
   hemisphere, you need to enter a negative value, on southern hemisphere use the positive value.
 
+!!! tip "Southern hemisphere"
+    Use a meridian offset of -5° instead of +5°, so that PHD2 slews to the right-hand side of the screen rather than
+    the left.
+
 Click "Slew".
 
 <figure markdown="span">
@@ -180,6 +184,9 @@ In PHD2 enable the Bullseye overlay from "View" > "Bullseye". Using **only movem
 buttons in your mount driver, follow the arrows to point the mount at left side of the screen. Once you're there you've
 mastered the first step.
 
+!!! tip "Southern hemisphere"
+    The locator arrows point to the **right-hand side** of the screen. Follow them to position the mount there instead.
+
 <figure markdown="span">
   ![LHS of screen, at ideal heigth](BWMT_ideal_height.png)‚
   <figcaption>Figure 10: Left-hand-side of screen, in ideal height.</figcaption>
@@ -214,9 +221,10 @@ Last, for fine adjustment, use the mount control buttons in your mount driver so
 
 ## Placing BWMT dead south of the mount
 
-!!! note
-    The following text was written for northern hemisphere. For Southern hemisphere the same procedure applies but the mount
-    will be moving right-to-left instead of left-to-right and North and South will be exchanged.
+!!! tip "Southern hemisphere"
+    The same procedure applies, but the mount moves **right-to-left** instead of left-to-right, and North and South are
+    exchanged (the simulator is placed dead **north** of the mount). Start from the **right-hand side** of the screen
+    wherever the instructions below say "left-hand side", and vice versa.
 
 Now we will move the mount back and forth in RA repeatedly to position the screen dead south of the mount.
 
@@ -234,6 +242,9 @@ First, using the mount controls in your mount's driver, locate the left side of 
 (If you followed the manual so far, you should already be there). The simulator screen will display horizontol lines and
 a pixel scale on each side of the screen.
 
+!!! tip "Southern hemisphere"
+    Start from the **right-hand side** of the screen (you should already be there from the previous step).
+
 Using the bullseye displayed by PHD2, center the zero-line in the bullseye (at first this does not have to be
 pixel-perfect) using your driver's mount control.
 
@@ -242,6 +253,10 @@ the screen on top or bottom, stop there and adjust the axis of your mount to poi
 right-hand-side, you will notice, that it's very problably showing a different line. Using the azimuth screws of you
 mount, rotate it such, that the mount will hit the same horizontal line on both sides of the screen. A few pixel
 difference from left to right is ok.
+
+!!! tip "Southern hemisphere"
+    Move **left** across the screen (RA direction is reversed). Adjust azimuth screws so the mount hits the same
+    horizontal line on both sides.
 
 <figure markdown="span">
   a)
@@ -256,6 +271,9 @@ Repeat this procedure until you're satisfied, that a symmetric arc will be trace
 left-to-right.
 
 Move the mount to the left hand side of the simulator screen and press `next`.
+
+!!! tip "Southern hemisphere"
+    Move the mount to the **right-hand side** of the screen before pressing `next`.
 
 ## Calibrating the simulator
 
@@ -295,6 +313,10 @@ the bullseye. The keys only work, if the cursor is hovering on the picture.
 **Step 2**: Using **ONLY** the RA axis, move the mount to the right, so that you can still see the previous alignment
 point. Then repeat step 1.
 
+!!! tip "Southern hemisphere"
+    Move the mount to the **left** instead, tracing right-to-left across the screen. The calibration preview numbers
+    point #1 at the right-hand side and count up toward the left.
+
 <figure markdown="span">
   ![Step 2: move mount to add next calibration point](BWMT_calibration_step2.png)
   <figcaption>Figure 16: Move mount to create the next calibration point.</figcaption>
@@ -313,9 +335,12 @@ star crossing the screen.
 
 At last, move the mount to the left of the screen, then press `next`, to start measuring the velocity of your mount.
 
+!!! tip "Southern hemisphere"
+    Move the mount to the **right** of the screen before pressing `next`.
+
 ## Measuring on Screen Velocity
 
-!!! info
+!!! info "Why measured velocity may differ from sidereal rate"
     You probably know about sidereal, lunar and solar tracking velocities. These velocities apply in the
     case where the telescope is directly mounted to the intersection point of conic sections.
 
@@ -346,6 +371,11 @@ press "Start" once the bullseye center enters the left stripe. Take care to avoi
 screen casing. Press stop, when it leaves the stripe. The time it took to cross the stripe is displayed on the web page.
 Now using **ONLY** movements in RA, move to the middle stripe and measure there. Then repeat this procedure with the
 right-hand stripe.
+
+!!! tip "Southern hemisphere"
+    Start to the **right** of the right-hand stripe and measure **right → middle → left** in that order, following the
+    direction the mount naturally travels. The web interface auto-advances the stopwatch selector in this order when
+    southern hemisphere mode is active.
 
 <figure markdown="span">
   ![During a velocity measurement](BWMT_velocity_running.png)
@@ -496,6 +526,10 @@ records the position of the guide star on the camera.
 For this to happen, do this:
 
 - Move to the left of the simulated star and enable tracking in the mount.
+
+!!! tip "Southern hemisphere"
+    Move to the **right** of the simulated star instead, so the mount tracks it left-ward into frame.
+
 - When the guidecam picture has the star approximately in the center, start simulation in BWMT's web interface.
 - Open up PHD2 "Tools" > "Guiding Assistant", select the simulated star, if it is not already selected, then start guiding.
 - Let "Measure Declination Backlash" enabled, then press "Start".
@@ -505,14 +539,14 @@ For this to happen, do this:
 - Press "Stop" in the guiding assistant.
 - Accept all changes that the guiding assistant recommends.
 
-!!! bug
+!!! bug "Simulator velocity is systematically too high"
     The velocity, with which the simulator crosses the screen is systematically too high.
     The reason for that is at the moment unknown. Any help is appreciated.
     If all else fails, a future version will contain a slider to tune velocity up or down.
 
 ### Measurement: Guiding
 
-!!! warning 
+!!! warning "Do not disturb the setup during measurement"
     During measurement avoid crossing the line of sight and walking around the mount and screen! Else PHD2 might
     loose the simulated guide star and stop guiding.
 
