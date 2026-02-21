@@ -34,7 +34,8 @@ clean:
 
 # Remove build artifacts
 full-clean: clean
-    rm -rf dist build bwmt.egg-info
+    rm dist 
+    rm build 
 
 # Run the application
 run:
