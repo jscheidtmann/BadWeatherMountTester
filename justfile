@@ -28,9 +28,13 @@ compile-translations:
 # Full translation refresh: extract, update .po files, compile .mo files
 translations: update-translations compile-translations
 
+# Remove log files and other temporary files
 clean:
-    rm -rf dist build *.egg-info
     rm bwmt*.log
+
+# Remove build artifacts
+full-clean: clean
+    rm -rf dist build bwmt.egg-info
 
 # Run the application
 run:
