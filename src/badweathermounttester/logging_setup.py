@@ -2,16 +2,16 @@
 
 import logging
 import logging.config
-# import sys
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
 
 def get_log_dir() -> Path:
+    """Return the platform-specific log directory."""
     return Path(".")
 
-    # """Return the platform-specific log directory."""
     # if sys.platform == "win32":
     #     import os
     #     base = Path(os.environ.get("APPDATA", Path.home() / "AppData" / "Local"))
@@ -43,7 +43,12 @@ def setup_logging(config_path: Optional[Path] = None) -> Path:
     3. Bundled ``logging_errors.ini`` (errors-only default)
     """
     log_dir = get_log_dir()
-    log_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        log_dir.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        pass
+    if not log_dir.is_dir():
+        log_dir = Path(".")
 
     _rotate_logs(log_dir)
 
@@ -51,7 +56,7 @@ def setup_logging(config_path: Optional[Path] = None) -> Path:
     log_file = log_dir / f"bwmt_{timestamp}.log"
 
     # Determine which config file to use
-    bundled_errors_ini = Path(__file__).parent / "logging_errors.ini"
+    bundled_errors_ini = Path(__file__).parent / "logging_verbose.ini"
     user_logging_ini = log_dir.parent / "logging.ini"
 
     if config_path is not None and Path(config_path).exists():
@@ -63,7 +68,6 @@ def setup_logging(config_path: Optional[Path] = None) -> Path:
 
     # Convert log file path to use forward slashes for compatibility with logging config (\Users being mistaken for unicode)
     str_log_file = str(log_file).replace("\\", "/")
-    print(str_log_file)
 
     logging.config.fileConfig(
         ini_path,
