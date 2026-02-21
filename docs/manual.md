@@ -516,9 +516,59 @@ If the figures are inconsistent and diverging from each other much:
 
 ## Measuring a guiding run
 
-First we need to have PHD2 optimize it's  guiding parameters using the Guiding Assistant, then we can perform measurements.
+### How Simulation Velocity is Determined
+
+When you enter the "Measure" tab, BWMT computes the velocity at which the simulated star moves across the screen.
+The calculation depends on how many of the three stripes you have measured in the previous step.
+
+#### Step 1 — Theoretical baseline
+
+Regardless of measurements, BWMT first calculates a theoretical velocity from the geometry of your setup:
+
+```
+pixel_pitch_arcsec = (screen_width_mm / screen_width_px / distance_m / 1000) × 206265
+theoretical_velocity = 15 arcsec/s / pixel_pitch_arcsec × cos(90° − latitude)
+```
+
+The factor `cos(90° − latitude)` accounts for the fact that stars move more slowly across the sky the further
+you are from the equator and you're point straight at the simulator screen.
+
+#### Step 2 — Choosing a velocity source
+
+Depending on how many stripes were timed in Step 4, one of three cases applies:
+
+| Stripes measured | Velocity source label | How velocity is determined |
+|--------|-------------------|------------------------------------------------------------|
+| 0      | *estimated*       | Theoretical value from Step 1 (constant across the screen) |
+| 1 or 2 | *partial average* | Average of the measured stripe velocities (constant across the screen) |
+| 3      | *interpolated*    | Quadratic polynomial fitted through all three measured points; velocity varies across the screen |
+
+The active source is shown in the **Simulation Control** card next to the current velocity readout.
+If the source is *estimated*, a warning is displayed both in the web interface and on the simulator screen.
+
+#### Case "estimated" — no measurements
+
+The theoretical velocity is used unchanged. This is the least accurate option: it assumes the mount
+tracks exactly at the sidereal rate, ignoring any mechanical offset of the telescope from the RA axis
+or other geometric effects that cause the apparent screen velocity to differ from the pure sidereal rate.
+
+#### Case "partial average" — 1 or 2 stripes measured
+
+The average of the available measured stripe velocities is used as a constant velocity.
+This is more accurate than the theoretical estimate, but because only part of the screen was measured,
+position-dependent velocity variations are not captured.
+
+#### Case "interpolated" — all 3 stripes measured
+
+A quadratic polynomial is fitted through the three measured `(screen_x, velocity)` pairs at the left,
+middle, and right stripe centres. During simulation, the star's velocity is looked up from this curve at
+each x-position, so it naturally accelerates or decelerates across the screen to match the mount's real
+tracking behaviour. The constant velocity used for the duration estimate is the maximum of the three
+measured values.
 
 ### Guiding Assistant run
+
+First we need to have PHD2 optimize it's  guiding parameters using the Guiding Assistant, then we can perform measurements.
 
 Now let's run PHD2's guiding assistant. This switches off guiding and just follows the movement of the stars and directly
 records the position of the guide star on the camera.
