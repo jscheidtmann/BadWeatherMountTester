@@ -2,7 +2,6 @@
 
 import logging
 import logging.config
-import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -66,7 +65,8 @@ def setup_logging(config_path: Optional[Path] = None) -> Path:
     else:
         ini_path = bundled_errors_ini
 
-    # Convert log file path to use forward slashes for compatibility with logging config (\Users being mistaken for unicode)
+    # Convert log file path to forward slashes for logging config compat
+    # (\Users would be mistaken for a unicode escape otherwise)
     str_log_file = str(log_file).replace("\\", "/")
 
     logging.config.fileConfig(

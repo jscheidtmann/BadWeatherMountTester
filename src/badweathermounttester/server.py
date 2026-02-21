@@ -95,7 +95,6 @@ def fit_ellipse(points: List[List[int]]) -> Optional[Dict]:
         # Calculate semi-axes and rotation angle
         # Using formulas from conic section theory
         num = 2 * (A * E * E + C * D * D - B * D * E + (B * B - 4 * A * C) * F)
-        term1 = A + C
         term2 = np.sqrt((A - C) ** 2 + B**2)
 
         denom_a = (B * B - 4 * A * C) * (term2 - (A + C))

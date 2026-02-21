@@ -2,11 +2,9 @@ import argparse
 import math
 from pathlib import Path
 
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import yaml
-from mpl_toolkits.mplot3d import Axes3D
 
 
 def load_config(config_file: str | None = None) -> dict:
@@ -50,7 +48,10 @@ def parse_args(config: dict, config_file: str | None = None) -> argparse.Namespa
         "--offsetRA",
         type=float,
         default=mount.get("telescope_offset_m", 0.27),
-        help=f"Telescope offset from RA/rotation axis (default from setup.yml: {mount.get('telescope_offset_m', 0.27)})",
+        help=(
+            "Telescope offset from RA/rotation axis"
+            f" (default from setup.yml: {mount.get('telescope_offset_m', 0.27)})"
+        ),
     )
     parser.add_argument(
         "-od",
@@ -76,7 +77,10 @@ def parse_args(config: dict, config_file: str | None = None) -> argparse.Namespa
         "--distance",
         type=float,
         default=-mount.get("distance_to_screen_m", 3.41),
-        help=f"Distance from origin along the line (default from setup.yml: {mount.get('distance_to_screen_m', 3.41)}m)",
+        help=(
+            "Distance from origin along the line"
+            f" (default from setup.yml: {mount.get('distance_to_screen_m', 3.41)}m)"
+        ),
     )
     parser.add_argument(
         "--dec",
@@ -152,7 +156,8 @@ def main():
 
     dec_str = f", Declination: {args.dec}°" if args.dec is not None else ""
     print(
-        f"Latitude: {args.lat}°, Offset RA: {args.offsetRA}m, Offset Dec: {args.offsetDec}m, Start: {args.start}°, Stop: {args.stop}°{dec_str}"
+        f"Latitude: {args.lat}°, Offset RA: {args.offsetRA}m, Offset Dec: {args.offsetDec}m,"
+        f" Start: {args.start}°, Stop: {args.stop}°{dec_str}"
     )
 
     lat = math.radians(args.lat)

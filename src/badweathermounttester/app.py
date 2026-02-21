@@ -198,7 +198,7 @@ class Application:
             return 0
 
         except Exception as e:
-            print(f"Error: {e}")    
+            print(f"Error: {e}")
             log.error("Error: %s", e)
             return 1
 
