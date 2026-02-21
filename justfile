@@ -28,6 +28,10 @@ compile-translations:
 # Full translation refresh: extract, update .po files, compile .mo files
 translations: update-translations compile-translations
 
+clean:
+    rm -rf dist build *.egg-info
+    rm bwmt*.log
+
 # Run the application
 run:
     uv run bwmt
