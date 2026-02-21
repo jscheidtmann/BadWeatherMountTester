@@ -31,14 +31,29 @@ log_app = get_app_logger()
 log_sim = get_simulation_logger()
 
 
-def _setup_translations() -> Callable[[str], str]:
-    """Load .mo translations based on the system locale, falling back to English."""
+def _setup_translations(lang: Optional[str] = None) -> Callable[[str], str]:
+    """Load .mo translations for the given locale code, or detect from the system locale.
+
+    Falls back to returning the original English string if no translation is found.
+    """
     translations_dir = Path(__file__).parent / "translations"
     try:
-        lang = (locale.getlocale()[0] or "").split("_")[0]
+        if lang is None:
+            lang = (locale.getlocale()[0] or "").split("_")[0]
         return gettext.translation("messages", localedir=str(translations_dir), languages=[lang]).gettext
     except (FileNotFoundError, locale.Error):
         return lambda s: s
+
+
+def init_translations(lang: Optional[str] = None) -> None:
+    """Re-initialize display translations.
+
+    Call this before creating SimulatorDisplay to force a specific locale,
+    e.g. ``init_translations('de')`` for German.
+    If *lang* is None the system locale is used.
+    """
+    global _
+    _ = _setup_translations(lang)
 
 
 _ = _setup_translations()

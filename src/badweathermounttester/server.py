@@ -137,7 +137,9 @@ def get_locale():
 class WebServer:
     """Flask web server for the BWMT control interface."""
 
-    def __init__(self, config: AppConfig, setup_path: Path = DEFAULT_SETUP_PATH):
+    def __init__(
+        self, config: AppConfig, setup_path: Path = DEFAULT_SETUP_PATH, forced_locale: Optional[str] = None
+    ):
         self.config = config
         self.setup_path = setup_path
         package_dir = Path(__file__).parent
@@ -150,12 +152,19 @@ class WebServer:
         # Configure Babel for internationalization
         self.app.config["BABEL_DEFAULT_LOCALE"] = "en"
         self.app.config["BABEL_TRANSLATION_DIRECTORIES"] = str(package_dir / "translations")
-        self.babel = Babel(self.app, locale_selector=get_locale)
 
-        # Make get_locale available in templates
+        if forced_locale:
+            def locale_selector():
+                return forced_locale
+        else:
+            locale_selector = get_locale
+
+        self.babel = Babel(self.app, locale_selector=locale_selector)
+
+        # Make locale selector available in templates
         @self.app.context_processor
         def inject_locale():
-            return {"get_locale": get_locale}
+            return {"get_locale": locale_selector}
 
         self._setup_routes()
         self._server_thread: Optional[Thread] = None

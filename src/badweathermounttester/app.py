@@ -8,7 +8,7 @@ from badweathermounttester import __version__
 from typing import Optional, List, Tuple
 
 from badweathermounttester.config import AppConfig, DEFAULT_SETUP_PATH
-from badweathermounttester.display import SimulatorDisplay, DisplayMode
+from badweathermounttester.display import SimulatorDisplay, DisplayMode, init_translations
 from badweathermounttester.logging_setup import get_app_logger, setup_logging
 from badweathermounttester.server import WebServer, fit_ellipse
 
@@ -18,12 +18,14 @@ log = get_app_logger()
 class Application:
     """Main BWMT application that coordinates display and web server."""
 
-    def __init__(self, config: AppConfig, setup_path: Path = DEFAULT_SETUP_PATH):
+    def __init__(
+        self, config: AppConfig, setup_path: Path = DEFAULT_SETUP_PATH, forced_locale: Optional[str] = None
+    ):
         self.config = config
         self.setup_path = setup_path
         self.display = SimulatorDisplay(config.display)
         self.display.set_southern_hemisphere(config.mount.southern_hemisphere)
-        self.server = WebServer(config, setup_path)
+        self.server = WebServer(config, setup_path, forced_locale=forced_locale)
 
         # Set up callbacks
         self.server.on_connect(self._on_client_connect)
@@ -257,6 +259,13 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help="Screen size preset: 640x480/vga, hd/720p, fhd/1080p (default), 4k/2160p, custom",
     )
+    parser.add_argument(
+        "--locale",
+        type=str,
+        default=None,
+        metavar="LANG",
+        help="Force display language, e.g. 'de' or 'fr' (default: system locale)",
+    )
     return parser.parse_args()
 
 
@@ -276,6 +285,9 @@ def main() -> int:
     else:
         config = AppConfig()
 
+    # Apply locale override before any display strings are rendered
+    init_translations(args.locale)
+
     # Apply command line overrides
     if args.port:
         config.server.port = args.port
@@ -288,7 +300,7 @@ def main() -> int:
         config.display.apply_screen_size_preset()
 
     # Run the application
-    app = Application(config, args.setup)
+    app = Application(config, args.setup, forced_locale=args.locale)
     return app.run()
 
 
