@@ -2,27 +2,29 @@
 
 import logging
 import logging.config
-import sys
+# import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
 
 def get_log_dir() -> Path:
-    """Return the platform-specific log directory."""
-    if sys.platform == "win32":
-        import os
-        base = Path(os.environ.get("APPDATA", Path.home() / "AppData" / "Roaming"))
-        return base / "BWMT" / "logs"
-    elif sys.platform == "darwin":
-        return Path.home() / "Library" / "Logs" / "BWMT"
-    else:
-        # Linux / Raspberry Pi: XDG_DATA_HOME or fallback
-        import os
-        xdg = os.environ.get("XDG_DATA_HOME", "")
-        if xdg:
-            return Path(xdg) / "bwmt" / "logs"
-        return Path.home() / ".local" / "share" / "bwmt" / "logs"
+    return Path(".")
+
+    # """Return the platform-specific log directory."""
+    # if sys.platform == "win32":
+    #     import os
+    #     base = Path(os.environ.get("APPDATA", Path.home() / "AppData" / "Local"))
+    #     return Path(base) / "BWMT" / "logs"
+    # elif sys.platform == "darwin":
+    #     return Path.home() / "Library" / "Logs" / "BWMT"
+    # else:
+    #     # Linux / Raspberry Pi: XDG_DATA_HOME or fallback
+    #     import os
+    #     xdg = os.environ.get("XDG_DATA_HOME", "")
+    #     if xdg:
+    #         return Path(xdg) / "bwmt" / "logs"
+    #     return Path.home() / ".local" / "share" / "bwmt" / "logs"
 
 
 def _rotate_logs(log_dir: Path) -> None:
@@ -59,9 +61,13 @@ def setup_logging(config_path: Optional[Path] = None) -> Path:
     else:
         ini_path = bundled_errors_ini
 
+    # Convert log file path to use forward slashes for compatibility with logging config (\Users being mistaken for unicode)
+    str_log_file = str(log_file).replace("\\", "/")
+    print(str_log_file)
+
     logging.config.fileConfig(
-        str(ini_path),
-        defaults={"log_file": str(log_file)},
+        ini_path,
+        defaults={"log_file": str_log_file},
         disable_existing_loggers=False,
     )
 
