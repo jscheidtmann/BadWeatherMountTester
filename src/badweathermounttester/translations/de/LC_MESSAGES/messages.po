@@ -1,0 +1,529 @@
+# German translations for Bad Weather Mount Tester.
+# Copyright (C) 2026 Jens Scheidtmann
+# This file is distributed under the same license as the Bad Weather Mount Tester project.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: badweathermounttester 0.8.0\n"
+"Report-Msgid-Bugs-To: https://github.com/jscheidtmann/BadWeatherMountTester/issues\n"
+"POT-Creation-Date: 2026-02-21 15:34+0100\n"
+"PO-Revision-Date: 2026-02-21 00:00+0100\n"
+"Last-Translator: Jens Scheidtmann\n"
+"Language: de\n"
+"Language-Team: de\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: src/badweathermounttester/templates/index.html:6
+#: src/badweathermounttester/templates/index.html:761
+msgid "Bad Weather Mount Tester"
+msgstr "Bad Weather Mount Tester"
+
+#: src/badweathermounttester/templates/index.html:764
+#: src/badweathermounttester/templates/index.html:1151
+msgid "Northern Hemisphere"
+msgstr "Nordhalbkugel"
+
+#: src/badweathermounttester/templates/index.html:772
+msgid "Configure"
+msgstr "Konfigurieren"
+
+#: src/badweathermounttester/templates/index.html:773
+msgid "Align"
+msgstr "Ausrichten"
+
+#: src/badweathermounttester/templates/index.html:774
+msgid "Calibrate"
+msgstr "Kalibrieren"
+
+#: src/badweathermounttester/templates/index.html:775
+msgid "Velocity"
+msgstr "Geschwindigkeit"
+
+#: src/badweathermounttester/templates/index.html:776
+msgid "Measure"
+msgstr "Messen"
+
+#: src/badweathermounttester/templates/index.html:783
+msgid "Mount Configuration"
+msgstr "Montierungskonfiguration"
+
+#: src/badweathermounttester/templates/index.html:785
+msgid "Latitude (degrees)"
+msgstr "Geografische Breite (Grad)"
+
+#: src/badweathermounttester/templates/index.html:786
+msgid ""
+"Enter the latitude that your mount is configured for. This affects the "
+"geometry calculations for the simulated star movement."
+msgstr ""
+"Geben Sie den Breitengrad ein, für den Ihre Montierung konfiguriert ist. "
+"Dies beeinflusst die Geometrieberechnungen für die simulierte Sternbewegung."
+
+#: src/badweathermounttester/templates/index.html:791
+msgid "Guide Scope Focal Length (mm)"
+msgstr "Brennweite des Leitfernrohrs (mm)"
+
+#: src/badweathermounttester/templates/index.html:792
+msgid ""
+"Enter the focal length of your guide scope. Since the scope is not "
+"focused to infinity, BWMT will calculate an effective focal length for "
+"PHD2."
+msgstr ""
+"Geben Sie die Brennweite Ihres Leitfernrohrs ein. Da das Fernrohr nicht "
+"auf Unendlich fokussiert ist, berechnet BWMT eine effektive Brennweite "
+"für PHD2."
+
+#: src/badweathermounttester/templates/index.html:797
+msgid "Distance to Screen (m)"
+msgstr "Abstand zum Bildschirm (m)"
+
+#: src/badweathermounttester/templates/index.html:798
+msgid ""
+"The distance between mount and simulator screen. At least 5m is "
+"recommended for best accuracy, though 3.5m minimum is possible."
+msgstr ""
+"Der Abstand zwischen Montierung und Simulatorbildschirm. Mindestens 5m "
+"wird für beste Genauigkeit empfohlen, 3,5m ist das Minimum."
+
+#: src/badweathermounttester/templates/index.html:803
+msgid "Mount Main Period (seconds)"
+msgstr "Hauptperiode der Montierung (Sekunden)"
+
+#: src/badweathermounttester/templates/index.html:804
+msgid ""
+"For worm gear mounts: How long does it take for the worm to rotate once? "
+"This information is provided by the manufacturer of your mount."
+msgstr ""
+"Für Schneckengetriebe-Montierungen: Wie lange dauert eine vollständige "
+"Umdrehung der Schnecke? Diese Information wird vom Hersteller Ihrer "
+"Montierung angegeben."
+
+#: src/badweathermounttester/templates/index.html:811
+msgid "Guiding Camera"
+msgstr "Leitkamera"
+
+#: src/badweathermounttester/templates/index.html:813
+msgid "Pixel Size (micrometer)"
+msgstr "Pixelgröße (Mikrometer)"
+
+#: src/badweathermounttester/templates/index.html:814
+msgid ""
+"The pixel pitch of your guide camera sensor. This is typically found in "
+"the camera specifications (e.g., 2.4µm, 3.75µm)."
+msgstr ""
+"Die Pixelgröße Ihres Leitkamerasensors. Diese finden Sie in der Regel in "
+"den Kameraspezifikationen (z.B. 2,4 µm, 3,75 µm)."
+
+#: src/badweathermounttester/templates/index.html:819
+msgid "Width (pixels)"
+msgstr "Breite (Pixel)"
+
+#: src/badweathermounttester/templates/index.html:820
+msgid ""
+"The number of pixels in the horizontal direction of your guide camera "
+"sensor."
+msgstr "Die Anzahl der Pixel in horizontaler Richtung Ihres Leitkamerasensors."
+
+#: src/badweathermounttester/templates/index.html:825
+msgid "Height (pixels)"
+msgstr "Höhe (Pixel)"
+
+#: src/badweathermounttester/templates/index.html:826
+msgid ""
+"The number of pixels in the vertical direction of your guide camera "
+"sensor."
+msgstr "Die Anzahl der Pixel in vertikaler Richtung Ihres Leitkamerasensors."
+
+#: src/badweathermounttester/templates/index.html:831
+msgid "Resolution:"
+msgstr "Auflösung:"
+
+#: src/badweathermounttester/templates/index.html:837
+msgid "Screen"
+msgstr "Bildschirm"
+
+#: src/badweathermounttester/templates/index.html:839
+msgid "Screen Width (mm)"
+msgstr "Bildschirmbreite (mm)"
+
+#: src/badweathermounttester/templates/index.html:840
+msgid ""
+"The physical width of your simulator screen in millimeters. Measure the "
+"visible display area, not the bezel. This is used to calculate the pixel "
+"pitch."
+msgstr ""
+"Die physische Breite Ihres Simulatorbildschirms in Millimetern. Messen "
+"Sie den sichtbaren Anzeigebereich, nicht den Rahmen. Dies wird zur "
+"Berechnung der Pixelgröße verwendet."
+
+#: src/badweathermounttester/templates/index.html:845
+msgid "Pixel Pitch:"
+msgstr "Pixelgröße:"
+
+#: src/badweathermounttester/templates/index.html:853
+msgid "Calculated Values"
+msgstr "Berechnete Werte"
+
+#: src/badweathermounttester/templates/index.html:855
+msgid "Effective FL for PHD2:"
+msgstr "Effektive Brennweite für PHD2:"
+
+#: src/badweathermounttester/templates/index.html:856
+msgid "Measurement duration:"
+msgstr "Messdauer:"
+
+#: src/badweathermounttester/templates/index.html:856
+msgid "minutes"
+msgstr "Minuten"
+
+#: src/badweathermounttester/templates/index.html:857
+msgid "Recommended Binning:"
+msgstr "Empfohlenes Binning:"
+
+#: src/badweathermounttester/templates/index.html:858
+msgid "Area on Simulator:"
+msgstr "Bereich auf dem Simulator:"
+
+#: src/badweathermounttester/templates/index.html:859
+msgid "Dec target (90° - Lat):"
+msgstr "Dek-Ziel (90° - Breite):"
+
+#: src/badweathermounttester/templates/index.html:864
+#: src/badweathermounttester/templates/index.html:878
+#: src/badweathermounttester/templates/index.html:888
+#: src/badweathermounttester/templates/index.html:936
+#: src/badweathermounttester/templates/index.html:1003
+msgid "Instructions"
+msgstr "Anleitung"
+
+#: src/badweathermounttester/templates/index.html:866
+msgid "Fill in your mount, camera and screen values above."
+msgstr "Füllen Sie oben Ihre Montierungs-, Kamera- und Bildschirmwerte aus."
+
+#: src/badweathermounttester/templates/index.html:867
+msgid ""
+"In PHD2 create a new profile with the Effective FL and Binning shown "
+"above. Disable multi-star guiding."
+msgstr ""
+"Erstellen Sie in PHD2 ein neues Profil mit der oben angezeigten "
+"effektiven Brennweite und dem Binning. Deaktivieren Sie die "
+"Mehrsternnachführung."
+
+#: src/badweathermounttester/templates/index.html:868
+msgid ""
+"Use PHD2's Calibration Assistant to slew the mount to the screen: enter "
+"\"Dec target\" as Declination."
+msgstr ""
+"Verwenden Sie den Kalibrierungsassistenten von PHD2, um die Montierung "
+"zum Bildschirm zu schwenken: Geben Sie \"Dek-Ziel\" als Deklination ein."
+
+#: src/badweathermounttester/templates/index.html:869
+msgid "Focus and locate the cross on the simulator display, following the arrows."
+msgstr "Fokussieren Sie und suchen Sie das Kreuz auf dem Simulatordisplay, folgen Sie dabei den Pfeilen."
+
+#: src/badweathermounttester/templates/index.html:871
+msgid "Then press \"Next\" to start aligning the mount."
+msgstr "Drücken Sie dann \"Weiter\", um mit der Ausrichtung der Montierung zu beginnen."
+
+#: src/badweathermounttester/templates/index.html:879
+#: src/badweathermounttester/templates/index.html:1159
+msgid ""
+"Using only rotations in RA, move the mount back and forth from left-hand-"
+"side to right-hand-side. Use the mount's Azimuth adjustment screws, so "
+"that the zero line will be crossed on left-hand- and right-hand-side."
+msgstr ""
+"Bewegen Sie die Montierung nur in RA vor und zurück, von links nach "
+"rechts. Verwenden Sie die Azimuteinstellschrauben der Montierung, sodass "
+"die Nulllinie auf der linken und rechten Seite überquert wird."
+
+#: src/badweathermounttester/templates/index.html:880
+msgid "If necessary, adjust Dec slightly."
+msgstr "Falls nötig, die Deklination leicht anpassen."
+
+#: src/badweathermounttester/templates/index.html:881
+msgid "Press \"Next\" when aligned, or \"Back\" to return to configuration."
+msgstr "Drücken Sie \"Weiter\", wenn ausgerichtet, oder \"Zurück\", um zur Konfiguration zurückzukehren."
+
+#: src/badweathermounttester/templates/index.html:890
+msgid ""
+"Look at PHD2 to see where the white crosshair appears on the simulator "
+"screen."
+msgstr ""
+"Schauen Sie in PHD2, wo das weiße Fadenkreuz auf dem Simulatorbildschirm "
+"erscheint."
+
+#: src/badweathermounttester/templates/index.html:891
+msgid "Click on the preview below at that location to record a point."
+msgstr "Klicken Sie in der Vorschau unten auf diese Position, um einen Punkt aufzuzeichnen."
+
+#: src/badweathermounttester/templates/index.html:892
+msgid ""
+"Fine-tune the point position using keyboard: Arrow keys or S/E/D/F "
+"(left/up/down/right)."
+msgstr ""
+"Feinabstimmung der Punktposition mit der Tastatur: Pfeiltasten oder "
+"S/E/D/F (links/oben/unten/rechts)."
+
+#: src/badweathermounttester/templates/index.html:893
+msgid "Move the mount in RA a few pixels, then repeat steps 1-3."
+msgstr "Bewegen Sie die Montierung in RA um einige Pixel und wiederholen Sie die Schritte 1–3."
+
+#: src/badweathermounttester/templates/index.html:894
+msgid "Continue until you have traced across the entire screen."
+msgstr "Fahren Sie fort, bis Sie den gesamten Bildschirm abgefahren haben."
+
+#: src/badweathermounttester/templates/index.html:896
+msgid "Southern Hemisphere:"
+msgstr "Südhalbkugel:"
+
+#: src/badweathermounttester/templates/index.html:896
+msgid "Trace from right-hand-side to left-hand-side."
+msgstr "Von rechts nach links abfahren."
+
+#: src/badweathermounttester/templates/index.html:897
+msgid "Keyboard:"
+msgstr "Tastatur:"
+
+#: src/badweathermounttester/templates/index.html:897
+msgid "Arrows/S/E/D/F = move 1px | Q/PgUp = previous point | A/PgDn = next point"
+msgstr "Pfeile/S/E/D/F = 1px bewegen | Q/BildAuf = vorheriger Punkt | A/BildAb = nächster Punkt"
+
+#: src/badweathermounttester/templates/index.html:898
+msgid "The selected point is shown in yellow. New points are auto-selected."
+msgstr "Der ausgewählte Punkt wird gelb angezeigt. Neue Punkte werden automatisch ausgewählt."
+
+#: src/badweathermounttester/templates/index.html:902
+msgid "Calibration Preview"
+msgstr "Kalibrierungsvorschau"
+
+#: src/badweathermounttester/templates/index.html:907
+msgid "Points collected:"
+msgstr "Gesammelte Punkte:"
+
+#: src/badweathermounttester/templates/index.html:909
+#: src/badweathermounttester/templates/index.html:961
+msgid "Reset"
+msgstr "Zurücksetzen"
+
+#: src/badweathermounttester/templates/index.html:910
+msgid "Delete Selected"
+msgstr "Auswahl löschen"
+
+#: src/badweathermounttester/templates/index.html:914
+msgid "Fitted Ellipse"
+msgstr "Angepasste Ellipse"
+
+#: src/badweathermounttester/templates/index.html:917
+msgid "Center X:"
+msgstr "Mittelpunkt X:"
+
+#: src/badweathermounttester/templates/index.html:919
+msgid "Axis a:"
+msgstr "Achse a:"
+
+#: src/badweathermounttester/templates/index.html:923
+msgid "Center Y:"
+msgstr "Mittelpunkt Y:"
+
+#: src/badweathermounttester/templates/index.html:925
+msgid "Axis b:"
+msgstr "Achse b:"
+
+#: src/badweathermounttester/templates/index.html:938
+msgid "Three vertical stripes are now displayed on the simulator screen."
+msgstr "Drei vertikale Streifen werden jetzt auf dem Simulatorbildschirm angezeigt."
+
+#: src/badweathermounttester/templates/index.html:939
+msgid "Select a stripe below (Left, Middle, or Right)."
+msgstr "Wählen Sie unten einen Streifen aus (Links, Mitte oder Rechts)."
+
+#: src/badweathermounttester/templates/index.html:940
+msgid "Choose a very short exposure for the camera. At best avoid saturation."
+msgstr "Wählen Sie eine sehr kurze Belichtungszeit für die Kamera. Vermeiden Sie nach Möglichkeit Überbelichtung."
+
+#: src/badweathermounttester/templates/index.html:941
+#: src/badweathermounttester/templates/index.html:1178
+msgid ""
+"Move the mount until the star is about to enter the stripe and enable "
+"tracking in the mount."
+msgstr ""
+"Bewegen Sie die Montierung, bis der Stern kurz davor ist, in den Streifen "
+"einzutreten, und aktivieren Sie die Nachführung in der Montierung."
+
+#: src/badweathermounttester/templates/index.html:942
+msgid "Press Start when the star enters the stripe, Stop when it exits."
+msgstr "Drücken Sie Start, wenn der Stern in den Streifen eintritt, Stop, wenn er ihn verlässt."
+
+#: src/badweathermounttester/templates/index.html:943
+msgid "Record the time for each stripe to measure on screen velocity."
+msgstr "Notieren Sie die Zeit für jeden Streifen, um die Geschwindigkeit auf dem Bildschirm zu messen."
+
+#: src/badweathermounttester/templates/index.html:945
+msgid "This step verifies that the mount moves at the expected sidereal rate."
+msgstr "Dieser Schritt überprüft, ob sich die Montierung mit der erwarteten siderischen Rate bewegt."
+
+#: src/badweathermounttester/templates/index.html:949
+msgid "Stopwatch"
+msgstr "Stoppuhr"
+
+#: src/badweathermounttester/templates/index.html:952
+msgid "Left"
+msgstr "Links"
+
+#: src/badweathermounttester/templates/index.html:953
+msgid "Middle"
+msgstr "Mitte"
+
+#: src/badweathermounttester/templates/index.html:954
+msgid "Right"
+msgstr "Rechts"
+
+#: src/badweathermounttester/templates/index.html:960
+msgid "Start"
+msgstr "Start"
+
+#: src/badweathermounttester/templates/index.html:967
+msgid "Recorded Times"
+msgstr "Aufgezeichnete Zeiten"
+
+#: src/badweathermounttester/templates/index.html:970
+msgid "Left Stripe"
+msgstr "Linker Streifen"
+
+#: src/badweathermounttester/templates/index.html:973
+#: src/badweathermounttester/templates/index.html:979
+#: src/badweathermounttester/templates/index.html:985
+msgid "Clear"
+msgstr "Löschen"
+
+#: src/badweathermounttester/templates/index.html:976
+msgid "Middle Stripe"
+msgstr "Mittlerer Streifen"
+
+#: src/badweathermounttester/templates/index.html:982
+msgid "Right Stripe"
+msgstr "Rechter Streifen"
+
+#: src/badweathermounttester/templates/index.html:990
+msgid "Stripe width:"
+msgstr "Streifenbreite:"
+
+#: src/badweathermounttester/templates/index.html:990
+msgid "Expected:"
+msgstr "Erwartet:"
+
+#: src/badweathermounttester/templates/index.html:992
+msgid "Min:"
+msgstr "Min:"
+
+#: src/badweathermounttester/templates/index.html:993
+msgid "Avg:"
+msgstr "Durchschn.:"
+
+#: src/badweathermounttester/templates/index.html:994
+msgid "Max:"
+msgstr "Max:"
+
+#: src/badweathermounttester/templates/index.html:1005
+#: src/badweathermounttester/templates/index.html:1197
+msgid "Move the mount back to the starting position (left side of screen)."
+msgstr "Bewegen Sie die Montierung zurück zur Startposition (linke Bildschirmseite)."
+
+#: src/badweathermounttester/templates/index.html:1006
+msgid "In PHD2, center the simulated star and start guiding."
+msgstr "Zentrieren Sie in PHD2 den simulierten Stern und starten Sie die Nachführung."
+
+#: src/badweathermounttester/templates/index.html:1007
+msgid "Press \"Start Simulation\" below to begin the star movement."
+msgstr "Drücken Sie unten \"Simulation starten\", um die Sternbewegung zu beginnen."
+
+#: src/badweathermounttester/templates/index.html:1008
+msgid "Wait until the simulation completes (the star crosses the screen)."
+msgstr "Warten Sie, bis die Simulation abgeschlossen ist (der Stern den Bildschirm überquert)."
+
+#: src/badweathermounttester/templates/index.html:1009
+msgid "Stop guiding in PHD2 and analyze the log with PHD2 Log Viewer."
+msgstr "Stoppen Sie die Nachführung in PHD2 und analysieren Sie das Protokoll mit dem PHD2 Log Viewer."
+
+#: src/badweathermounttester/templates/index.html:1014
+msgid "Simulation Control"
+msgstr "Simulationssteuerung"
+
+#: src/badweathermounttester/templates/index.html:1018
+msgid "Ready"
+msgstr "Bereit"
+
+#: src/badweathermounttester/templates/index.html:1021
+msgid "Remaining:"
+msgstr "Verbleibend:"
+
+#: src/badweathermounttester/templates/index.html:1034
+msgid "Elapsed:"
+msgstr "Vergangen:"
+
+#: src/badweathermounttester/templates/index.html:1034
+msgid "Total:"
+msgstr "Gesamt:"
+
+#: src/badweathermounttester/templates/index.html:1036
+msgid "Velocity:"
+msgstr "Geschwindigkeit:"
+
+#: src/badweathermounttester/templates/index.html:1042
+msgid "Reset to start"
+msgstr "Zum Anfang zurücksetzen"
+
+#: src/badweathermounttester/templates/index.html:1043
+msgid "Skip back 10s"
+msgstr "10s zurückspringen"
+
+#: src/badweathermounttester/templates/index.html:1044
+msgid "Play/Pause"
+msgstr "Abspielen/Pause"
+
+#: src/badweathermounttester/templates/index.html:1045
+msgid "Skip forward 10s"
+msgstr "10s vorspringen"
+
+#: src/badweathermounttester/templates/index.html:1046
+msgid "Stop"
+msgstr "Stopp"
+
+#: src/badweathermounttester/templates/index.html:1052
+msgid "Back"
+msgstr "Zurück"
+
+#: src/badweathermounttester/templates/index.html:1053
+msgid "Next"
+msgstr "Weiter"
+
+#: src/badweathermounttester/templates/index.html:1150
+msgid "Southern Hemisphere"
+msgstr "Südhalbkugel"
+
+#: src/badweathermounttester/templates/index.html:1158
+msgid ""
+"Using only rotations in RA, move the mount back and forth from right-"
+"hand-side to left-hand-side. Use the mount's Azimuth adjustment screws, "
+"so that the zero line will be crossed on right-hand- and left-hand-side."
+msgstr ""
+"Bewegen Sie die Montierung nur in RA vor und zurück, von rechts nach "
+"links. Verwenden Sie die Azimuteinstellschrauben der Montierung, sodass "
+"die Nulllinie auf der rechten und linken Seite überquert wird."
+
+#: src/badweathermounttester/templates/index.html:1177
+msgid ""
+"Move the mount until the star is about to enter the stripe from the right"
+" and enable tracking in the mount."
+msgstr ""
+"Bewegen Sie die Montierung, bis der Stern kurz davor ist, von rechts in "
+"den Streifen einzutreten, und aktivieren Sie die Nachführung in der "
+"Montierung."
+
+#: src/badweathermounttester/templates/index.html:1196
+msgid "Move the mount back to the starting position (right side of screen)."
+msgstr "Bewegen Sie die Montierung zurück zur Startposition (rechte Bildschirmseite)."
