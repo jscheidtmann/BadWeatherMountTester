@@ -89,6 +89,7 @@ class VelocityMeasurementConfig:
     right_time_seconds: float | None = None
     stripe_width_pixels: int = 0
     is_complete: bool = False
+    ra_drift_px_per_min: float | None = None  # PHD2 RA drift rate in guidecam px/min
 
 
 # Default path for setup configuration
@@ -145,6 +146,7 @@ class AppConfig:
                 "right_time_seconds": self.velocity.right_time_seconds,
                 "stripe_width_pixels": self.velocity.stripe_width_pixels,
                 "is_complete": self.velocity.is_complete,
+                "ra_drift_px_per_min": self.velocity.ra_drift_px_per_min,
             },
         }
 

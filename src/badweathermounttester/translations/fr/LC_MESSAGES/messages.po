@@ -582,3 +582,27 @@ msgstr "Vitesse non mesurée \u2014 taux estimé utilisé"
 #: src/badweathermounttester/display.py
 msgid "Velocity partially measured \u2014 using average"
 msgstr "Vitesse partiellement mesurée \u2014 moyenne utilisée"
+
+#: src/badweathermounttester/templates/index.html
+msgid "RA Drift Rate (PHD2, guidecam px/min):"
+msgstr "Taux de dérive AR (PHD2, px caméra-guide/min) :"
+
+#: src/badweathermounttester/templates/index.html
+msgid ""
+"Enter the RA drift rate measured by PHD2 Log Viewer in guide camera pixels "
+"per minute. This is the residual star motion while the mount tracks; it is "
+"added to the base simulation velocity. Negative values mean drift opposite "
+"to the sidereal direction."
+msgstr ""
+"Entrez le taux de dérive AR mesuré par PHD2 Log Viewer en pixels de caméra-guide "
+"par minute. Il s'agit du mouvement résiduel de l'étoile pendant le suivi de la "
+"monture ; il s'ajoute à la vitesse de simulation de base. Les valeurs négatives "
+"indiquent une dérive opposée à la direction sidérale."
+
+#: src/badweathermounttester/templates/index.html
+msgid "Apply"
+msgstr "Appliquer"
+
+#: src/badweathermounttester/templates/index.html
+msgid "Clear"
+msgstr "Effacer"

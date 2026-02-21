@@ -584,3 +584,27 @@ msgstr "Geschwindigkeit nicht gemessen \u2014 geschätzte Rate wird verwendet"
 #: src/badweathermounttester/display.py
 msgid "Velocity partially measured \u2014 using average"
 msgstr "Geschwindigkeit teilweise gemessen \u2014 Durchschnitt wird verwendet"
+
+#: src/badweathermounttester/templates/index.html
+msgid "RA Drift Rate (PHD2, guidecam px/min):"
+msgstr "RA-Driftrate (PHD2, Leitkam.-Px/min):"
+
+#: src/badweathermounttester/templates/index.html
+msgid ""
+"Enter the RA drift rate measured by PHD2 Log Viewer in guide camera pixels "
+"per minute. This is the residual star motion while the mount tracks; it is "
+"added to the base simulation velocity. Negative values mean drift opposite "
+"to the sidereal direction."
+msgstr ""
+"Geben Sie die von PHD2 Log Viewer gemessene RA-Driftrate in Leitkamerapixeln "
+"pro Minute ein. Dies ist die Restbewegung des Sterns während der Nachführung; "
+"sie wird zur Basissimulationsgeschwindigkeit addiert. Negative Werte bedeuten "
+"Drift entgegen der siderischen Richtung."
+
+#: src/badweathermounttester/templates/index.html
+msgid "Apply"
+msgstr "Übernehmen"
+
+#: src/badweathermounttester/templates/index.html
+msgid "Clear"
+msgstr "Löschen"

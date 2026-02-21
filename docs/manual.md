@@ -363,8 +363,13 @@ The web page shows three "recorded times", one for each stripe and a stop watch 
   </figcaption>
 </figure>
 
-Chose a very short exposure time for your camera. The smallest value, that PHD2 supports is 0.1s. Try to avoid
-saturation, but in principle it doesn't matter.
+!!! important "Check the focus! Again!"
+    It is very important, that you measure the velocity correctly. Therefore avoid - if possible - using remote access 
+    software such as Remote Desktop Client or VNC to access you asto computer. Also make sure that the guide scope is 
+    **exactly focused** on the simulator screen.
+
+Chose a very short exposure time for your camera. The smallest value, that PHD2 supports is 0.01s. Avoid
+saturation, and focus correctly on the simulator screen. 
 
 Now move the mount to the left of the outer strip, start tracking with the bullseye overlay active on the screen and
 press "Start" once the bullseye center enters the left stripe. Take care to avoid any reflection of the stripe on the
@@ -436,7 +441,7 @@ In order to improve the star profile for measurements, you can do the following:
 - Reduce the focal length of your guidescope. Decreases arcsec / px for the guidescope image.
 - Use a different guide camera with larger pixels
 - Use a different screen, with a better resolution (higher dpi)
-- unfocus the guidescope. Artifically smears out the pixel structure
+- **unfocus the guidescope. Artifically smears out the pixel structure**
 
 #### Rock solid floor
 
@@ -456,11 +461,22 @@ measurements (people walking around or bouncing balls)
 BWMT is configured to refresh the screen every 1/60th of a second or equivalently every 0.017 seconds. The exposure time
 of the guidecam should therefore be different from that rate.
 
-### Statistical Measurement Error
+### Measuring the Statistical Error
 
 When entering the "measurement" tab, BWMT will on left hand side (northern hemisphere, right hand side on southern
 hemisphere), where you placed the first alignment point, display a simulated star. This star will have a gaussian
 profile that is sampled at the positions of the pixels. The diameter of this star will be roughly 3 pixels.
+
+!!! warning "Defocus the star"
+    In order to get a nice star profile, you need to intentionally defocus. **Defocus by a large amount.** 
+    If you switch back to the "Calibrate" tab, you should not be able to read the number of the calibration
+    points anymore!
+
+!!! warning "Use your target exposure time"
+    If you're aiming at having a guidescope exposure time of 1s, you should also conduct the measurement at 1s. 
+    In order to achieve this, you may need to use neutral density filters. Make sure the peak of the simulated 
+    star profile is at least 50% of the maximum of your sensor (see the "Saturation by Max-ADU value" in the 
+    "Camera" tab in PHD2's advanced settings). 
 
 Let's see, which statistical fluctuations the measurement setup is reporting. These can be: air currents, cables
 tugging, imbalances in RA and Dec, vibrations present in the building from people or cars driving on the street, the
@@ -475,10 +491,11 @@ Start looping in PHD2, if it is not already running. Then move the mount **only 
 click on the simulated star to select it for guiding and then &lt;SHIFT&gt;-click or click on the "Start Guiding" icon
 in PHD2.
 
-Using shift-click you can force a calibration. As we have created a new profile above, a new calibration should be
-created now. You should force a new calibration, if you have an old one active (PHD2 usually re-uses a good
-calibration), but you changed the optical train, e.g. by adding a neutral density filter to get into the right exposure
-range.
+!!! tip "Forcing a calibration" 
+    Using shift-click you can force a calibration. As we have created a new profile above, a new calibration should be
+    created now. You should force a new calibration, if you have an old one active (PHD2 usually re-uses a good
+    calibration), **but you changed the optical train**, e.g. by adding a neutral density filter to get into the right exposure
+    range.
 
 Let it run for a while. Now use PHD2 Log Viewer to have a look at the Log.
 
@@ -521,7 +538,7 @@ If the figures are inconsistent and diverging from each other much:
 When you enter the "Measure" tab, BWMT computes the velocity at which the simulated star moves across the screen.
 The calculation depends on how many of the three stripes you have measured in the previous step.
 
-#### Step 1 — Theoretical baseline
+#### Theoretical baseline
 
 Regardless of measurements, BWMT first calculates a theoretical velocity from the geometry of your setup:
 
@@ -531,34 +548,35 @@ theoretical_velocity = 15 arcsec/s / pixel_pitch_arcsec × cos(90° − latitude
 ```
 
 The factor `cos(90° − latitude)` accounts for the fact that stars move more slowly across the sky the further
-you are from the equator and you're point straight at the simulator screen.
+you are from the equator (with increasing absolute Dec value) and you're rather far away from it in most 
+cases, because you're pointing at the simulator screen. 
 
-#### Step 2 — Choosing a velocity source
+#### Velocity source
 
 Depending on how many stripes were timed in Step 4, one of three cases applies:
 
 | Stripes measured | Velocity source label | How velocity is determined |
-|--------|-------------------|------------------------------------------------------------|
-| 0      | *estimated*       | Theoretical value from Step 1 (constant across the screen) |
-| 1 or 2 | *partial average* | Average of the measured stripe velocities (constant across the screen) |
-| 3      | *interpolated*    | Quadratic polynomial fitted through all three measured points; velocity varies across the screen |
+|------------------|-----------------------|------------------------------------------------------------|
+| 0                | *estimated*           | Theoretical value from Step 1 (constant across the screen) |
+| 1 or 2           | *partial average*     | Average of the measured stripe velocities (constant across the screen) |
+| 3                | *interpolated*        | Quadratic polynomial fitted through all three measured points; velocity varies across the screen |
 
 The active source is shown in the **Simulation Control** card next to the current velocity readout.
 If the source is *estimated*, a warning is displayed both in the web interface and on the simulator screen.
 
-#### Case "estimated" — no measurements
+**Case "estimated" — no measurements**
 
 The theoretical velocity is used unchanged. This is the least accurate option: it assumes the mount
 tracks exactly at the sidereal rate, ignoring any mechanical offset of the telescope from the RA axis
 or other geometric effects that cause the apparent screen velocity to differ from the pure sidereal rate.
 
-#### Case "partial average" — 1 or 2 stripes measured
+**Case "partial average" — 1 or 2 stripes measured**
 
 The average of the available measured stripe velocities is used as a constant velocity.
 This is more accurate than the theoretical estimate, but because only part of the screen was measured,
 position-dependent velocity variations are not captured.
 
-#### Case "interpolated" — all 3 stripes measured
+**Case "interpolated" — all 3 stripes measured**
 
 A quadratic polynomial is fitted through the three measured `(screen_x, velocity)` pairs at the left,
 middle, and right stripe centres. During simulation, the star's velocity is looked up from this curve at
@@ -581,7 +599,7 @@ For this to happen, do this:
     Move to the **right** of the simulated star instead, so the mount tracks it left-ward into frame.
 
 - When the guidecam picture has the star approximately in the center, start simulation in BWMT's web interface.
-- Open up PHD2 "Tools" > "Guiding Assistant", select the simulated star, if it is not already selected, then start guiding.
+- Open up PHD2 "Tools" > "Guiding Assistant", select the simulated star when it is not already selected, then start guiding.
 - Let "Measure Declination Backlash" enabled, then press "Start".
 - Let it run for at least one full revolution of the worm gear (see "elapsed time" in the top-right table).
 - Check that time against he remaining simulation time, that is displayed on the simulator screen.

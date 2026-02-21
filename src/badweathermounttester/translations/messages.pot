@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-02-21 15:34+0100\n"
+"POT-Creation-Date: 2026-02-21 21:03+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,13 +17,58 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
+#: src/badweathermounttester/display.py:661
+msgid "Press ESC to exit"
+msgstr ""
+
+#: src/badweathermounttester/display.py:886
+#, python-format
+msgid "Calibration - Points: %d"
+msgstr ""
+
+#: src/badweathermounttester/display.py:894
+msgid "Move mouse on web UI to position crosshair, click to record point"
+msgstr ""
+
+#: src/badweathermounttester/display.py:952
+msgid "LEFT"
+msgstr ""
+
+#: src/badweathermounttester/display.py:953
+msgid "MIDDLE"
+msgstr ""
+
+#: src/badweathermounttester/display.py:954
+msgid "RIGHT"
+msgstr ""
+
+#: src/badweathermounttester/display.py:1050
+msgid "Simulation Complete"
+msgstr ""
+
+#: src/badweathermounttester/display.py:1058
+msgid "Running"
+msgstr ""
+
+#: src/badweathermounttester/display.py:1066
+msgid "Simulation Ready - Press Start"
+msgstr ""
+
+#: src/badweathermounttester/display.py:1073
+msgid "Velocity not measured — using estimated rate"
+msgstr ""
+
+#: src/badweathermounttester/display.py:1080
+msgid "Velocity partially measured — using average"
+msgstr ""
+
 #: src/badweathermounttester/templates/index.html:6
 #: src/badweathermounttester/templates/index.html:761
 msgid "Bad Weather Mount Tester"
 msgstr ""
 
 #: src/badweathermounttester/templates/index.html:764
-#: src/badweathermounttester/templates/index.html:1151
+#: src/badweathermounttester/templates/index.html:1168
 msgid "Northern Hemisphere"
 msgstr ""
 
@@ -210,7 +255,7 @@ msgid "Then press \"Next\" to start aligning the mount."
 msgstr ""
 
 #: src/badweathermounttester/templates/index.html:879
-#: src/badweathermounttester/templates/index.html:1159
+#: src/badweathermounttester/templates/index.html:1176
 msgid ""
 "Using only rotations in RA, move the mount back and forth from left-hand-"
 "side to right-hand-side. Use the mount's Azimuth adjustment screws, so "
@@ -319,7 +364,7 @@ msgid "Choose a very short exposure for the camera. At best avoid saturation."
 msgstr ""
 
 #: src/badweathermounttester/templates/index.html:941
-#: src/badweathermounttester/templates/index.html:1178
+#: src/badweathermounttester/templates/index.html:1195
 msgid ""
 "Move the mount until the star is about to enter the stripe and enable "
 "tracking in the mount."
@@ -368,6 +413,7 @@ msgstr ""
 #: src/badweathermounttester/templates/index.html:973
 #: src/badweathermounttester/templates/index.html:979
 #: src/badweathermounttester/templates/index.html:985
+#: src/badweathermounttester/templates/index.html:1053
 msgid "Clear"
 msgstr ""
 
@@ -400,7 +446,7 @@ msgid "Max:"
 msgstr ""
 
 #: src/badweathermounttester/templates/index.html:1005
-#: src/badweathermounttester/templates/index.html:1197
+#: src/badweathermounttester/templates/index.html:1214
 msgid "Move the mount back to the starting position (left side of screen)."
 msgstr ""
 
@@ -421,75 +467,97 @@ msgid "Stop guiding in PHD2 and analyze the log with PHD2 Log Viewer."
 msgstr ""
 
 #: src/badweathermounttester/templates/index.html:1014
-msgid "Simulation Control"
+msgid ""
+"Velocity not yet determined. Complete Step 4 (Velocity) for accurate "
+"simulation results. Using estimated velocity based on the sidereal rate."
 msgstr ""
 
 #: src/badweathermounttester/templates/index.html:1018
+msgid "Simulation Control"
+msgstr ""
+
+#: src/badweathermounttester/templates/index.html:1022
 msgid "Ready"
 msgstr ""
 
-#: src/badweathermounttester/templates/index.html:1021
+#: src/badweathermounttester/templates/index.html:1025
 msgid "Remaining:"
 msgstr ""
 
-#: src/badweathermounttester/templates/index.html:1034
+#: src/badweathermounttester/templates/index.html:1038
 msgid "Elapsed:"
 msgstr ""
 
-#: src/badweathermounttester/templates/index.html:1034
+#: src/badweathermounttester/templates/index.html:1038
 msgid "Total:"
 msgstr ""
 
-#: src/badweathermounttester/templates/index.html:1036
+#: src/badweathermounttester/templates/index.html:1040
 msgid "Velocity:"
 msgstr ""
 
-#: src/badweathermounttester/templates/index.html:1042
-msgid "Reset to start"
+#: src/badweathermounttester/templates/index.html:1047
+msgid "RA Drift Rate (PHD2, guidecam px/min):"
 msgstr ""
 
-#: src/badweathermounttester/templates/index.html:1043
-msgid "Skip back 10s"
-msgstr ""
-
-#: src/badweathermounttester/templates/index.html:1044
-msgid "Play/Pause"
-msgstr ""
-
-#: src/badweathermounttester/templates/index.html:1045
-msgid "Skip forward 10s"
-msgstr ""
-
-#: src/badweathermounttester/templates/index.html:1046
-msgid "Stop"
+#: src/badweathermounttester/templates/index.html:1048
+msgid ""
+"Enter the RA drift rate measured by PHD2 Log Viewer in guide camera "
+"pixels per minute. This is the residual star motion while the mount "
+"tracks; it is added to the base simulation velocity. Negative values mean"
+" drift opposite to the sidereal direction."
 msgstr ""
 
 #: src/badweathermounttester/templates/index.html:1052
+msgid "Apply"
+msgstr ""
+
+#: src/badweathermounttester/templates/index.html:1059
+msgid "Reset to start"
+msgstr ""
+
+#: src/badweathermounttester/templates/index.html:1060
+msgid "Skip back 10s"
+msgstr ""
+
+#: src/badweathermounttester/templates/index.html:1061
+msgid "Play/Pause"
+msgstr ""
+
+#: src/badweathermounttester/templates/index.html:1062
+msgid "Skip forward 10s"
+msgstr ""
+
+#: src/badweathermounttester/templates/index.html:1063
+msgid "Stop"
+msgstr ""
+
+#: src/badweathermounttester/templates/index.html:1069
 msgid "Back"
 msgstr ""
 
-#: src/badweathermounttester/templates/index.html:1053
+#: src/badweathermounttester/templates/index.html:1070
 msgid "Next"
 msgstr ""
 
-#: src/badweathermounttester/templates/index.html:1150
+#: src/badweathermounttester/templates/index.html:1167
 msgid "Southern Hemisphere"
 msgstr ""
 
-#: src/badweathermounttester/templates/index.html:1158
+#: src/badweathermounttester/templates/index.html:1175
 msgid ""
 "Using only rotations in RA, move the mount back and forth from right-"
 "hand-side to left-hand-side. Use the mount's Azimuth adjustment screws, "
 "so that the zero line will be crossed on right-hand- and left-hand-side."
 msgstr ""
 
-#: src/badweathermounttester/templates/index.html:1177
+#: src/badweathermounttester/templates/index.html:1194
 msgid ""
 "Move the mount until the star is about to enter the stripe from the right"
 " and enable tracking in the mount."
 msgstr ""
 
-#: src/badweathermounttester/templates/index.html:1196
+#: src/badweathermounttester/templates/index.html:1213
 msgid "Move the mount back to the starting position (right side of screen)."
 msgstr ""
 

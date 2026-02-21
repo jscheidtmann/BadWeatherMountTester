@@ -134,6 +134,41 @@ def get_locale():
     return request.accept_languages.best_match(["en", "de", "fr", "es"])
 
 
+def _drift_to_sim_px_s(
+    drift_px_per_min: float,
+    pixel_size_um: float,
+    focal_length_mm: float,
+    distance_m: float,
+    screen_width_mm: float,
+    screen_width_px: int,
+) -> float:
+    """Convert a PHD2 RA drift rate (guidecam px/min) to simulator screen px/s.
+
+    This value is ADDITIVE: the drift is the residual star motion on the guide camera
+    while the mount is tracking. The corrected simulation velocity is:
+        corrected_px_s = base_px_s + drift_sim_px_s
+
+    The conversion formula equates angular velocity on the guide camera and on the
+    simulator screen:
+        sim_px/s = (drift_px/min / 60)
+                   × (pixel_size_um / eff_focal_mm)
+                   / (screen_width_mm / screen_width_px / distance_m)
+
+    The effective focal length accounts for near-focus imaging at distance_m.
+    A negative drift means the star drifts opposite to the sidereal direction.
+    """
+    if focal_length_mm <= 0 or distance_m <= 0 or screen_width_mm <= 0 or screen_width_px <= 0:
+        return 0.0
+    denom = distance_m * 1000.0 - focal_length_mm
+    if denom <= 0:
+        return 0.0
+    eff_focal_mm = (focal_length_mm * distance_m * 1000.0) / denom
+    # arcsec/guidecam_px and arcsec/sim_px both multiply by 206265 – factor cancels
+    arcsec_per_guidecam_px = pixel_size_um / eff_focal_mm          # (×206265/1000 implicit, cancels)
+    arcsec_per_sim_px = (screen_width_mm / screen_width_px) / (distance_m * 1000.0)
+    return (drift_px_per_min / 60.0) * arcsec_per_guidecam_px / arcsec_per_sim_px
+
+
 class WebServer:
     """Flask web server for the BWMT control interface."""
 
@@ -707,6 +742,21 @@ class WebServer:
                     pixels_per_second = sum(measured_velocities) / len(measured_velocities)
                     velocity_source = "measured_average"
 
+            # PHD2 drift rate is additive: residual star motion on guidecam while tracking
+            if self.config.velocity.ra_drift_px_per_min is not None:
+                drift_sim_px_s = _drift_to_sim_px_s(
+                    self.config.velocity.ra_drift_px_per_min,
+                    self.config.camera.pixel_size_um,
+                    self.config.mount.focal_length_mm,
+                    self.config.mount.distance_to_screen_m,
+                    self.config.display.screen_width_mm,
+                    self.config.display.screen_width,
+                )
+                if drift_sim_px_s != 0:
+                    pixels_per_second = max(0.001, pixels_per_second - drift_sim_px_s)
+                    velocity_profile = None
+                    velocity_source = "drift_corrected"
+
             if self._on_simulation_setup_callback:
                 self._on_simulation_setup_callback(
                     x_start, x_end, pixels_per_second, velocity_profile, velocity_source
@@ -801,6 +851,21 @@ class WebServer:
                 elif len(measured_velocities) > 0:
                     pixels_per_second = sum(measured_velocities) / len(measured_velocities)
                     velocity_source = "measured_average"
+
+            # PHD2 drift rate is additive: residual star motion on guidecam while tracking
+            if self.config.velocity.ra_drift_px_per_min is not None:
+                drift_sim_px_s = _drift_to_sim_px_s(
+                    self.config.velocity.ra_drift_px_per_min,
+                    self.config.camera.pixel_size_um,
+                    self.config.mount.focal_length_mm,
+                    self.config.mount.distance_to_screen_m,
+                    self.config.display.screen_width_mm,
+                    self.config.display.screen_width,
+                )
+                if drift_sim_px_s != 0:
+                    pixels_per_second = max(0.001, pixels_per_second - drift_sim_px_s)
+                    velocity_profile = None
+                    velocity_source = "drift_corrected"
 
             if velocity_profile is not None:
                 # Compute total time via numerical integration (quadratic polynomial)
@@ -904,8 +969,39 @@ class WebServer:
                     "right_time_seconds": self.config.velocity.right_time_seconds,
                     "stripe_width_pixels": self.config.velocity.stripe_width_pixels,
                     "is_complete": self.config.velocity.is_complete,
+                    "ra_drift_px_per_min": self.config.velocity.ra_drift_px_per_min,
                 }
             )
+
+        @self.app.route("/api/simulation/drift", methods=["POST"])
+        def set_drift():
+            """Set the PHD2 RA drift rate (guidecam px/min) and return converted sim px/s."""
+            data = request.get_json()
+            if not data or "ra_drift_px_per_min" not in data:
+                return jsonify({"error": "ra_drift_px_per_min required"}), 400
+            drift = float(data["ra_drift_px_per_min"])
+            if drift == 0:
+                return jsonify({"error": "ra_drift_px_per_min must be non-zero"}), 400
+            self.config.velocity.ra_drift_px_per_min = drift
+            self.config.save_yaml(self.setup_path)
+            sim_px_s = _drift_to_sim_px_s(
+                drift,
+                self.config.camera.pixel_size_um,
+                self.config.mount.focal_length_mm,
+                self.config.mount.distance_to_screen_m,
+                self.config.display.screen_width_mm,
+                self.config.display.screen_width,
+            )
+            log_vel.info("RA drift rate set to %.4f guidecam px/min → %.4f sim px/s", drift, sim_px_s)
+            return jsonify({"status": "ok", "ra_drift_px_per_min": drift, "sim_px_per_s": round(sim_px_s, 4)})
+
+        @self.app.route("/api/simulation/drift", methods=["DELETE"])
+        def clear_drift():
+            """Clear the PHD2 RA drift rate override."""
+            self.config.velocity.ra_drift_px_per_min = None
+            self.config.save_yaml(self.setup_path)
+            log_vel.info("RA drift rate cleared")
+            return jsonify({"status": "ok"})
 
         @self.app.route("/api/velocity/setup", methods=["POST"])
         def velocity_setup():
