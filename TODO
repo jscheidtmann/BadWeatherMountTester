@@ -1,6 +1,10 @@
 
--[ ] Remove code duplicates between web server and javascript
--[ ] Check velocity calculation: calibration points start and end vs. locations of measured velocities
--[ ] Add more tests
--[ ] Better formatting of figures (only centered at the moment)
--[ ] Make geometry.py available as a separate page of the web server.  
+Version 1.0.0
+- Check velocity calculation: calibration points start and end vs. locations of measured velocities
+
+Afterwards
+- Add more verbose logging
+- Add more tests: Selenium tests of Chrome, Edge, Safari and Firefox tests.
+- Make geometry.py available as a separate page of the web server.  
+- Remove code duplication between web server and javascript
+- Better formatting of figures in manual (only centered at the moment)
