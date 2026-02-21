@@ -140,12 +140,13 @@ class Application:
         x_end: int,
         pixels_per_second: float,
         velocity_profile: Optional[List[Tuple[float, float]]] = None,
+        velocity_source: str = "calculated",
     ) -> None:
         """Handle simulation setup."""
         # Make sure ellipse is set from calibration points
         ellipse = fit_ellipse(self.config.calibration.points)
         self.display.set_calibration_ellipse(ellipse)
-        self.display.setup_simulation(x_start, x_end, pixels_per_second, velocity_profile)
+        self.display.setup_simulation(x_start, x_end, pixels_per_second, velocity_profile, velocity_source)
 
     def _on_simulation_start(self) -> None:
         """Handle simulation start."""

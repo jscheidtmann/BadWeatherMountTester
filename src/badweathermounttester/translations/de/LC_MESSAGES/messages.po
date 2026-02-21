@@ -580,3 +580,7 @@ msgstr "Simulation bereit - Start drücken"
 #: src/badweathermounttester/display.py
 msgid "Velocity not measured \u2014 using estimated rate"
 msgstr "Geschwindigkeit nicht gemessen \u2014 geschätzte Rate wird verwendet"
+
+#: src/badweathermounttester/display.py
+msgid "Velocity partially measured \u2014 using average"
+msgstr "Geschwindigkeit teilweise gemessen \u2014 Durchschnitt wird verwendet"

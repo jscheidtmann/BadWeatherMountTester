@@ -2106,11 +2106,15 @@
                     const velocityWarning = document.getElementById('velocity-warning');
                     if (data.velocity_source === 'measured_interpolated') {
                         velocitySourceLabel.textContent = 'interpolated';
-                        velocitySourceLabel.style.color = '#4caf50';  // Green for measured
+                        velocitySourceLabel.style.color = '#4caf50';  // Green: all 3 measured
+                        velocityWarning.style.display = 'none';
+                    } else if (data.velocity_source === 'measured_average') {
+                        velocitySourceLabel.textContent = 'partial average';
+                        velocitySourceLabel.style.color = '#ff9800';  // Orange: 1–2 measured
                         velocityWarning.style.display = 'none';
                     } else {
                         velocitySourceLabel.textContent = 'estimated';
-                        velocitySourceLabel.style.color = '#aaa';  // Gray for calculated
+                        velocitySourceLabel.style.color = '#aaa';  // Gray: no measurements
                         velocityWarning.style.display = 'block';
                     }
                 } else {

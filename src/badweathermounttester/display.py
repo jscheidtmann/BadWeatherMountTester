@@ -160,7 +160,8 @@ class SimulatorDisplay:
         # Velocity measurement state
         self.velocity_stripe_width: int = 0  # Width of each stripe in pixels
         self.velocity_pixels_per_second: float = 0.0  # Calculated velocity
-        self.simulation_velocity_measured: bool = False  # True if velocity was measured in Step 4
+        # "calculated", "measured_average", or "measured_interpolated"
+        self.simulation_velocity_source: str = "calculated"
         # Hemisphere
         self.southern_hemisphere: bool = False
         # Simulation completion logging guard
@@ -326,6 +327,7 @@ class SimulatorDisplay:
         x_end: int,
         pixels_per_second: float,
         velocity_profile: Optional[List[Tuple[float, float]]] = None,
+        velocity_source: str = "calculated",
     ) -> None:
         """Set up simulation parameters.
 
@@ -343,7 +345,7 @@ class SimulatorDisplay:
         self.simulation_running = False
         self.simulation_start_time = None
         self.simulation_elapsed = 0.0
-        self.simulation_velocity_measured = velocity_profile is not None
+        self.simulation_velocity_source = velocity_source
         self.reset_beep_state()
 
         if velocity_profile is not None and len(velocity_profile) >= 3:
@@ -1065,10 +1067,17 @@ class SimulatorDisplay:
             text_rect = text.get_rect(center=(width // 2, 50))
             self.screen.blit(text, text_rect)
 
-        if not self.simulation_velocity_measured:
+        if self.simulation_velocity_source == "calculated":
             font_warn = pygame.font.Font(None, 48)
             warn_text = font_warn.render(
                 _("Velocity not measured \u2014 using estimated rate"), True, (255, 180, 0)
+            )
+            warn_rect = warn_text.get_rect(center=(width // 2, height - 40))
+            self.screen.blit(warn_text, warn_rect)
+        elif self.simulation_velocity_source == "measured_average":
+            font_warn = pygame.font.Font(None, 48)
+            warn_text = font_warn.render(
+                _("Velocity partially measured \u2014 using average"), True, (255, 200, 0)
             )
             warn_rect = warn_text.get_rect(center=(width // 2, height - 40))
             self.screen.blit(warn_text, warn_rect)

@@ -174,7 +174,7 @@ class WebServer:
         self._on_calibration_hover_callback: Optional[Callable[[int, int], None]] = None
         self._on_calibration_click_callback: Optional[Callable[[int, int], None]] = None
         self._on_calibration_select_callback: Optional[Callable[[int], None]] = None
-        self._on_simulation_setup_callback: Optional[Callable[[int, int, float, Optional[list]], None]] = None
+        self._on_simulation_setup_callback: Optional[Callable[[int, int, float, Optional[list], str], None]] = None
         self._on_simulation_start_callback: Optional[Callable[[], None]] = None
         self._on_simulation_stop_callback: Optional[Callable[[], None]] = None
         self._on_simulation_reset_callback: Optional[Callable[[], None]] = None
@@ -672,50 +672,45 @@ class WebServer:
                 latitude_factor = np.cos(np.radians(90.0 - latitude))
                 calculated_pixels_per_second *= latitude_factor
 
-            # Check if we have measured velocity data to use instead
+            # Determine velocity from available measurements (0, 1, 2, or 3 stripes measured)
+            # Case "calculated":           no measurements → theoretical sidereal velocity (constant)
+            # Case "measured_average":     1 or 2 measurements → average of measured values (constant)
+            # Case "measured_interpolated": all 3 measurements → quadratic interpolation across screen
             velocity_source = "calculated"
             pixels_per_second = calculated_pixels_per_second
             velocity_profile = None
 
-            if (
-                self.config.velocity.is_complete
-                and self.config.velocity.stripe_width_pixels > 0
-                and self.config.velocity.left_time_seconds is not None
-                and self.config.velocity.middle_time_seconds is not None
-                and self.config.velocity.right_time_seconds is not None
-            ):
-                stripe_width = self.config.velocity.stripe_width_pixels
+            stripe_width = self.config.velocity.stripe_width_pixels
+            if stripe_width > 0:
                 screen_width = self.config.display.screen_width
-
-                # Compute per-stripe velocities at stripe center positions
-                v_left = (
-                    stripe_width / self.config.velocity.left_time_seconds
-                    if self.config.velocity.left_time_seconds > 0
-                    else 0
-                )
-                v_mid = (
-                    stripe_width / self.config.velocity.middle_time_seconds
-                    if self.config.velocity.middle_time_seconds > 0
-                    else 0
-                )
-                v_right = (
-                    stripe_width / self.config.velocity.right_time_seconds
-                    if self.config.velocity.right_time_seconds > 0
-                    else 0
-                )
-
-                # Stripe center x-positions (same layout as display.py)
                 x_left = stripe_width / 2.0
                 x_mid = screen_width / 2.0
                 x_right = screen_width - stripe_width / 2.0
 
-                # Use max velocity as the representative constant velocity
-                pixels_per_second = max(v_left, v_mid, v_right)
-                velocity_profile = [(x_left, v_left), (x_mid, v_mid), (x_right, v_right)]
-                velocity_source = "measured_interpolated"
+                measured_velocities = []
+                measured_points = []
+                for t, x in [
+                    (self.config.velocity.left_time_seconds, x_left),
+                    (self.config.velocity.middle_time_seconds, x_mid),
+                    (self.config.velocity.right_time_seconds, x_right),
+                ]:
+                    if t is not None and t > 0:
+                        v = stripe_width / t
+                        measured_velocities.append(v)
+                        measured_points.append((x, v))
+
+                if len(measured_velocities) == 3:
+                    pixels_per_second = max(measured_velocities)
+                    velocity_profile = measured_points
+                    velocity_source = "measured_interpolated"
+                elif len(measured_velocities) > 0:
+                    pixels_per_second = sum(measured_velocities) / len(measured_velocities)
+                    velocity_source = "measured_average"
 
             if self._on_simulation_setup_callback:
-                self._on_simulation_setup_callback(x_start, x_end, pixels_per_second, velocity_profile)
+                self._on_simulation_setup_callback(
+                    x_start, x_end, pixels_per_second, velocity_profile, velocity_source
+                )
 
             # Get total_seconds from the display's simulation status after setup
             if self._get_simulation_status_callback:
@@ -775,49 +770,42 @@ class WebServer:
                 latitude_factor = np.cos(np.radians(90.0 - latitude))
                 calculated_pixels_per_second *= latitude_factor
 
-            # Check if we have measured velocity data
+            # Determine velocity from available measurements (mirrors simulation_setup logic)
             velocity_source = "calculated"
             pixels_per_second = calculated_pixels_per_second
+            velocity_profile = None
 
-            if (
-                self.config.velocity.is_complete
-                and self.config.velocity.stripe_width_pixels > 0
-                and self.config.velocity.left_time_seconds is not None
-                and self.config.velocity.middle_time_seconds is not None
-                and self.config.velocity.right_time_seconds is not None
-            ):
-                stripe_width = self.config.velocity.stripe_width_pixels
+            stripe_width = self.config.velocity.stripe_width_pixels
+            if stripe_width > 0:
                 screen_width = self.config.display.screen_width
-
-                # Compute per-stripe velocities at stripe center positions
-                v_left = (
-                    stripe_width / self.config.velocity.left_time_seconds
-                    if self.config.velocity.left_time_seconds > 0
-                    else 0
-                )
-                v_mid = (
-                    stripe_width / self.config.velocity.middle_time_seconds
-                    if self.config.velocity.middle_time_seconds > 0
-                    else 0
-                )
-                v_right = (
-                    stripe_width / self.config.velocity.right_time_seconds
-                    if self.config.velocity.right_time_seconds > 0
-                    else 0
-                )
-
-                # Stripe center x-positions
                 x_left = stripe_width / 2.0
                 x_mid = screen_width / 2.0
                 x_right = screen_width - stripe_width / 2.0
 
-                # Use max velocity as the representative constant velocity
-                pixels_per_second = max(v_left, v_mid, v_right)
-                velocity_source = "measured_interpolated"
+                measured_velocities = []
+                measured_points = []
+                for t, x in [
+                    (self.config.velocity.left_time_seconds, x_left),
+                    (self.config.velocity.middle_time_seconds, x_mid),
+                    (self.config.velocity.right_time_seconds, x_right),
+                ]:
+                    if t is not None and t > 0:
+                        v = stripe_width / t
+                        measured_velocities.append(v)
+                        measured_points.append((x, v))
 
+                if len(measured_velocities) == 3:
+                    pixels_per_second = max(measured_velocities)
+                    velocity_profile = measured_points
+                    velocity_source = "measured_interpolated"
+                elif len(measured_velocities) > 0:
+                    pixels_per_second = sum(measured_velocities) / len(measured_velocities)
+                    velocity_source = "measured_average"
+
+            if velocity_profile is not None:
                 # Compute total time via numerical integration (quadratic polynomial)
-                profile_xs = np.array([x_left, x_mid, x_right])
-                profile_vs = np.array([v_left, v_mid, v_right])
+                profile_xs = np.array([p[0] for p in velocity_profile])
+                profile_vs = np.array([p[1] for p in velocity_profile])
                 coeffs = np.polyfit(profile_xs, profile_vs, 2)
                 lookup_xs = np.linspace(float(x_start), float(x_end), 1000)
                 lookup_vs = np.maximum(np.polyval(coeffs, lookup_xs), 0.01)
@@ -1071,8 +1059,8 @@ class WebServer:
         """Set callback for when a calibration point is selected."""
         self._on_calibration_select_callback = callback
 
-    def on_simulation_setup(self, callback: Callable[[int, int, float, Optional[list]], None]) -> None:
-        """Set callback for simulation setup (x_start, x_end, pixels_per_second, velocity_profile)."""
+    def on_simulation_setup(self, callback: Callable[[int, int, float, Optional[list], str], None]) -> None:
+        """Set callback for simulation setup (x_start, x_end, pixels_per_second, velocity_profile, velocity_source)."""
         self._on_simulation_setup_callback = callback
 
     def on_simulation_start(self, callback: Callable[[], None]) -> None:
