@@ -527,3 +527,56 @@ msgstr ""
 #: src/badweathermounttester/templates/index.html:1196
 msgid "Move the mount back to the starting position (right side of screen)."
 msgstr "Bewegen Sie die Montierung zurück zur Startposition (rechte Bildschirmseite)."
+
+#: src/badweathermounttester/templates/index.html
+msgid ""
+"Velocity not yet determined. Complete Step 4 (Velocity) for accurate "
+"simulation results. Using estimated velocity based on the sidereal rate."
+msgstr ""
+"Geschwindigkeit noch nicht gemessen. Führen Sie Schritt 4 (Geschwindigkeit) "
+"für genaue Simulationsergebnisse durch. Verwende geschätzte Geschwindigkeit "
+"basierend auf der Sideralrate."
+
+#: src/badweathermounttester/display.py
+msgid "Press ESC to exit"
+msgstr "ESC drücken zum Beenden"
+
+#: src/badweathermounttester/display.py
+msgid "Connect to:"
+msgstr "Verbinden mit:"
+
+#: src/badweathermounttester/display.py
+msgid "Calibration - Points: %d"
+msgstr "Kalibrierung - Punkte: %d"
+
+#: src/badweathermounttester/display.py
+msgid "Move mouse on web UI to position crosshair, click to record point"
+msgstr "Maus im Web-UI bewegen zum Positionieren des Fadenkreuzes, klicken zum Aufzeichnen"
+
+#: src/badweathermounttester/display.py
+msgid "LEFT"
+msgstr "LINKS"
+
+#: src/badweathermounttester/display.py
+msgid "MIDDLE"
+msgstr "MITTE"
+
+#: src/badweathermounttester/display.py
+msgid "RIGHT"
+msgstr "RECHTS"
+
+#: src/badweathermounttester/display.py
+msgid "Simulation Complete"
+msgstr "Simulation abgeschlossen"
+
+#: src/badweathermounttester/display.py
+msgid "Running"
+msgstr "Läuft"
+
+#: src/badweathermounttester/display.py
+msgid "Simulation Ready - Press Start"
+msgstr "Simulation bereit - Start drücken"
+
+#: src/badweathermounttester/display.py
+msgid "Velocity not measured \u2014 using estimated rate"
+msgstr "Geschwindigkeit nicht gemessen \u2014 geschätzte Rate wird verwendet"

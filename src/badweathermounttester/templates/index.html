@@ -1010,6 +1010,10 @@
                 </ol>
             </div>
 
+            <div id="velocity-warning" style="display:none; border-left: 4px solid #f59e0b; background: #1a1400; color: #fbbf24; padding: 12px 16px; border-radius: 4px; margin-bottom: 12px;">
+                ⚠ {{ _('Velocity not yet determined. Complete Step 4 (Velocity) for accurate simulation results. Using estimated velocity based on the sidereal rate.') }}
+            </div>
+
             <div class="card">
                 <h2>{{ _('Simulation Control') }}</h2>
                 <div class="simulation-status" id="simulation-status">
@@ -2099,12 +2103,15 @@
 
                     // Display velocity source
                     simCurrentVelocitySpan.textContent = data.pixels_per_second.toFixed(4);
+                    const velocityWarning = document.getElementById('velocity-warning');
                     if (data.velocity_source === 'measured_interpolated') {
                         velocitySourceLabel.textContent = 'interpolated';
                         velocitySourceLabel.style.color = '#4caf50';  // Green for measured
+                        velocityWarning.style.display = 'none';
                     } else {
                         velocitySourceLabel.textContent = 'estimated';
                         velocitySourceLabel.style.color = '#aaa';  // Gray for calculated
+                        velocityWarning.style.display = 'block';
                     }
                 } else {
                     console.error('Simulation setup failed:', data.error);

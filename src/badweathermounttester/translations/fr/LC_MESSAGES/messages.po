@@ -525,3 +525,56 @@ msgstr ""
 #: src/badweathermounttester/templates/index.html:1196
 msgid "Move the mount back to the starting position (right side of screen)."
 msgstr "Ramenez la monture à la position de départ (côté droit de l'écran)."
+
+#: src/badweathermounttester/templates/index.html
+msgid ""
+"Velocity not yet determined. Complete Step 4 (Velocity) for accurate "
+"simulation results. Using estimated velocity based on the sidereal rate."
+msgstr ""
+"Vitesse pas encore déterminée. Complétez l'étape 4 (Vitesse) pour des "
+"résultats de simulation précis. Utilisation d'une vitesse estimée basée "
+"sur le taux sidéral."
+
+#: src/badweathermounttester/display.py
+msgid "Press ESC to exit"
+msgstr "Appuyer sur ÉCHAP pour quitter"
+
+#: src/badweathermounttester/display.py
+msgid "Connect to:"
+msgstr "Se connecter à :"
+
+#: src/badweathermounttester/display.py
+msgid "Calibration - Points: %d"
+msgstr "Calibration - Points : %d"
+
+#: src/badweathermounttester/display.py
+msgid "Move mouse on web UI to position crosshair, click to record point"
+msgstr "Déplacer la souris dans l'interface web pour positionner le réticule, cliquer pour enregistrer"
+
+#: src/badweathermounttester/display.py
+msgid "LEFT"
+msgstr "GAUCHE"
+
+#: src/badweathermounttester/display.py
+msgid "MIDDLE"
+msgstr "MILIEU"
+
+#: src/badweathermounttester/display.py
+msgid "RIGHT"
+msgstr "DROITE"
+
+#: src/badweathermounttester/display.py
+msgid "Simulation Complete"
+msgstr "Simulation terminée"
+
+#: src/badweathermounttester/display.py
+msgid "Running"
+msgstr "En cours"
+
+#: src/badweathermounttester/display.py
+msgid "Simulation Ready - Press Start"
+msgstr "Simulation prête - Appuyer sur Démarrer"
+
+#: src/badweathermounttester/display.py
+msgid "Velocity not measured \u2014 using estimated rate"
+msgstr "Vitesse non mesurée \u2014 taux estimé utilisé"

@@ -6,6 +6,8 @@ This module handles the pygame-based display that shows:
 - The simulated star for guiding
 """
 
+import gettext
+import locale
 import math
 import time
 from pathlib import Path
@@ -20,13 +22,26 @@ with warnings.catch_warnings():
     import pygame
 from enum import Enum, auto
 from dataclasses import dataclass
-from typing import Optional, Tuple, List, Dict
+from typing import Callable, Optional, Tuple, List, Dict
 
 from badweathermounttester.config import DisplayConfig
 from badweathermounttester.logging_setup import get_app_logger, get_simulation_logger
 
 log_app = get_app_logger()
 log_sim = get_simulation_logger()
+
+
+def _setup_translations() -> Callable[[str], str]:
+    """Load .mo translations based on the system locale, falling back to English."""
+    translations_dir = Path(__file__).parent / "translations"
+    try:
+        lang = (locale.getlocale()[0] or "").split("_")[0]
+        return gettext.translation("messages", localedir=str(translations_dir), languages=[lang]).gettext
+    except (FileNotFoundError, locale.Error):
+        return lambda s: s
+
+
+_ = _setup_translations()
 
 # Path to the logo file
 LOGO_PATH = Path(__file__).parent / "static" / "BWMT_logo_w.png"
@@ -130,6 +145,7 @@ class SimulatorDisplay:
         # Velocity measurement state
         self.velocity_stripe_width: int = 0  # Width of each stripe in pixels
         self.velocity_pixels_per_second: float = 0.0  # Calculated velocity
+        self.simulation_velocity_measured: bool = False  # True if velocity was measured in Step 4
         # Hemisphere
         self.southern_hemisphere: bool = False
         # Simulation completion logging guard
@@ -312,6 +328,7 @@ class SimulatorDisplay:
         self.simulation_running = False
         self.simulation_start_time = None
         self.simulation_elapsed = 0.0
+        self.simulation_velocity_measured = velocity_profile is not None
         self.reset_beep_state()
 
         if velocity_profile is not None and len(velocity_profile) >= 3:
@@ -624,14 +641,14 @@ class SimulatorDisplay:
             self.screen.blit(scaled_logo, logo_rect)
 
         # Instructions at bottom
-        instructions = font_small.render("Press ESC to exit", True, (150, 150, 150))
+        instructions = font_small.render(_("Press ESC to exit"), True, (150, 150, 150))
         instr_y = self.config.screen_height - int(self.config.screen_height * 0.05)  # 5% from bottom
         instr_rect = instructions.get_rect(center=(self.config.screen_width // 2, instr_y))
         self.screen.blit(instructions, instr_rect)
 
         # Network address - just above instructions, dynamically sized to fit screen
         if self.network_address:
-            connect_text = f"Connect to: {self.network_address}"
+            connect_text = f"{_('Connect to:')} {self.network_address}"
             # Start with a base font size and calculate the needed size
             connect_base_size = max(36, int(min(self.config.screen_height, self.config.screen_width) * 0.11))
             connect_base_font = pygame.font.Font(None, connect_base_size)
@@ -848,14 +865,16 @@ class SimulatorDisplay:
 
         # Display point count and instructions
         font = pygame.font.Font(None, 36)
-        text = font.render(f"Calibration - Points: {len(self.calibration_points)}", True, (255, 255, 255))
+        text = font.render(
+            _("Calibration - Points: %d") % len(self.calibration_points), True, (255, 255, 255)
+        )
         text_rect = text.get_rect(center=(width // 2, 30))
         self.screen.blit(text, text_rect)
 
         # Instructions at bottom
         font_small = pygame.font.Font(None, 28)
         instr = font_small.render(
-            "Move mouse on web UI to position crosshair, click to record point", True, (200, 200, 200)
+            _("Move mouse on web UI to position crosshair, click to record point"), True, (200, 200, 200)
         )
         instr_rect = instr.get_rect(center=(width // 2, height - 30))
         self.screen.blit(instr, instr_rect)
@@ -913,10 +932,13 @@ class SimulatorDisplay:
             (width - stripe_width) // 2,  # Middle stripe centered
             width - stripe_width,  # Right stripe flush with right edge
         ]
+        label_left = _("LEFT") + " "
+        label_mid = _("MIDDLE") + " "
+        label_right = _("RIGHT") + " "
         if self.southern_hemisphere:
-            stripe_base_labels = ["RIGHT ", "MIDDLE ", "LEFT "]
+            stripe_base_labels = [label_right, label_mid, label_left]
         else:
-            stripe_base_labels = ["LEFT ", "MIDDLE ", "RIGHT "]
+            stripe_base_labels = [label_left, label_mid, label_right]
 
         # Stripe color (gray for B/W camera)
         stripe_color = (200, 200, 200)
@@ -1008,7 +1030,7 @@ class SimulatorDisplay:
         font_status = pygame.font.Font(None, 72)
         font_time = pygame.font.Font(None, 200)  # Very large for time remaining
         if status["complete"]:
-            text = font_status.render("Simulation Complete", True, (0, 255, 0))
+            text = font_status.render(_("Simulation Complete"), True, (0, 255, 0))
             text_rect = text.get_rect(center=(width // 2, 50))
             self.screen.blit(text, text_rect)
         elif status["running"]:
@@ -1016,7 +1038,7 @@ class SimulatorDisplay:
             mins = int(remaining // 60)
             secs = int(remaining % 60)
             # Draw "Running" label
-            label = font_status.render("Running", True, (255, 255, 0))
+            label = font_status.render(_("Running"), True, (255, 255, 0))
             label_rect = label.get_rect(center=(width // 2, 40))
             self.screen.blit(label, label_rect)
             # Draw large time remaining
@@ -1024,9 +1046,17 @@ class SimulatorDisplay:
             time_rect = time_text.get_rect(center=(width // 2, 130))
             self.screen.blit(time_text, time_rect)
         else:
-            text = font_status.render("Simulation Ready - Press Start", True, (200, 200, 200))
+            text = font_status.render(_("Simulation Ready - Press Start"), True, (200, 200, 200))
             text_rect = text.get_rect(center=(width // 2, 50))
             self.screen.blit(text, text_rect)
+
+        if not self.simulation_velocity_measured:
+            font_warn = pygame.font.Font(None, 48)
+            warn_text = font_warn.render(
+                _("Velocity not measured \u2014 using estimated rate"), True, (255, 180, 0)
+            )
+            warn_rect = warn_text.get_rect(center=(width // 2, height - 40))
+            self.screen.blit(warn_text, warn_rect)
 
         font_small = pygame.font.Font(None, 24)
         # Draw FPS in top-right corner
