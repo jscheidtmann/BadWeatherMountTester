@@ -135,7 +135,6 @@ def get_locale():
     return request.accept_languages.best_match(["en", "de", "fr", "es"])
 
 
-
 class WebServer:
     """Flask web server for the BWMT control interface."""
 
@@ -214,6 +213,11 @@ class WebServer:
                         "distance_to_screen_m": self.config.mount.distance_to_screen_m,
                         "main_period_seconds": self.config.mount.main_period_seconds,
                         "southern_hemisphere": self.config.mount.southern_hemisphere,
+                        "telescope_offset_m":     self.config.mount.telescope_offset_m,
+                        "telescope_offset_dec_m": self.config.mount.telescope_offset_dec_m,
+                        "angle_start_deg":        self.config.mount.angle_start_deg,
+                        "angle_stop_deg":         self.config.mount.angle_stop_deg,
+                        "declination_deg":        self.config.mount.declination_deg,
                     },
                     "display": {
                         "screen_width": self.config.display.screen_width,
@@ -348,13 +352,21 @@ class WebServer:
             if not data or "value" not in data:
                 return jsonify({"error": "No value provided"}), 400
 
-            valid_fields = ["latitude", "focal_length_mm", "distance_to_screen_m", "main_period_seconds"]
+            valid_fields = [
+                "latitude", "focal_length_mm", "distance_to_screen_m", "main_period_seconds",
+                "telescope_offset_m", "telescope_offset_dec_m",
+                "angle_start_deg", "angle_stop_deg", "declination_deg",
+            ]
             if field not in valid_fields:
                 return jsonify({"error": f"Invalid field: {field}"}), 400
 
             try:
-                value = float(data["value"])
-                setattr(self.config.mount, field, value)
+                if field == "declination_deg" and data["value"] is None:
+                    value = None
+                    setattr(self.config.mount, field, None)
+                else:
+                    value = float(data["value"])
+                    setattr(self.config.mount, field, value)
             except (ValueError, TypeError) as e:
                 return jsonify({"error": f"Invalid value: {e}"}), 400
 

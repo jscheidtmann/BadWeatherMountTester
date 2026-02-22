@@ -633,6 +633,45 @@ msgstr ""
 msgid "Move the mount back to the starting position (right side of screen)."
 msgstr "Ramenez la monture à la position de départ (côté droit de l'écran)."
 
+msgid "Mount Geometry"
+msgstr "Géométrie de la monture"
+
+msgid "Optional parameters used by the geometry visualisation tool (bwmt -g). Leave at defaults if unsure."
+msgstr "Paramètres optionnels pour l'outil de visualisation géométrique (bwmt -g). Laisser les valeurs par défaut en cas de doute."
+
+msgid "Telescope Offset RA (m)"
+msgstr "Décalage télescope AR (m)"
+
+msgid "Distance of the guide scope from the RA rotation axis, in meters."
+msgstr "Distance de la lunette guide depuis l'axe de rotation AR, en mètres."
+
+msgid "Telescope Offset Dec (m)"
+msgstr "Décalage télescope Déc (m)"
+
+msgid "Offset of the guide scope from the Dec axis, in meters. Negative = toward floor."
+msgstr "Décalage de la lunette guide par rapport à l'axe Déc, en mètres. Négatif = vers le sol."
+
+msgid "Sweep Start Angle (°)"
+msgstr "Angle de début (°)"
+
+msgid "Start angle for the geometry sweep in degrees."
+msgstr "Angle de départ pour le balayage géométrique en degrés."
+
+msgid "Sweep Stop Angle (°)"
+msgstr "Angle de fin (°)"
+
+msgid "Stop angle for the geometry sweep in degrees."
+msgstr "Angle d'arrêt pour le balayage géométrique en degrés."
+
+msgid "Declination (°)"
+msgstr "Déclinaison (°)"
+
+msgid "Line-of-sight declination in degrees. Leave empty to use the straight-ahead direction."
+msgstr "Déclinaison de la ligne de visée en degrés. Laisser vide pour la direction rectiligne."
+
+msgid "optional"
+msgstr "optionnel"
+
 #~ msgid "Connect to:"
 #~ msgstr "Se connecter à :"
 

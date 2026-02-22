@@ -638,3 +638,62 @@ end is reached BWMT will beep, the screen that is attached to the simulator has 
 the simulation a countdown will start and BWMT will beep 10 times. Use this to stop the mount.
 
 Using **PHD2 Log Viewer** you can now analyse the performance of your mount.
+
+## Geometry Visualisation Tool
+
+The `geometry` command (or `bwmt -g`) opens a 3D visualisation of how the guide
+scope's line of sight traces across the simulator screen as the mount rotates in RA.
+It is intended as a planning and diagnostic tool — not required for normal operation.
+
+### Invoking geometry
+
+```
+bwmt -g                          # uses setup.yml in current directory
+bwmt -g --lat 48 --distance 5   # override specific values
+geometry -c /path/to/setup.yml  # invoke the dedicated entry point
+```
+
+### Configuration parameters
+
+The geometry tool reads five additional parameters from `setup.yml` under the
+`mount:` key. They can also be set from the **Mount Geometry** card in the web
+UI (Configure step).
+
+| Key | Default | Meaning |
+|---|---|---|
+| `telescope_offset_m` | `0.27` | Distance of guide scope from RA axis (m) |
+| `telescope_offset_dec_m` | `-0.015` | Offset from Dec axis; negative = toward floor (m) |
+| `angle_start_deg` | `0.0` | Start of RA sweep (°) |
+| `angle_stop_deg` | `-10.0` | End of RA sweep (°) |
+| `declination_deg` | *(none)* | Line-of-sight declination; omit for equatorial pointing |
+
+### Output plots
+
+The tool opens three figures:
+
+**Figure 1 – 3D view**
+Shows the RA rotation axis (green), the telescope position circle (red dots for
+every 5°), and the lines of sight traced from `angle_start_deg` to
+`angle_stop_deg`. The blue rectangle is the simulator screen.
+
+**Figure 2 – Screen traces and velocity**
+Three stacked plots:
+- *Screen intersection* – the path the guide star traces on the screen (mm).
+- *Total velocity* – speed of the star along the path (mm/s) vs progress (%).
+  The green dashed line is the sidereal reference velocity at the given distance.
+- *X velocity* – horizontal component of velocity (px/s), the value most relevant
+  for configuring PHD2.
+
+**Figure 3 – Geometry summary table**
+A concise table of all input parameters and computed results: X/Y span on screen,
+min/avg/max velocity (mm/s and px/s), pixel pitch, and sidereal reference.
+
+### Typical workflow
+
+1. Set distance, latitude, and screen dimensions in the main BWMT web UI.
+2. Measure your telescope offset from the RA and Dec axes with a ruler.
+3. Enter the values in the **Mount Geometry** card (or `setup.yml`).
+4. Run `bwmt -g` and inspect Figure 2 to verify the velocity profile is
+   acceptably flat across the screen.
+5. Cross-check the X velocity from Figure 3 against the measured on-screen
+   velocity from Step 4 of the main workflow.

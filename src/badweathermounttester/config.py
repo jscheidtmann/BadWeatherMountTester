@@ -16,7 +16,11 @@ class MountConfig:
     distance_to_screen_m: float = 5.0
     main_period_seconds: float = 480.0  # 8 minutes default for typical worm gear
     southern_hemisphere: bool = False
-
+    telescope_offset_m: float = 0.27          # RA offset: telescope distance from RA axis (m)
+    telescope_offset_dec_m: float = -0.015    # Dec offset: telescope offset from Dec axis (m)
+    angle_start_deg: float = -10.0              # geometry sweep start angle (°)
+    angle_stop_deg: float = -1.0             # geometry sweep stop angle (°)
+    declination_deg: float | None = None      # line-of-sight declination (°); None = not set
 
 # Screen size presets
 SCREEN_SIZE_PRESETS = {
@@ -116,6 +120,11 @@ class AppConfig:
                 "distance_to_screen_m": self.mount.distance_to_screen_m,
                 "main_period_seconds": self.mount.main_period_seconds,
                 "southern_hemisphere": self.mount.southern_hemisphere,
+                "telescope_offset_m":     self.mount.telescope_offset_m,
+                "telescope_offset_dec_m": self.mount.telescope_offset_dec_m,
+                "angle_start_deg":        self.mount.angle_start_deg,
+                "angle_stop_deg":         self.mount.angle_stop_deg,
+                "declination_deg":        self.mount.declination_deg,
             },
             "display": {
                 "fullscreen": self.display.fullscreen,
@@ -206,13 +215,13 @@ class AppConfig:
     @classmethod
     def load_yaml(cls, path: Path = DEFAULT_SETUP_PATH) -> "AppConfig":
         """Load configuration from a YAML file."""
-        if not path.exists():
-            return cls()
+        if not path.exists() or yaml.safe_load(path.read_text()) is None:
+            config = cls()
+            config.save_yaml(path)   # write full template with all keys + defaults
+            config.display.apply_screen_size_preset()
+            return config
 
         data = yaml.safe_load(path.read_text())
-        if data is None:
-            return cls()
-
         config = cls()
         cls._apply_dict(config, data)
         config.display.apply_screen_size_preset()

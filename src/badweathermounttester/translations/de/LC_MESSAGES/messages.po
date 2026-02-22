@@ -647,6 +647,45 @@ msgstr ""
 "Bewegen Sie die Montierung zurück zur Startposition (rechte "
 "Bildschirmseite)."
 
+msgid "Mount Geometry"
+msgstr "Montierungsgeometrie"
+
+msgid "Optional parameters used by the geometry visualisation tool (bwmt -g). Leave at defaults if unsure."
+msgstr "Optionale Parameter für das Geometrie-Visualisierungswerkzeug (bwmt -g). Bei Unsicherheit Standardwerte belassen."
+
+msgid "Telescope Offset RA (m)"
+msgstr "Teleskopversatz RA (m)"
+
+msgid "Distance of the guide scope from the RA rotation axis, in meters."
+msgstr "Abstand des Leitfernrohrs von der RA-Drehachse in Metern."
+
+msgid "Telescope Offset Dec (m)"
+msgstr "Teleskopversatz Dek (m)"
+
+msgid "Offset of the guide scope from the Dec axis, in meters. Negative = toward floor."
+msgstr "Versatz des Leitfernrohrs von der Dek-Achse in Metern. Negativ = Richtung Boden."
+
+msgid "Sweep Start Angle (°)"
+msgstr "Startwinkel (°)"
+
+msgid "Start angle for the geometry sweep in degrees."
+msgstr "Startwinkel für den Geometrie-Durchlauf in Grad."
+
+msgid "Sweep Stop Angle (°)"
+msgstr "Stoppwinkel (°)"
+
+msgid "Stop angle for the geometry sweep in degrees."
+msgstr "Stoppwinkel für den Geometrie-Durchlauf in Grad."
+
+msgid "Declination (°)"
+msgstr "Deklination (°)"
+
+msgid "Line-of-sight declination in degrees. Leave empty to use the straight-ahead direction."
+msgstr "Sichtlinien-Deklination in Grad. Leer lassen für die geradeaus-Richtung."
+
+msgid "optional"
+msgstr "optional"
+
 #~ msgid "Connect to:"
 #~ msgstr "Verbinden mit:"
 

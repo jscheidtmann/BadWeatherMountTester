@@ -807,6 +807,42 @@
                     </div>
                 </div>
 
+                <div class="card" id="geometry-card">
+                    <h2>{{ _('Mount Geometry') }}
+                        <span class="info-icon">i<span class="tooltip">{{ _('Optional parameters used by the geometry visualisation tool (bwmt -g). Leave at defaults if unsure.') }}</span></span>
+                    </h2>
+                    <div class="form-group">
+                        <label for="telescope-offset-ra">{{ _('Telescope Offset RA (m)') }}
+                            <span class="info-icon">i<span class="tooltip">{{ _('Distance of the guide scope from the RA rotation axis, in meters.') }}</span></span>
+                        </label>
+                        <input type="number" id="telescope-offset-ra" step="0.001" value="0.27">
+                    </div>
+                    <div class="form-group">
+                        <label for="telescope-offset-dec">{{ _('Telescope Offset Dec (m)') }}
+                            <span class="info-icon">i<span class="tooltip">{{ _('Offset of the guide scope from the Dec axis, in meters. Negative = toward floor.') }}</span></span>
+                        </label>
+                        <input type="number" id="telescope-offset-dec" step="0.001" value="-0.015">
+                    </div>
+                    <div class="form-group">
+                        <label for="angle-start">{{ _('Sweep Start Angle (°)') }}
+                            <span class="info-icon">i<span class="tooltip">{{ _('Start angle for the geometry sweep in degrees.') }}</span></span>
+                        </label>
+                        <input type="number" id="angle-start" step="0.5" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="angle-stop">{{ _('Sweep Stop Angle (°)') }}
+                            <span class="info-icon">i<span class="tooltip">{{ _('Stop angle for the geometry sweep in degrees.') }}</span></span>
+                        </label>
+                        <input type="number" id="angle-stop" step="0.5" value="-10">
+                    </div>
+                    <div class="form-group">
+                        <label for="declination-deg">{{ _('Declination (°)') }}
+                            <span class="info-icon">i<span class="tooltip">{{ _('Line-of-sight declination in degrees. Leave empty to use the straight-ahead direction.') }}</span></span>
+                        </label>
+                        <input type="number" id="declination-deg" step="0.1" placeholder="{{ _('optional') }}">
+                    </div>
+                </div>
+
                 <div class="card" id="camera-card">
                     <h2>{{ _('Guiding Camera') }}</h2>
                     <div class="form-group">
@@ -1104,6 +1140,13 @@
         const distanceInput = document.getElementById('distance');
         const periodInput = document.getElementById('period');
 
+        // DOM elements - Mount Geometry
+        const telescopeOffsetRaInput  = document.getElementById('telescope-offset-ra');
+        const telescopeOffsetDecInput = document.getElementById('telescope-offset-dec');
+        const angleStartInput         = document.getElementById('angle-start');
+        const angleStopInput          = document.getElementById('angle-stop');
+        const declinationDegInput     = document.getElementById('declination-deg');
+
         // DOM elements - Camera
         const pixelSizeInput = document.getElementById('pixel-size');
         const cameraWidthInput = document.getElementById('camera-width');
@@ -1133,6 +1176,11 @@
             'focal-length': { section: 'mount', apiField: 'focal_length_mm' },
             'distance': { section: 'mount', apiField: 'distance_to_screen_m' },
             'period': { section: 'mount', apiField: 'main_period_seconds' },
+            'telescope-offset-ra':  { section: 'mount', apiField: 'telescope_offset_m' },
+            'telescope-offset-dec': { section: 'mount', apiField: 'telescope_offset_dec_m' },
+            'angle-start':          { section: 'mount', apiField: 'angle_start_deg' },
+            'angle-stop':           { section: 'mount', apiField: 'angle_stop_deg' },
+            'declination-deg':      { section: 'mount', apiField: 'declination_deg', nullable: true },
             'pixel-size': { section: 'camera', apiField: 'pixel_size_um' },
             'camera-width': { section: 'camera', apiField: 'width_px' },
             'camera-height': { section: 'camera', apiField: 'height_px' },
@@ -1240,6 +1288,12 @@
             focalLengthInput.value = mountConfig.focal_length_mm;
             distanceInput.value = mountConfig.distance_to_screen_m;
             periodInput.value = mountConfig.main_period_seconds;
+
+            telescopeOffsetRaInput.value  = mountConfig.telescope_offset_m;
+            telescopeOffsetDecInput.value = mountConfig.telescope_offset_dec_m;
+            angleStartInput.value         = mountConfig.angle_start_deg;
+            angleStopInput.value          = mountConfig.angle_stop_deg;
+            declinationDegInput.value     = mountConfig.declination_deg ?? '';
 
             pixelSizeInput.value = cameraConfig.pixel_size_um;
             cameraWidthInput.value = cameraConfig.width_px;
@@ -1395,8 +1449,8 @@
             const mapping = fieldMapping[fieldId];
             if (!mapping) return;
 
-            const { section, apiField } = mapping;
-            const value = parseFloat(inputElement.value);
+            const { section, apiField, nullable } = mapping;
+            const value = (nullable && inputElement.value === '') ? null : parseFloat(inputElement.value);
 
             // Clear existing timer for this field
             if (debounceTimers[fieldId]) {
@@ -1404,12 +1458,12 @@
             }
 
             // Validate the value
-            if (isNaN(value)) {
+            if (value !== null && isNaN(value)) {
                 return;
             }
 
-            // For non-latitude fields, require positive values
-            if (apiField !== 'latitude' && value <= 0) {
+            // For non-latitude, non-nullable fields, require positive values
+            if (value !== null && !nullable && apiField !== 'latitude' && value <= 0) {
                 return;
             }
 
@@ -1434,6 +1488,8 @@
 
         // Event listeners - update on input for immediate feedback
         const allInputs = [latitudeInput, focalLengthInput, distanceInput, periodInput,
+                          telescopeOffsetRaInput, telescopeOffsetDecInput,
+                          angleStartInput, angleStopInput, declinationDegInput,
                           pixelSizeInput, cameraWidthInput, cameraHeightInput,
                           screenWidthMmInput];
         allInputs.forEach(input => {
