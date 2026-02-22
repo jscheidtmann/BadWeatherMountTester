@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-02-21 21:03+0100\n"
+"POT-Creation-Date: 2026-02-22 10:39+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -497,15 +497,13 @@ msgid "Velocity:"
 msgstr ""
 
 #: src/badweathermounttester/templates/index.html:1047
-msgid "RA Drift Rate (PHD2, guidecam px/min):"
+msgid "Velocity Override (px/s):"
 msgstr ""
 
 #: src/badweathermounttester/templates/index.html:1048
 msgid ""
-"Enter the RA drift rate measured by PHD2 Log Viewer in guide camera "
-"pixels per minute. This is the residual star motion while the mount "
-"tracks; it is added to the base simulation velocity. Negative values mean"
-" drift opposite to the sidereal direction."
+"Enter the simulation velocity in simulator pixels per second. This "
+"overrides the measured velocity. Use Apply to activate it."
 msgstr ""
 
 #: src/badweathermounttester/templates/index.html:1052

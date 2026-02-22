@@ -1,12 +1,14 @@
 # French translations for Bad Weather Mount Tester.
 # Copyright (C) 2026 Jens Scheidtmann
-# This file is distributed under the same license as the Bad Weather Mount Tester project.
+# This file is distributed under the same license as the Bad Weather Mount
+# Tester project.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: badweathermounttester 0.8.0\n"
-"Report-Msgid-Bugs-To: https://github.com/jscheidtmann/BadWeatherMountTester/issues\n"
-"POT-Creation-Date: 2026-02-21 15:34+0100\n"
+"Report-Msgid-Bugs-To: "
+"https://github.com/jscheidtmann/BadWeatherMountTester/issues\n"
+"POT-Creation-Date: 2026-02-22 10:39+0100\n"
 "PO-Revision-Date: 2026-02-21 00:00+0100\n"
 "Last-Translator: Jens Scheidtmann\n"
 "Language: fr\n"
@@ -17,13 +19,62 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
+#: src/badweathermounttester/display.py:661
+msgid "Press ESC to exit"
+msgstr "Appuyer sur ÉCHAP pour quitter"
+
+#: src/badweathermounttester/display.py:886
+#, python-format
+msgid "Calibration - Points: %d"
+msgstr "Calibration - Points : %d"
+
+#: src/badweathermounttester/display.py:894
+msgid "Move mouse on web UI to position crosshair, click to record point"
+msgstr ""
+"Déplacer la souris dans l'interface web pour positionner le réticule, "
+"cliquer pour enregistrer"
+
+#: src/badweathermounttester/display.py:952
+msgid "LEFT"
+msgstr "GAUCHE"
+
+#: src/badweathermounttester/display.py:953
+msgid "MIDDLE"
+msgstr "MILIEU"
+
+#: src/badweathermounttester/display.py:954
+msgid "RIGHT"
+msgstr "DROITE"
+
+#: src/badweathermounttester/display.py:1050
+msgid "Simulation Complete"
+msgstr "Simulation terminée"
+
+#: src/badweathermounttester/display.py:1058
+msgid "Running"
+msgstr "En cours"
+
+#: src/badweathermounttester/display.py:1066
+msgid "Simulation Ready - Press Start"
+msgstr "Simulation prête - Appuyer sur Démarrer"
+
+#: src/badweathermounttester/display.py:1073
+#, fuzzy
+msgid "Velocity not measured — using estimated rate"
+msgstr "Vitesse non mesurée \\u2014 taux estimé utilisé"
+
+#: src/badweathermounttester/display.py:1080
+#, fuzzy
+msgid "Velocity partially measured — using average"
+msgstr "Vitesse partiellement mesurée \\u2014 moyenne utilisée"
+
 #: src/badweathermounttester/templates/index.html:6
 #: src/badweathermounttester/templates/index.html:761
 msgid "Bad Weather Mount Tester"
 msgstr "Bad Weather Mount Tester"
 
 #: src/badweathermounttester/templates/index.html:764
-#: src/badweathermounttester/templates/index.html:1151
+#: src/badweathermounttester/templates/index.html:1168
 msgid "Northern Hemisphere"
 msgstr "Hémisphère Nord"
 
@@ -99,8 +150,8 @@ msgid ""
 "This information is provided by the manufacturer of your mount."
 msgstr ""
 "Pour les montures à vis sans fin : combien de temps faut-il pour que la "
-"vis effectue une rotation complète ? Cette information est fournie par le "
-"fabricant de votre monture."
+"vis effectue une rotation complète ? Cette information est fournie par le"
+" fabricant de votre monture."
 
 #: src/badweathermounttester/templates/index.html:811
 msgid "Guiding Camera"
@@ -126,7 +177,9 @@ msgstr "Largeur (pixels)"
 msgid ""
 "The number of pixels in the horizontal direction of your guide camera "
 "sensor."
-msgstr "Le nombre de pixels dans la direction horizontale de votre capteur de caméra guide."
+msgstr ""
+"Le nombre de pixels dans la direction horizontale de votre capteur de "
+"caméra guide."
 
 #: src/badweathermounttester/templates/index.html:825
 msgid "Height (pixels)"
@@ -136,7 +189,9 @@ msgstr "Hauteur (pixels)"
 msgid ""
 "The number of pixels in the vertical direction of your guide camera "
 "sensor."
-msgstr "Le nombre de pixels dans la direction verticale de votre capteur de caméra guide."
+msgstr ""
+"Le nombre de pixels dans la direction verticale de votre capteur de "
+"caméra guide."
 
 #: src/badweathermounttester/templates/index.html:831
 msgid "Resolution:"
@@ -157,8 +212,8 @@ msgid ""
 "pitch."
 msgstr ""
 "La largeur physique de votre écran simulateur en millimètres. Mesurez la "
-"zone d'affichage visible, pas le cadre. Ceci est utilisé pour calculer "
-"la taille du pixel."
+"zone d'affichage visible, pas le cadre. Ceci est utilisé pour calculer la"
+" taille du pixel."
 
 #: src/badweathermounttester/templates/index.html:845
 msgid "Pixel Pitch:"
@@ -202,7 +257,9 @@ msgstr "Instructions"
 
 #: src/badweathermounttester/templates/index.html:866
 msgid "Fill in your mount, camera and screen values above."
-msgstr "Renseignez ci-dessus les valeurs de votre monture, de votre caméra et de votre écran."
+msgstr ""
+"Renseignez ci-dessus les valeurs de votre monture, de votre caméra et de "
+"votre écran."
 
 #: src/badweathermounttester/templates/index.html:867
 msgid ""
@@ -222,14 +279,16 @@ msgstr ""
 
 #: src/badweathermounttester/templates/index.html:869
 msgid "Focus and locate the cross on the simulator display, following the arrows."
-msgstr "Faites la mise au point et localisez la croix sur l'affichage du simulateur en suivant les flèches."
+msgstr ""
+"Faites la mise au point et localisez la croix sur l'affichage du "
+"simulateur en suivant les flèches."
 
 #: src/badweathermounttester/templates/index.html:871
 msgid "Then press \"Next\" to start aligning the mount."
 msgstr "Appuyez ensuite sur \"Suivant\" pour commencer l'alignement de la monture."
 
 #: src/badweathermounttester/templates/index.html:879
-#: src/badweathermounttester/templates/index.html:1159
+#: src/badweathermounttester/templates/index.html:1176
 msgid ""
 "Using only rotations in RA, move the mount back and forth from left-hand-"
 "side to right-hand-side. Use the mount's Azimuth adjustment screws, so "
@@ -245,7 +304,9 @@ msgstr "Si nécessaire, ajustez légèrement la déclinaison."
 
 #: src/badweathermounttester/templates/index.html:881
 msgid "Press \"Next\" when aligned, or \"Back\" to return to configuration."
-msgstr "Appuyez sur \"Suivant\" une fois aligné, ou \"Précédent\" pour revenir à la configuration."
+msgstr ""
+"Appuyez sur \"Suivant\" une fois aligné, ou \"Précédent\" pour revenir à "
+"la configuration."
 
 #: src/badweathermounttester/templates/index.html:890
 msgid ""
@@ -269,7 +330,9 @@ msgstr ""
 
 #: src/badweathermounttester/templates/index.html:893
 msgid "Move the mount in RA a few pixels, then repeat steps 1-3."
-msgstr "Déplacez la monture en AR de quelques pixels, puis répétez les étapes 1 à 3."
+msgstr ""
+"Déplacez la monture en AR de quelques pixels, puis répétez les étapes 1 à"
+" 3."
 
 #: src/badweathermounttester/templates/index.html:894
 msgid "Continue until you have traced across the entire screen."
@@ -289,11 +352,15 @@ msgstr "Clavier :"
 
 #: src/badweathermounttester/templates/index.html:897
 msgid "Arrows/S/E/D/F = move 1px | Q/PgUp = previous point | A/PgDn = next point"
-msgstr "Flèches/S/E/D/F = déplacer 1px | Q/PgPréc = point précédent | A/PgSuiv = point suivant"
+msgstr ""
+"Flèches/S/E/D/F = déplacer 1px | Q/PgPréc = point précédent | A/PgSuiv = "
+"point suivant"
 
 #: src/badweathermounttester/templates/index.html:898
 msgid "The selected point is shown in yellow. New points are auto-selected."
-msgstr "Le point sélectionné est affiché en jaune. Les nouveaux points sont sélectionnés automatiquement."
+msgstr ""
+"Le point sélectionné est affiché en jaune. Les nouveaux points sont "
+"sélectionnés automatiquement."
 
 #: src/badweathermounttester/templates/index.html:902
 msgid "Calibration Preview"
@@ -334,7 +401,9 @@ msgstr "Axe b :"
 
 #: src/badweathermounttester/templates/index.html:938
 msgid "Three vertical stripes are now displayed on the simulator screen."
-msgstr "Trois bandes verticales sont maintenant affichées sur l'écran du simulateur."
+msgstr ""
+"Trois bandes verticales sont maintenant affichées sur l'écran du "
+"simulateur."
 
 #: src/badweathermounttester/templates/index.html:939
 msgid "Select a stripe below (Left, Middle, or Right)."
@@ -342,10 +411,12 @@ msgstr "Sélectionnez une bande ci-dessous (Gauche, Milieu ou Droite)."
 
 #: src/badweathermounttester/templates/index.html:940
 msgid "Choose a very short exposure for the camera. At best avoid saturation."
-msgstr "Choisissez une exposition très courte pour la caméra. Évitez autant que possible la saturation."
+msgstr ""
+"Choisissez une exposition très courte pour la caméra. Évitez autant que "
+"possible la saturation."
 
 #: src/badweathermounttester/templates/index.html:941
-#: src/badweathermounttester/templates/index.html:1178
+#: src/badweathermounttester/templates/index.html:1195
 msgid ""
 "Move the mount until the star is about to enter the stripe and enable "
 "tracking in the mount."
@@ -355,7 +426,9 @@ msgstr ""
 
 #: src/badweathermounttester/templates/index.html:942
 msgid "Press Start when the star enters the stripe, Stop when it exits."
-msgstr "Appuyez sur Démarrer quand l'étoile entre dans la bande, Arrêt quand elle en sort."
+msgstr ""
+"Appuyez sur Démarrer quand l'étoile entre dans la bande, Arrêt quand elle"
+" en sort."
 
 #: src/badweathermounttester/templates/index.html:943
 msgid "Record the time for each stripe to measure on screen velocity."
@@ -363,7 +436,9 @@ msgstr "Notez le temps pour chaque bande afin de mesurer la vitesse à l'écran.
 
 #: src/badweathermounttester/templates/index.html:945
 msgid "This step verifies that the mount moves at the expected sidereal rate."
-msgstr "Cette étape vérifie que la monture se déplace à la vitesse sidérale attendue."
+msgstr ""
+"Cette étape vérifie que la monture se déplace à la vitesse sidérale "
+"attendue."
 
 #: src/badweathermounttester/templates/index.html:949
 msgid "Stopwatch"
@@ -396,6 +471,7 @@ msgstr "Bande gauche"
 #: src/badweathermounttester/templates/index.html:973
 #: src/badweathermounttester/templates/index.html:979
 #: src/badweathermounttester/templates/index.html:985
+#: src/badweathermounttester/templates/index.html:1053
 msgid "Clear"
 msgstr "Effacer"
 
@@ -428,7 +504,7 @@ msgid "Max:"
 msgstr "Max :"
 
 #: src/badweathermounttester/templates/index.html:1005
-#: src/badweathermounttester/templates/index.html:1197
+#: src/badweathermounttester/templates/index.html:1214
 msgid "Move the mount back to the starting position (left side of screen)."
 msgstr "Ramenez la monture à la position de départ (côté gauche de l'écran)."
 
@@ -438,7 +514,9 @@ msgstr "Dans PHD2, centrez l'étoile simulée et démarrez le guidage."
 
 #: src/badweathermounttester/templates/index.html:1007
 msgid "Press \"Start Simulation\" below to begin the star movement."
-msgstr "Appuyez sur \"Démarrer la simulation\" ci-dessous pour lancer le mouvement de l'étoile."
+msgstr ""
+"Appuyez sur \"Démarrer la simulation\" ci-dessous pour lancer le "
+"mouvement de l'étoile."
 
 #: src/badweathermounttester/templates/index.html:1008
 msgid "Wait until the simulation completes (the star crosses the screen)."
@@ -449,62 +527,87 @@ msgid "Stop guiding in PHD2 and analyze the log with PHD2 Log Viewer."
 msgstr "Arrêtez le guidage dans PHD2 et analysez le journal avec PHD2 Log Viewer."
 
 #: src/badweathermounttester/templates/index.html:1014
+msgid ""
+"Velocity not yet determined. Complete Step 4 (Velocity) for accurate "
+"simulation results. Using estimated velocity based on the sidereal rate."
+msgstr ""
+"Vitesse pas encore déterminée. Complétez l'étape 4 (Vitesse) pour des "
+"résultats de simulation précis. Utilisation d'une vitesse estimée basée "
+"sur le taux sidéral."
+
+#: src/badweathermounttester/templates/index.html:1018
 msgid "Simulation Control"
 msgstr "Contrôle de simulation"
 
-#: src/badweathermounttester/templates/index.html:1018
+#: src/badweathermounttester/templates/index.html:1022
 msgid "Ready"
 msgstr "Prêt"
 
-#: src/badweathermounttester/templates/index.html:1021
+#: src/badweathermounttester/templates/index.html:1025
 msgid "Remaining:"
 msgstr "Restant :"
 
-#: src/badweathermounttester/templates/index.html:1034
+#: src/badweathermounttester/templates/index.html:1038
 msgid "Elapsed:"
 msgstr "Écoulé :"
 
-#: src/badweathermounttester/templates/index.html:1034
+#: src/badweathermounttester/templates/index.html:1038
 msgid "Total:"
 msgstr "Total :"
 
-#: src/badweathermounttester/templates/index.html:1036
+#: src/badweathermounttester/templates/index.html:1040
 msgid "Velocity:"
 msgstr "Vitesse :"
 
-#: src/badweathermounttester/templates/index.html:1042
+#: src/badweathermounttester/templates/index.html:1047
+msgid "Velocity Override (px/s):"
+msgstr "Vitesse imposée (px/s) :"
+
+#: src/badweathermounttester/templates/index.html:1048
+msgid ""
+"Enter the simulation velocity in simulator pixels per second. This "
+"overrides the measured velocity. Use Apply to activate it."
+msgstr ""
+"Entrez la vitesse de simulation en pixels simulateur par seconde. Cela "
+"remplace la vitesse mesurée. Cliquez sur Appliquer pour l'activer."
+
+#: src/badweathermounttester/templates/index.html:1052
+msgid "Apply"
+msgstr "Appliquer"
+
+#: src/badweathermounttester/templates/index.html:1059
 msgid "Reset to start"
 msgstr "Revenir au début"
 
-#: src/badweathermounttester/templates/index.html:1043
+#: src/badweathermounttester/templates/index.html:1060
 msgid "Skip back 10s"
 msgstr "Reculer de 10s"
 
-#: src/badweathermounttester/templates/index.html:1044
+#: src/badweathermounttester/templates/index.html:1061
 msgid "Play/Pause"
 msgstr "Lecture/Pause"
 
-#: src/badweathermounttester/templates/index.html:1045
+#: src/badweathermounttester/templates/index.html:1062
 msgid "Skip forward 10s"
 msgstr "Avancer de 10s"
 
-#: src/badweathermounttester/templates/index.html:1046
+#: src/badweathermounttester/templates/index.html:1063
 msgid "Stop"
 msgstr "Arrêt"
 
-#: src/badweathermounttester/templates/index.html:1052
+#: src/badweathermounttester/templates/index.html:1069
 msgid "Back"
 msgstr "Précédent"
 
-#: src/badweathermounttester/templates/index.html:1053
+#: src/badweathermounttester/templates/index.html:1070
 msgid "Next"
 msgstr "Suivant"
 
-#: src/badweathermounttester/templates/index.html:1150
+#: src/badweathermounttester/templates/index.html:1167
 msgid "Southern Hemisphere"
 msgstr "Hémisphère Sud"
 
-#: src/badweathermounttester/templates/index.html:1158
+#: src/badweathermounttester/templates/index.html:1175
 msgid ""
 "Using only rotations in RA, move the mount back and forth from right-"
 "hand-side to left-hand-side. Use the mount's Azimuth adjustment screws, "
@@ -514,7 +617,7 @@ msgstr ""
 "droite à gauche et vice-versa. Utilisez les vis de réglage en azimut de "
 "la monture afin que la ligne zéro soit franchie des deux côtés."
 
-#: src/badweathermounttester/templates/index.html:1177
+#: src/badweathermounttester/templates/index.html:1194
 msgid ""
 "Move the mount until the star is about to enter the stripe from the right"
 " and enable tracking in the mount."
@@ -522,87 +625,10 @@ msgstr ""
 "Déplacez la monture jusqu'à ce que l'étoile soit sur le point d'entrer "
 "dans la bande par la droite et activez le suivi dans la monture."
 
-#: src/badweathermounttester/templates/index.html:1196
+#: src/badweathermounttester/templates/index.html:1213
 msgid "Move the mount back to the starting position (right side of screen)."
 msgstr "Ramenez la monture à la position de départ (côté droit de l'écran)."
 
-#: src/badweathermounttester/templates/index.html
-msgid ""
-"Velocity not yet determined. Complete Step 4 (Velocity) for accurate "
-"simulation results. Using estimated velocity based on the sidereal rate."
-msgstr ""
-"Vitesse pas encore déterminée. Complétez l'étape 4 (Vitesse) pour des "
-"résultats de simulation précis. Utilisation d'une vitesse estimée basée "
-"sur le taux sidéral."
+#~ msgid "Connect to:"
+#~ msgstr "Se connecter à :"
 
-#: src/badweathermounttester/display.py
-msgid "Press ESC to exit"
-msgstr "Appuyer sur ÉCHAP pour quitter"
-
-#: src/badweathermounttester/display.py
-msgid "Connect to:"
-msgstr "Se connecter à :"
-
-#: src/badweathermounttester/display.py
-msgid "Calibration - Points: %d"
-msgstr "Calibration - Points : %d"
-
-#: src/badweathermounttester/display.py
-msgid "Move mouse on web UI to position crosshair, click to record point"
-msgstr "Déplacer la souris dans l'interface web pour positionner le réticule, cliquer pour enregistrer"
-
-#: src/badweathermounttester/display.py
-msgid "LEFT"
-msgstr "GAUCHE"
-
-#: src/badweathermounttester/display.py
-msgid "MIDDLE"
-msgstr "MILIEU"
-
-#: src/badweathermounttester/display.py
-msgid "RIGHT"
-msgstr "DROITE"
-
-#: src/badweathermounttester/display.py
-msgid "Simulation Complete"
-msgstr "Simulation terminée"
-
-#: src/badweathermounttester/display.py
-msgid "Running"
-msgstr "En cours"
-
-#: src/badweathermounttester/display.py
-msgid "Simulation Ready - Press Start"
-msgstr "Simulation prête - Appuyer sur Démarrer"
-
-#: src/badweathermounttester/display.py
-msgid "Velocity not measured \u2014 using estimated rate"
-msgstr "Vitesse non mesurée \u2014 taux estimé utilisé"
-
-#: src/badweathermounttester/display.py
-msgid "Velocity partially measured \u2014 using average"
-msgstr "Vitesse partiellement mesurée \u2014 moyenne utilisée"
-
-#: src/badweathermounttester/templates/index.html
-msgid "RA Drift Rate (PHD2, guidecam px/min):"
-msgstr "Taux de dérive AR (PHD2, px caméra-guide/min) :"
-
-#: src/badweathermounttester/templates/index.html
-msgid ""
-"Enter the RA drift rate measured by PHD2 Log Viewer in guide camera pixels "
-"per minute. This is the residual star motion while the mount tracks; it is "
-"added to the base simulation velocity. Negative values mean drift opposite "
-"to the sidereal direction."
-msgstr ""
-"Entrez le taux de dérive AR mesuré par PHD2 Log Viewer en pixels de caméra-guide "
-"par minute. Il s'agit du mouvement résiduel de l'étoile pendant le suivi de la "
-"monture ; il s'ajoute à la vitesse de simulation de base. Les valeurs négatives "
-"indiquent une dérive opposée à la direction sidérale."
-
-#: src/badweathermounttester/templates/index.html
-msgid "Apply"
-msgstr "Appliquer"
-
-#: src/badweathermounttester/templates/index.html
-msgid "Clear"
-msgstr "Effacer"

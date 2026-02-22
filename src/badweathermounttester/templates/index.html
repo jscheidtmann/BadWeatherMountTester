@@ -1044,11 +1044,11 @@
 
                 <div class="form-group" style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #333;">
                     <label for="ra-drift-rate" style="font-size: 0.9em;">
-                        {{ _('RA Drift Rate (PHD2, guidecam px/min):') }}
-                        <span class="info-icon">i<span class="tooltip">{{ _('Enter the RA drift rate measured by PHD2 Log Viewer in guide camera pixels per minute. This is the residual star motion while the mount tracks; it is added to the base simulation velocity. Negative values mean drift opposite to the sidereal direction.') }}</span></span>
+                        {{ _('Velocity Override (px/s):') }}
+                        <span class="info-icon">i<span class="tooltip">{{ _('Enter the simulation velocity in simulator pixels per second. This overrides the measured velocity. Use Apply to activate it.') }}</span></span>
                     </label>
                     <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
-                        <input type="number" id="ra-drift-rate" step="0.01" placeholder="e.g. 2.5 or -1.3" style="width: 120px;">
+                        <input type="number" id="ra-drift-rate" step="0.0001" placeholder="e.g. 0.5" style="width: 120px;">
                         <button class="btn" id="btn-apply-drift" style="padding: 4px 10px; font-size: 0.85em;">{{ _('Apply') }}</button>
                         <button class="btn btn-secondary" id="btn-clear-drift" style="padding: 4px 10px; font-size: 0.85em; display:none;">{{ _('Clear') }}</button>
                     </div>
@@ -2099,14 +2099,12 @@
 
         // Setup simulation when entering step 5
         async function setupSimulation() {
-            // Restore drift rate field from saved config
+            // Restore velocity override field from saved config
             try {
                 const vResp = await fetch('/api/velocity');
                 const vData = await vResp.json();
-                if (vData.ra_drift_px_per_min !== null && vData.ra_drift_px_per_min !== undefined) {
-                    const simPxS = parseFloat(document.getElementById('sim-current-velocity').textContent) || 0;
-                    // sim_px_per_s will be overwritten by setupSimulation below; just restore the input value
-                    raDriftInput.value = vData.ra_drift_px_per_min;
+                if (vData.sim_velocity_override_px_s !== null && vData.sim_velocity_override_px_s !== undefined) {
+                    raDriftInput.value = vData.sim_velocity_override_px_s;
                     btnClearDrift.style.display = 'inline-block';
                 }
             } catch (_) {}
@@ -2132,12 +2130,11 @@
                         velocitySourceLabel.textContent = 'interpolated';
                         velocitySourceLabel.style.color = '#4caf50';  // Green: all 3 measured
                         velocityWarning.style.display = 'none';
-                    } else if (data.velocity_source === 'drift_corrected') {
-                        velocitySourceLabel.textContent = 'PHD2 drift';
-                        velocitySourceLabel.style.color = '#4caf50';  // Green: drift measurement
+                    } else if (data.velocity_source === 'velocity_override') {
+                        velocitySourceLabel.textContent = 'manual override';
+                        velocitySourceLabel.style.color = '#4caf50';  // Green: manual override
                         velocityWarning.style.display = 'none';
-                        driftConverted.textContent = `→ ${data.pixels_per_second.toFixed(4)} sim px/s`;
-                        driftConverted.style.display = 'block';
+                        driftConverted.style.display = 'none';
                         btnClearDrift.style.display = 'inline-block';
                     } else if (data.velocity_source === 'measured_average') {
                         velocitySourceLabel.textContent = 'partial average';
@@ -2313,17 +2310,16 @@
             });
         }
 
-        // ===== RA Drift Rate =====
+        // ===== Velocity Override =====
         const raDriftInput = document.getElementById('ra-drift-rate');
         const btnApplyDrift = document.getElementById('btn-apply-drift');
         const btnClearDrift = document.getElementById('btn-clear-drift');
         const driftConverted = document.getElementById('drift-converted');
 
-        function updateDriftUI(driftValue, simPxS) {
-            if (driftValue !== null && driftValue !== undefined) {
-                raDriftInput.value = driftValue;
-                driftConverted.textContent = `→ ${simPxS.toFixed(4)} sim px/s`;
-                driftConverted.style.display = 'block';
+        function updateDriftUI(simPxS) {
+            if (simPxS !== null && simPxS !== undefined) {
+                raDriftInput.value = simPxS;
+                driftConverted.style.display = 'none';
                 btnClearDrift.style.display = 'inline-block';
             } else {
                 raDriftInput.value = '';
@@ -2333,30 +2329,30 @@
         }
 
         btnApplyDrift.addEventListener('click', async () => {
-            const drift = parseFloat(raDriftInput.value);
-            if (isNaN(drift) || drift === 0) return;
+            const vel = parseFloat(raDriftInput.value);
+            if (isNaN(vel) || vel === 0) return;
             try {
-                const resp = await fetch('/api/simulation/drift', {
+                const resp = await fetch('/api/simulation/velocity', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ra_drift_px_per_min: drift })
+                    body: JSON.stringify({ sim_px_per_s: vel })
                 });
                 const data = await resp.json();
                 if (data.status === 'ok') {
-                    updateDriftUI(data.ra_drift_px_per_min, data.sim_px_per_s);
+                    updateDriftUI(data.sim_px_per_s);
                     await setupSimulation();
                     pollSimulationStatus();
                 }
-            } catch (e) { console.error('Failed to apply drift rate:', e); }
+            } catch (e) { console.error('Failed to apply velocity override:', e); }
         });
 
         btnClearDrift.addEventListener('click', async () => {
             try {
-                await fetch('/api/simulation/drift', { method: 'DELETE' });
-                updateDriftUI(null, 0);
+                await fetch('/api/simulation/velocity', { method: 'DELETE' });
+                updateDriftUI(null);
                 await setupSimulation();
                 pollSimulationStatus();
-            } catch (e) { console.error('Failed to clear drift rate:', e); }
+            } catch (e) { console.error('Failed to clear velocity override:', e); }
         });
 
         // Handle btnBack to stop polling when leaving step 5
