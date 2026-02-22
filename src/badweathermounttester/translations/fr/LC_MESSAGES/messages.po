@@ -600,6 +600,10 @@ msgid "Back"
 msgstr "Précédent"
 
 #: src/badweathermounttester/templates/index.html:1070
+msgid "Current Config"
+msgstr "Config actuelle"
+
+#: src/badweathermounttester/templates/index.html:1070
 msgid "Next"
 msgstr "Suivant"
 

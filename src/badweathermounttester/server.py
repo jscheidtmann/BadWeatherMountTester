@@ -10,7 +10,8 @@ from threading import Thread
 from typing import Optional, Callable, List, Dict
 
 import numpy as np
-from flask import Flask, render_template, jsonify, request  # , g
+import yaml
+from flask import Flask, make_response, render_template, jsonify, request  # , g
 from flask_babel import Babel  # , gettext as _
 from waitress import serve
 
@@ -193,6 +194,15 @@ class WebServer:
             if self._on_connect_callback:
                 self._on_connect_callback()
             return render_template("index.html")
+
+        @self.app.route("/config", methods=["GET"])
+        def download_config():
+            """Return the current configuration as a downloadable YAML text file."""
+            text = yaml.safe_dump(self.config.to_dict(), default_flow_style=False, sort_keys=False)
+            response = make_response(text)
+            response.headers["Content-Type"] = "text/plain; charset=utf-8"
+            response.headers["Content-Disposition"] = "attachment; filename=\"setup.yml\""
+            return response
 
         @self.app.route("/api/config", methods=["GET"])
         def get_config():

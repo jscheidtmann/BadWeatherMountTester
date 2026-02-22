@@ -611,6 +611,10 @@ msgid "Back"
 msgstr "Zurück"
 
 #: src/badweathermounttester/templates/index.html:1070
+msgid "Current Config"
+msgstr "Aktuelle Konfiguration"
+
+#: src/badweathermounttester/templates/index.html:1070
 msgid "Next"
 msgstr "Weiter"
 
