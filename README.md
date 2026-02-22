@@ -99,6 +99,10 @@ uv run bwmt
 5. **Internationalization:** The project supports German, English, and French via Flask-Babel. Translation files live in `src/badweathermounttester/translations/`. After editing `.po` files run `just compile-translations`.
 6. Submit a pull request against `main`
 
+## CHANGELOG.md
+
+This project keeps a [CHANGELOG](https://github.com/jscheidtmann/BadWeatherMountTester/blob/main/CHANGELOG.md).
+
 # Credit
 
 This software is based on the idea by [Klaus Weyer from Solingen, Germany](https://web.archive.org/web/20241013053734/https://watchgear.de/SWMT/SWMT.html). Rest in Peace, Klaus!
