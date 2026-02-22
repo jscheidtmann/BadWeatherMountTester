@@ -267,11 +267,23 @@ def parse_args() -> argparse.Namespace:
         metavar="LANG",
         help="Force display language, e.g. 'de' or 'fr' (default: system locale)",
     )
+    parser.add_argument(
+        "-g", "--geometry",
+        action="store_true",
+        help="Run the geometry visualisation tool instead of the main application",
+    )
     return parser.parse_args()
 
 
 def main() -> int:
     """Main entry point."""
+    # Check before full parsing so geometry-specific flags (--lat, --distance, …)
+    # are never seen by bwmt's parser.
+    if "-g" in sys.argv[1:] or "--geometry" in sys.argv[1:]:
+        from badweathermounttester import geometry
+        sys.argv = [sys.argv[0]] + [a for a in sys.argv[1:] if a not in ("-g", "--geometry")]
+        return geometry.main()
+
     args = parse_args()
 
     log_file = setup_logging(args.log_config)

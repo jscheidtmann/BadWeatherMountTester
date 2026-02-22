@@ -22,8 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   estimate.
 - "Current Config" link in the navigation bar between Back and Next, opening
   the configuration download in a new browser tab.
-- `/config` GET endpoint: downloads the complete current configuration as a
-  YAML text file (`setup.yml`). 
+- Integrated geometry.py into the bwmt tool. Use -g or --geometry to visualize 
+  geometry and provide a summary of expected velocities. 
 
 #### Developer Experience
 - Logging facilities: application now writes log files in the current working

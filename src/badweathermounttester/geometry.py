@@ -354,6 +354,69 @@ def main():
 
     fig2.tight_layout()
 
+    # ---- Summary table figure ----
+    fig3, ax_tbl = plt.subplots(figsize=(7, 6))
+    ax_tbl.axis("off")
+
+    dec_val = f"{args.dec}°" if args.dec is not None else "—"
+    x_span_mm = (max(intersections_x) - min(intersections_x)) * 1000.0
+    y_span_mm = (max(intersections_y) - min(intersections_y)) * 1000.0
+    v_min = min(velocities_mm_s)
+    v_avg = sum(velocities_mm_s) / len(velocities_mm_s)
+    v_max = max(velocities_mm_s)
+    xv_min = min(x_velocities_px_s)
+    xv_avg = sum(x_velocities_px_s) / len(x_velocities_px_s)
+    xv_max = max(x_velocities_px_s)
+
+    rows = [
+        # ---- inputs ----
+        ["Latitude",                    f"{args.lat}°"],
+        ["Distance to screen",          f"{abs(args.distance):.3f} m"],
+        ["Offset RA",                   f"{args.offsetRA:.3f} m"],
+        ["Offset Dec",                  f"{args.offsetDec:.3f} m"],
+        ["Angle range",                 f"{args.start}° → {args.stop}°"],
+        ["Declination",                 dec_val],
+        ["Screen size (physical)",      f"{args.screen_width_mm:.0f} × {args.screen_height * 1000:.0f} mm"],
+        ["Screen resolution",           f"{args.screen_width_px} px wide"],
+        ["Pixel pitch",                 f"{args.screen_width_mm / args.screen_width_px:.4g} mm/px"],
+        # ---- separator ----
+        ["", ""],
+        # ---- computed ----
+        ["X span on screen",            f"{x_span_mm:.1f} mm"],
+        ["Y span on screen",            f"{y_span_mm:.1f} mm"],
+        ["Total velocity  min/avg/max", f"{v_min:.3g} / {v_avg:.3g} / {v_max:.3g} mm/s"],
+        ["X velocity  min/avg/max",     f"{xv_min:.3g} / {xv_avg:.3g} / {xv_max:.3g} px/s"],
+        ["Sidereal reference velocity", f"{sidereal_velocity_mm_s:.4g} mm/s"],
+    ]
+
+    tbl = ax_tbl.table(
+        cellText=rows,
+        colLabels=["Parameter", "Value"],
+        cellLoc="left",
+        loc="center",
+        colWidths=[0.58, 0.42],
+    )
+    tbl.auto_set_font_size(False)
+    tbl.set_fontsize(10)
+    tbl.scale(1, 1.5)
+
+    # Style header row
+    for col in range(2):
+        tbl[0, col].set_facecolor("#4C72B0")
+        tbl[0, col].set_text_props(color="white", fontweight="bold")
+
+    # Style the blank separator row and dim computed-section rows slightly
+    separator_row = 10  # 0-based data rows + 1 for header = row index 11 in table (0=header)
+    for row in range(1, len(rows) + 1):
+        for col in range(2):
+            if row == separator_row + 1:   # blank row
+                tbl[row, col].set_facecolor("#E8E8E8")
+            elif row > separator_row + 1:  # computed section
+                tbl[row, col].set_facecolor("#EEF4FB")
+
+    ax_tbl.set_title("Geometry Summary", fontsize=13, fontweight="bold", pad=14)
+    fig3.tight_layout()
+
     try:
         plt.show()
     except KeyboardInterrupt:
