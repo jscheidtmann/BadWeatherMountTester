@@ -3,6 +3,7 @@ mount:
   focal_length_mm: 210.0
   distance_to_screen_m: 3.41
   main_period_seconds: 480.0
+  southern_hemisphere: false
   telescope_offset_m: 0.27
   telescope_offset_dec_m: -0.03
   angle_start_deg: 0.0
