@@ -36,6 +36,7 @@ clean:
 full-clean: clean
     rm dist 
     rm build 
+    rm bwmt.spec
 
 # Run the application
 run:
