@@ -38,6 +38,21 @@ full-clean: clean
     rm build 
     rm bwmt.spec
 
+# Build root language-redirect page
+docs-root:
+    uv run zensical build
+
+# Build English documentation
+docs-en:
+    uv run zensical build --config-file zensical-en.toml
+
+# Build German documentation
+docs-de:
+    uv run zensical build --config-file zensical-de.toml
+
+# Build all documentation (root redirect, English, German)
+docs: docs-root docs-en docs-de
+
 # Run the application
 run:
     uv run bwmt

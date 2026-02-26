@@ -1,0 +1,55 @@
+[project]
+site_name = "Bad Weather Mount Tester"
+site_url = "https://jscheidtmann.github.io/BadWeatherMountTester/de/"
+site_description = "Periodischen Fehler einer Teleskop-Montierung drinnen testen mit einem simulierten Stern auf einem Monitor"
+site_author = "Jens Scheidtmann"
+copyright = "&copy; 2026 Jens Scheidtmann und Mitwirkende"
+repo_url = "https://github.com/jscheidtmann/BadWeatherMountTester/tree/main/docs"
+docs_dir = "docs/de"
+site_dir = "site/de"
+
+extra_javascript = [
+    "javascripts/mathjax.js",
+    "https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"
+]
+
+nav = [
+  { "Startseite" = "index.md" },
+  { "Voraussetzungen" = "prerequisits.md" },
+  { "Handbuch" = "manual.md" },
+]
+
+[project.extra]
+alternate = [
+    { name = "English", link = "/BadWeatherMountTester/en/", lang = "en" },
+    { name = "Deutsch", link = "/BadWeatherMountTester/de/", lang = "de" }
+]
+
+[project.markdown_extensions.admonition]
+[project.markdown_extensions.attr_list]
+[project.markdown_extensions.footnotes]
+[project.markdown_extensions.md_in_html]
+[project.markdown_extensions.pymdownx.blocks.caption]
+[project.markdown_extensions.pymdownx.caret]
+[project.markdown_extensions.pymdownx.details]
+[project.markdown_extensions.pymdownx.keys]
+[project.markdown_extensions.pymdownx.mark]
+[project.markdown_extensions.pymdownx.tilde]
+
+[project.markdown_extensions.pymdownx.arithmatex]
+generic = true
+
+[project.markdown_extensions.pymdownx.superfences]
+custom_fences = [
+  { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" }
+]
+
+[project.theme]
+language = "de"
+features = [
+  "navigation",
+  "navigation.tracking",
+  "navigation.indexes",
+  "navigation.instant",
+  "content.footnote.tooltips"
+]
