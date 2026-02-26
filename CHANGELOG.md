@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0]
+
 ### Added
 
 #### Features
@@ -72,4 +74,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 _Initial public release._
 
 [Unreleased]: https://github.com/jscheidtmann/BadWeatherMountTester/compare/release-0.8.0...HEAD
+[0.9.0]: https://github.com/jscheidtmann/BadWeatherMountTester/releases/tag/release-0.9.0
 [0.8.0]: https://github.com/jscheidtmann/BadWeatherMountTester/releases/tag/release-0.8.0
