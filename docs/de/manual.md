@@ -57,6 +57,9 @@ Stelle sicher, dass du BWMT starten kannst, wie hier beschrieben, bevor du die A
   <figcaption>Abbildung 3: Die Konfigurationsseite der BWMT-Weboberfläche.</figcaption>
 </figure>
 
+!!! note "Referenz"
+    Eine vollständige Beschreibung jedes Feldes und berechneten Wertes in diesem Bildschirm findest du in der [Configure-Tab-Referenz](reference.md#configure-tab).
+
 Gib die passenden Werte für dein Setup in den Konfigurationsseite ein.
 
 Gib zunächst die **Montierungskonfiguration** ein:
@@ -211,6 +214,9 @@ Für den nächsten Schritt musst du im „Align"-Bildschirm sein:
   <figcaption>Abbildung 11: Simulatorbildschirm-Anzeige zur Ausrichtung</figcaption>
 </figure>
 
+!!! note "Referenz"
+    Eine Beschreibung jedes Elements auf dem Align-Bildschirm findest du in der [Align-Tab-Referenz](reference.md#align-tab).
+
 ### Höhe von Bildschirm und Montierung anpassen
 
 Jetzt, wo du auf die linke Seite des Bildschirms zeigst, passe die Höhe von Montierung und Bildschirm so an, dass das
@@ -292,6 +298,9 @@ Du solltest jetzt im „Calibrate"-Tab sein.
   ![BWMT Kalibrierungsbildschirm](BWMT_web_calibration.png)
   <figcaption>Abbildung 14: Der Kalibrierungsbildschirm</figcaption>
 </figure>
+
+!!! note "Referenz"
+    Eine vollständige Beschreibung aller Steuerelemente und Parameter im Calibrate-Tab findest du in der [Calibrate-Tab-Referenz](reference.md#calibrate-tab).
 
 Jetzt werden wir die Position der Montierung über den Bildschirm verfolgen, um den Weg aufzuzeichnen, den die Montierung
 über den Bildschirm nimmt. Das beinhaltet:
@@ -376,6 +385,9 @@ Die Webseite zeigt drei „aufgezeichnete Zeiten", eine für jeden Streifen und 
   </figcaption>
 </figure>
 
+!!! note "Referenz"
+    Eine vollständige Beschreibung aller Steuerelemente im Velocity-Tab findest du in der [Velocity-Tab-Referenz](reference.md#velocity-tab).
+
 !!! important "Fokus prüfen! Nochmal!"
     Es ist sehr wichtig, dass du die Geschwindigkeit korrekt misst. Vermeide daher — wenn möglich — die Verwendung von
     Fernzugriffssoftware wie Remote Desktop Client oder VNC für den Zugriff auf deinen Astro-Computer. Stelle außerdem
@@ -415,6 +427,9 @@ Für das Folgende musst du im „Measure"-Tab der Weboberfläche sein, wo die Si
   ![BWMT Simulationssteuerung](BWMT_web_measure.png)
   <figcaption>Abbildung 21: Die Simulationssteuerung.</figcaption>
 </figure>
+
+!!! note "Referenz"
+    Eine vollständige Beschreibung aller Steuerelemente und Statusanzeigen im Measure-Tab findest du in der [Measure-Tab-Referenz](reference.md#measure-tab).
 
 ### Voraussetzungen für gute Messungen
 

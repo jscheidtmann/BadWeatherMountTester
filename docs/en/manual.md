@@ -54,6 +54,9 @@ Make sure you can startup BWMT as described here, before setting up the gear (ca
   <figcaption>Figure 3: The configuration screen of BWMT's web interface. TODO - fix wording</figcaption>
 </figure>
 
+!!! note "Reference"
+    For a full description of every field and calculated value in this screen, see the [Configure Tab reference](reference.md#configure-tab).
+
 Enter the appropriate values for your setup into the configuration screen.
 
 First enter the **Mount Configuration**:
@@ -204,6 +207,9 @@ For the next step you need to be in the "Align" screen:
   <figcaption>Figure 11: Simulator screen displayed for Alignment</figcaptoin>
 </figure>
 
+!!! note "Reference"
+    For a description of every element on the Align screen, see the [Align Tab reference](reference.md#align-tab).
+
 ### Adjusting height of Screen and Mount
 
 Now that you're pointing at the left side of the screen, adjust the height of mount and screen such, that while the
@@ -284,6 +290,9 @@ You should now be in the "Calibrate" tab.
   <figcaption>Figure 14: The Calibration Screen</figcaption>
 </figure>
 
+!!! note "Reference"
+    For a full description of every control and parameter in the Calibrate tab, see the [Calibrate Tab reference](reference.md#calibrate-tab).
+
 Now we will trace the mount's location accross the screen, to setup the average path that the mount takes across the
 screen. This entails:
 
@@ -363,13 +372,16 @@ The web page shows three "recorded times", one for each stripe and a stop watch 
   </figcaption>
 </figure>
 
+!!! note "Reference"
+    For a full description of every control in the Velocity tab, see the [Velocity Tab reference](reference.md#velocity-tab).
+
 !!! important "Check the focus! Again!"
-    It is very important, that you measure the velocity correctly. Therefore avoid - if possible - using remote access 
-    software such as Remote Desktop Client or VNC to access you asto computer. Also make sure that the guide scope is 
+    It is very important, that you measure the velocity correctly. Therefore avoid - if possible - using remote access
+    software such as Remote Desktop Client or VNC to access you asto computer. Also make sure that the guide scope is
     **exactly focused** on the simulator screen.
 
 Chose a very short exposure time for your camera. The smallest value, that PHD2 supports is 0.01s. Avoid
-saturation, and focus correctly on the simulator screen. 
+saturation, and focus correctly on the simulator screen.
 
 Now move the mount to the left of the outer strip, start tracking with the bullseye overlay active on the screen and
 press "Start" once the bullseye center enters the left stripe. Take care to avoid any reflection of the stripe on the
@@ -402,6 +414,9 @@ For the following you need to be in the "Measure" tab of the web interface, wher
   ![BWMT Simulation Control](BWMT_web_measure.png)
   <figcaption>Figure 21: The simulation control.</figcaption>
 </figure>
+
+!!! note "Reference"
+    For a full description of every control and status indicator in the Measure tab, see the [Measure Tab reference](reference.md#measure-tab).
 
 ### Prerequisits for good measurements
 
@@ -468,15 +483,15 @@ hemisphere), where you placed the first alignment point, display a simulated sta
 profile that is sampled at the positions of the pixels. The diameter of this star will be roughly 3 pixels.
 
 !!! warning "Defocus the star"
-    In order to get a nice star profile, you need to intentionally defocus. **Defocus by a large amount.** 
+    In order to get a nice star profile, you need to intentionally defocus. **Defocus by a large amount.**
     If you switch back to the "Calibrate" tab, you should not be able to read the number of the calibration
     points anymore!
 
 !!! warning "Use your target exposure time"
-    If you're aiming at having a guidescope exposure time of 1s, you should also conduct the measurement at 1s. 
-    In order to achieve this, you may need to use neutral density filters. Make sure the peak of the simulated 
-    star profile is at least 50% of the maximum of your sensor (see the "Saturation by Max-ADU value" in the 
-    "Camera" tab in PHD2's advanced settings). 
+    If you're aiming at having a guidescope exposure time of 1s, you should also conduct the measurement at 1s.
+    In order to achieve this, you may need to use neutral density filters. Make sure the peak of the simulated
+    star profile is at least 50% of the maximum of your sensor (see the "Saturation by Max-ADU value" in the
+    "Camera" tab in PHD2's advanced settings).
 
 Let's see, which statistical fluctuations the measurement setup is reporting. These can be: air currents, cables
 tugging, imbalances in RA and Dec, vibrations present in the building from people or cars driving on the street, the
@@ -491,7 +506,7 @@ Start looping in PHD2, if it is not already running. Then move the mount **only 
 click on the simulated star to select it for guiding and then &lt;SHIFT&gt;-click or click on the "Start Guiding" icon
 in PHD2.
 
-!!! tip "Forcing a calibration" 
+!!! tip "Forcing a calibration"
     Using shift-click you can force a calibration. As we have created a new profile above, a new calibration should be
     created now. You should force a new calibration, if you have an old one active (PHD2 usually re-uses a good
     calibration), **but you changed the optical train**, e.g. by adding a neutral density filter to get into the right exposure
@@ -556,8 +571,8 @@ cases, because you're pointing at the simulator screen.
 Depending on how many stripes were timed in Step 4, one of three cases applies:
 
 | Stripes measured | Velocity source label | How velocity is determined |
-|------------------|-----------------------|------------------------------------------------------------|
-| 0                | *estimated*           | Theoretical value from Step 1 (constant across the screen) |
+|------------------|-----------------------|------------------------------------------------------------ |
+| 0                | *estimated*           | Theoretical value from Step 1 (constant across the screen)  |
 | 1 or 2           | *partial average*     | Average of the measured stripe velocities (constant across the screen) |
 | 3                | *interpolated*        | Quadratic polynomial fitted through all three measured points; velocity varies across the screen |
 
@@ -565,19 +580,16 @@ The active source is shown in the **Simulation Control** card next to the curren
 If the source is *estimated*, a warning is displayed both in the web interface and on the simulator screen.
 
 **Case "estimated" — no measurements**
-
 The theoretical velocity is used unchanged. This is the least accurate option: it assumes the mount
 tracks exactly at the sidereal rate, ignoring any mechanical offset of the telescope from the RA axis
 or other geometric effects that cause the apparent screen velocity to differ from the pure sidereal rate.
 
 **Case "partial average" — 1 or 2 stripes measured**
-
 The average of the available measured stripe velocities is used as a constant velocity.
 This is more accurate than the theoretical estimate, but because only part of the screen was measured,
 position-dependent velocity variations are not captured.
 
 **Case "interpolated" — all 3 stripes measured**
-
 A quadratic polynomial is fitted through the three measured `(screen_x, velocity)` pairs at the left,
 middle, and right stripe centres. During simulation, the star's velocity is looked up from this curve at
 each x-position, so it naturally accelerates or decelerates across the screen to match the mount's real
@@ -678,6 +690,7 @@ every 5°), and the lines of sight traced from `angle_start_deg` to
 
 **Figure 2 – Screen traces and velocity**
 Three stacked plots:
+
 - *Screen intersection* – the path the guide star traces on the screen (mm).
 - *Total velocity* – speed of the star along the path (mm/s) vs progress (%).
   The green dashed line is the sidereal reference velocity at the given distance.

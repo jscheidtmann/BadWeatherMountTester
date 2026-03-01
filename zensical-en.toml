@@ -17,6 +17,7 @@ nav = [
   { "Home" = "index.md" },
   { "Prerequisits" = "prerequisits.md" },
   { "Manual" = "manual.md" },
+  { "Reference" = "reference.md" },
 ]
 
 [project.extra]
