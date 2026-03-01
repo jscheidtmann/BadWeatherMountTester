@@ -2,28 +2,38 @@
 
 import logging
 import logging.config
+import os
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
 
-def get_log_dir() -> Path:
-    """Return the platform-specific log directory."""
-    return Path(".")
+def get_and_create_log_dir() -> Path:
+    """Return the platform-specific log directory, creating it if needed.
 
-    # if sys.platform == "win32":
-    #     import os
-    #     base = Path(os.environ.get("APPDATA", Path.home() / "AppData" / "Local"))
-    #     return Path(base) / "BWMT" / "logs"
-    # elif sys.platform == "darwin":
-    #     return Path.home() / "Library" / "Logs" / "BWMT"
-    # else:
-    #     # Linux / Raspberry Pi: XDG_DATA_HOME or fallback
-    #     import os
-    #     xdg = os.environ.get("XDG_DATA_HOME", "")
-    #     if xdg:
-    #         return Path(xdg) / "bwmt" / "logs"
-    #     return Path.home() / ".local" / "share" / "bwmt" / "logs"
+    Falls back to the current working directory if the platform directory
+    cannot be created.
+    """
+    if sys.platform == "win32":
+        base = Path(os.environ.get("APPDATA", Path.home() / "AppData" / "Local"))
+        log_dir = base / "BWMT" / "logs"
+    elif sys.platform == "darwin":
+        log_dir = Path.home() / "Library" / "Logs" / "BWMT"
+    else:
+        # Linux / Raspberry Pi: XDG_DATA_HOME or fallback
+        xdg = os.environ.get("XDG_DATA_HOME", "")
+        if xdg:
+            log_dir = Path(xdg) / "bwmt" / "logs"
+        else:
+            log_dir = Path.home() / ".local" / "share" / "bwmt" / "logs"
+
+    try:
+        log_dir.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        log_dir = Path(".")
+
+    return log_dir
 
 
 def _rotate_logs(log_dir: Path) -> None:
@@ -41,13 +51,7 @@ def setup_logging(config_path: Optional[Path] = None) -> Path:
     2. ``logging.ini`` in the user data dir (sibling of log dir)
     3. Bundled ``logging_errors.ini`` (errors-only default)
     """
-    log_dir = get_log_dir()
-    try:
-        log_dir.mkdir(parents=True, exist_ok=True)
-    except OSError:
-        pass
-    if not log_dir.is_dir():
-        log_dir = Path(".")
+    log_dir = get_and_create_log_dir()
 
     _rotate_logs(log_dir)
 
