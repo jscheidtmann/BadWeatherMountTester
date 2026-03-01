@@ -25,7 +25,8 @@ Wenn der Webbrowser eine Verbindung zu BWMT herstellt, wechselt der Simulator vo
 **Suchbildschirm**. Der Suchbildschirm zeigt Richtungspfeile auf schwarzem Hintergrund. Die Pfeile führen dich dazu, das
 Leitfernrohr in die richtige Richtung auf dem Simulatorbildschirm zu bewegen:
 
-- **Große Pfeile** zeigen von allen Richtungen zur Bildschirmmitte und helfen dir, vom aktuellen Standpunkt des Leitfernrohrs aus zu navigieren.
+- **Große Pfeile** zeigen von allen Richtungen zur Bildschirmmitte und helfen dir,
+  vom aktuellen Standpunkt des Leitfernrohrs aus zu navigieren.
 - **Kleines rotes Kreuz** markiert die linke Seite des Bildschirms (Nordhalbkugel) oder die rechte Seite (Südhalbkugel)
   – die Startposition für den Ausrichtungsschritt.
 - **Vertikale Linien bei 25 % und 75 %** der Bildschirmbreite werden im Configure-Modus angezeigt, um die besten
@@ -43,7 +44,7 @@ Die Weboberfläche des Configure-Tabs ist in mehrere Karten unterteilt.
 #### Montierungskonfiguration
 
 | Feld | Einheit | Beschreibung |
-|---|---|---|
+| --- | --- | --- |
 | **Breite** | Grad (Dezimal) | Die Breite, auf die deine Montierung eingestellt ist. Umrechnung von Sexagesimalgrad (dd° mm'): `dd + mm / 60`. Sowohl `.` als auch `,` werden als Dezimaltrennzeichen akzeptiert. |
 | **Brennweite des Leitfernrohrs** | mm | Die *effektive* Brennweite des Leitfernrohrs. Bei Verwendung eines Reducers multiplizieren: z. B. 420 mm × 0,5 = 210 mm. |
 | **Entfernung zum Bildschirm** | m | Abstand von der Dec-Rotationsachse zum Simulatorbildschirm. Drehe die RA-Achse, bis die Dec-Achse waagerecht ist, bevor du misst. |
@@ -74,7 +75,7 @@ verwendet und sind für normale Messungen nicht erforderlich.
 #### Bildschirm
 
 | Feld | Einheit | Beschreibung |
-|---|---|---|
+| --- | --- | --- |
 | **Bildschirmbreite** | mm | Die physikalische Breite des aktiven Anzeigebereichs, mit einem Lineal vom äußersten linken bis zum äußersten rechten Pixel gemessen. |
 | **Pixelabstand** *(berechnet)* | mm/px und Bogensek./px | Physikalische Größe eines Simulatorpixels und sein Winkelmaß aus Sicht des Leitfernrohrs. Wird automatisch angezeigt. |
 
@@ -83,12 +84,12 @@ verwendet und sind für normale Messungen nicht erforderlich.
 BWMT berechnet diese Größen aus den obigen Feldern und zeigt sie schreibgeschützt an.
 
 | Wert | Beschreibung |
-|---|---|
+| --- | --- |
 | **Effektive Brennweite für PHD2** | Die Brennweite, die in das PHD2-Nachführprofil eingetragen werden muss. Da das Leitfernrohr auf den nahen Simulatorbildschirm statt auf Unendlich fokussiert ist, weicht die effektive Brennweite von der Nennbrennweite ab. Formel: `effective_fl = (focal_length × distance) / (distance − focal_length)`. |
 | **Empfohlenes Binning** | Das optimale Kamera-Binning, damit ein gebinntes Kamerapixel denselben Winkel abdeckt wie ein Simulatorpixel. Diesen Wert in PHD2 einstellen; falls der genaue Wert nicht verfügbar ist, das nächstgelegene verfügbare Binning wählen. |
 | **Messdauer** | Geschätzte Zeit (in Minuten), die die Montierung benötigt, um den gesamten Simulatorbildschirm bei siderischer Rate zu überqueren, berücksichtigt die Breite über `cos(90° − Breite)`. Dies ist ein grober Schätzwert – der genaue Wert hängt von der Position des Leitfernrohrs relativ zur RA-Achse ab. |
 | **Bereich auf dem Simulator** | Breite × Höhe (in mm) des durch das Leitfernrohr sichtbaren Bereichs auf dem Simulatorbildschirm, berechnet aus der Sensorgröße und der effektiven Brennweite. |
-| **Dec-Ziel** | Der Deklinationswert für den Kalibrierungsassistenten von PHD2 beim Schwenken auf den Bildschirm. Nordhalbkugel: `−(90° − Breite)`. Südhalbkugel: `+(90° − |Breite|)`. |
+| **Dec-Ziel** | Der Deklinationswert für den Kalibrierungsassistenten von PHD2 beim Schwenken auf den Bildschirm. Nordhalbkugel: `−(90° − Breite)`. Südhalbkugel: `+(90° − \|Breite\|)`. |
 
 ---
 
@@ -111,7 +112,7 @@ ausrichten](manual.md#montierung-und-bildschirm-ausrichten) im Handbuch.
 Die Ausrichtungs-Simulatoranzeige zeigt:
 
 | Element | Beschreibung |
-|---|---|
+| --- | --- |
 | **Rote Nulllinie** | Die horizontale Mitte des Bildschirms. Auf beiden Seiten wird der Text *Null* angezeigt. Richte das Leitfernrohr so aus, dass das PHD2-Bullseye diese Linie kreuzt. |
 | **Parallele graue Linien** | Horizontale Referenzlinien im Abstand von 50 Pixeln ober- und unterhalb der Nulllinie, die eine Skalenreferenz für den vertikalen Versatz bieten. |
 | **Pixelskalenbeschriftungen** | Zahlen am linken und rechten Rand des Bildschirms, die den Pixelversatz von der Mittellinie anzeigen, sodass du quantifizieren kannst, wie weit das Leitfernrohr von der Mitte entfernt ist. |
@@ -144,8 +145,7 @@ kalibrieren](manual.md#den-simulator-kalibrieren) im Handbuch.
 
   b) Ein Linksklick setzt einen nummerierten Kalibrierungspunkt.
   ![Schritt 1b: Klicken setzt einen Kalibrierungspunkt auf dem Simulatorbildschirm](BWMT_calibration_step1b.png)
-  <figcaption>Simulatoranzeige des Calibrate-Tabs: Das Fadenkreuz und nummerierte Kalibrierungspunkte erscheinen auf dem s
-  chwarzen Bildschirm.</figcaption>
+  <figcaption>Calibrate-Tab Simulatoranzeige: Fadenkreuz und Kalibrierungspunkte auf schwarzem Bildschirm.</figcaption>
 </figure>
 
 Die Kalibrierungs-Simulatoranzeige zeigt:
@@ -190,7 +190,7 @@ Werden automatisch angezeigt, wenn fünf oder mehr Kalibrierungspunkte gesetzt w
 Fits einer Ellipse an die aufgezeichneten Punkte.
 
 | Parameter | Einheit | Beschreibung |
-|---|---|---|
+| --- | --- | --- |
 | **Mittelpunkt X** | m | Horizontale Position des Ellipsenmittelpunkts auf dem Simulatorbildschirm. |
 | **Mittelpunkt Y** | m | Vertikale Position des Ellipsenmittelpunkts auf dem Simulatorbildschirm. |
 | **Große Halbachse** | m | Länge der längeren Halbachse der angepassten Ellipse. |
@@ -252,7 +252,7 @@ gespeichert wird. Der aktuell aktive Streifen ist hervorgehoben.
 Ein dreispaltiges Raster zeigt eine Karte pro Streifen. Jede Karte zeigt:
 
 | Element | Beschreibung |
-|---|---|
+| --- | --- |
 | **Aufgezeichnete Zeit** | Die zuletzt für diesen Streifen gemessene Zeit (MM:SS.mmm). |
 | **Geschwindigkeit** | Abgeleitete Geschwindigkeit in Pixel pro Sekunde: `Streifenbreite_px / Überquerungszeit_s`. |
 | **Löschen** | Löscht die aufgezeichnete Zeit für diesen Streifen und ermöglicht eine Wiederholungsmessung. |
@@ -260,7 +260,7 @@ Ein dreispaltiges Raster zeigt eine Karte pro Streifen. Jede Karte zeigt:
 #### Geschwindigkeitsstatistiken
 
 | Wert | Beschreibung |
-|---|---|
+| --- | --- |
 | **Streifenbreite** | Breite jedes Streifens in Pixeln. |
 | **Erwartete Überquerungszeit** | Die theoretische Zeit (Sekunden) für die Montierung, um einen Streifen bei der aus der Konfiguration berechneten siderischen Geschwindigkeit zu überqueren. |
 | **Min / Mittel / Max Geschwindigkeit** | Minimum, Durchschnitt und Maximum der über alle drei Streifen aufgezeichneten Geschwindigkeiten (px/s). |
@@ -313,7 +313,7 @@ Weitere Simulatoranzeigeelemente während der Simulation:
 #### Simulationsparameter
 
 | Element | Beschreibung |
-|---|---|
+| --- | --- |
 | **Aktuelle Geschwindigkeit** | Die aktuelle Geschwindigkeit des Sterns in px/s. Die Quellenbezeichnung gibt an, wie diese Geschwindigkeit bestimmt wurde – siehe [Bestimmung der Simulationsgeschwindigkeit durch BWMT](manual.md#bestimmung-der-simulationsgeschwindigkeit-durch-bwmt). |
 | **Geschwindigkeitsquelle** | Eine von: *geschätzt* (keine Streifenmessungen; theoretischer Wert), *Teildurchschnitt* (1–2 Streifen gemessen; konstanter Durchschnitt), oder *interpoliert* (alle 3 Streifen gemessen; quadratische Kurve über den Bildschirm). |
 | **Geschwindigkeits-Override** | Ein optionales Eingabefeld (px/s), das die berechnete Geschwindigkeit überschreibt. Nützlich, wenn die Simulation systematisch zu schnell oder zu langsam läuft. |
@@ -323,7 +323,7 @@ Weitere Simulatoranzeigeelemente während der Simulation:
 #### Mediensteuerung
 
 | Schaltfläche | Aktion |
-|---|---|
+| --- | --- |
 | ⏮ | Simulation auf den Anfang zurücksetzen (0 %). |
 | ⏪ | 10 Sekunden zurückspringen. |
 | ▶ / ⏸ | Simulation starten oder pausieren. |
@@ -333,7 +333,49 @@ Weitere Simulatoranzeigeelemente während der Simulation:
 #### Navigation
 
 | Steuerelement | Beschreibung |
-|---|---|
+| --- | --- |
 | **Zurück** | Kehrt zum Calibrate-Tab zurück, damit du die Kalibrierungspunkte verwenden kannst, um das Leitfernrohr auf dem Simulatorbildschirm neu zu positionieren. |
 | **Aktuelle Konfiguration** | Öffnet die aktuelle Konfiguration als herunterladbare YAML-Datei in einem neuen Browser-Tab. |
 | **Weiter** | *(Im letzten Tab deaktiviert)* |
+
+---
+
+## BWMT starten
+
+BWMT wird über die Kommandozeile gestartet:
+
+```text
+bwmt [OPTIONEN]
+```
+
+| Option | Beschreibung |
+| --- | --- |
+| `--version` | Versionsnummer anzeigen und beenden. |
+| `--config PFAD` | Pfad zu einer Konfigurationsdatei (JSON). Wenn nicht angegeben, wird die Standardkonfiguration verwendet. |
+| `--setup PFAD` | Pfad zu einer Setup-Datei (YAML). Standardmäßig `setup.yml` im aktuellen Verzeichnis. |
+| `--port INT` | Portnummer des Webservers. Überschreibt den Wert in `setup.yml`. |
+| `--windowed` | Die Simulatoranzeige in einem Fenster statt im Vollbildmodus ausführen. |
+| `--fullscreen` | Die Simulatoranzeige im Vollbildmodus ausführen. Überschreibt den Wert in `setup.yml`. |
+| `--log-config PFAD` | Pfad zu einer Protokollierungskonfigurationsdatei (INI-Format). Überschreibt den mitgelieferten Standard. |
+| `--screen-size VOREINSTELLUNG` | Bildschirmgröße. Eines von: 640x480/vga, hd/720p, fhd/1080p (Standard), 4k/2160p, custom. |
+| `--locale SPRACHE` | Anzeigesprache erzwingen, z. B. `de` oder `fr`. Standardmäßig die Systemsprache. |
+| `-g` / `--geometry` | Das Geometrie-Visualisierungswerkzeug statt der Hauptanwendung ausführen. |
+
+---
+
+## Protokolldateien
+
+BWMT schreibt bei jedem Start eine Protokolldatei mit Zeitstempel. Bis zu 20 Protokolldateien
+werden aufbewahrt; ältere Dateien werden automatisch gelöscht, wenn dieses Limit erreicht wird.
+
+Der Name der Protokolldatei folgt dem Muster `bwmt_YYYY-MM-DD_HH-MM-SS.log`.
+
+| Plattform | Protokollverzeichnis |
+| --- | --- |
+| **Windows** | `%APPDATA%\BWMT\logs\` |
+| **macOS** | `~/Library/Logs/BWMT/` |
+| **Linux / Raspberry Pi** | `~/.local/share/bwmt/logs/` oder `$XDG_DATA_HOME/bwmt/logs/` |
+| **Fallback** | Aktuelles Arbeitsverzeichnis (`.`) — wird verwendet, wenn das Plattformverzeichnis nicht erstellt werden kann. |
+
+Um eine benutzerdefinierte Protokollierungskonfiguration zu verwenden, gib `--log-config PFAD`
+beim Start an (siehe [BWMT starten](#bwmt-starten)).

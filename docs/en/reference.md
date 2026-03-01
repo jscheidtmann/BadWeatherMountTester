@@ -45,7 +45,7 @@ The Configure tab web interface is divided into several cards.
 #### Mount Configuration
 
 | Field | Unit | Description |
-|---|---|---|
+| --- | --- | --- |
 | **Latitude** | degrees (decimal) | The latitude your mount is set up for. Convert sexagesimal (dd° mm') with: `dd + mm / 60`. Both `.` and `,` are accepted as decimal separators. |
 | **Guide Scope Focal Length** | mm | The *effective* focal length of the guide scope. If you use a reducer, multiply: e.g. 420 mm × 0.5 = 210 mm. |
 | **Distance to Screen** | m | Distance from the Dec rotational axis to the simulator screen. Rotate the RA axis until the Dec axis is level before measuring. |
@@ -57,7 +57,7 @@ These optional fields are used by the [Geometry Visualisation Tool](manual.md#ge
 required for normal measurements.
 
 | Field | Unit | Description |
-|---|---|---|
+| --- | --- | --- |
 | **Telescope Offset RA** | m | Distance of the guide scope from the RA rotation axis. |
 | **Telescope Offset Dec** | m | Offset from the Dec axis; negative values point toward the floor. |
 | **Sweep Start Angle** | ° | Start angle of the RA sweep modelled by the geometry tool. |
@@ -67,7 +67,7 @@ required for normal measurements.
 #### Guide Camera
 
 | Field | Unit | Description |
-|---|---|---|
+| --- | --- | --- |
 | **Pixel Size** | µm | Physical size of one camera pixel. Square pixels are assumed. |
 | **Width** | px | Sensor width in pixels. |
 | **Height** | px | Sensor height in pixels. |
@@ -76,7 +76,7 @@ required for normal measurements.
 #### Screen
 
 | Field | Unit | Description |
-|---|---|---|
+| --- | --- | --- |
 | **Screen Width** | mm | The physical width of the active display area, measured with a ruler from the leftmost to the rightmost pixel. |
 | **Pixel Pitch** *(calculated)* | mm/px and arcsec/px | Physical size of one simulator screen pixel and its angular size as seen from the guide scope. Displayed automatically. |
 
@@ -85,12 +85,12 @@ required for normal measurements.
 BWMT computes these quantities from the fields above and displays them read-only.
 
 | Value | Description |
-|---|---|
+| --- | --- |
 | **Effective FL for PHD2** | The focal length to enter into the PHD2 guiding profile. Because the guide scope is focused at the near-field simulator screen rather than at infinity, the effective focal length differs from the nominal one. Formula: `effective_fl = (focal_length × distance) / (distance − focal_length)`. |
 | **Recommended Binning** | The optimal camera binning so that one binned camera pixel subtends the same angle as one simulator screen pixel. Configure this value in PHD2; if the exact value is unavailable, choose the nearest available binning. |
 | **Measurement Duration** | Estimated time (in minutes) for the mount to traverse the full simulator screen at sidereal rate, accounting for your latitude via `cos(90° − latitude)`. This is a rough estimate — the exact value depends on the position of the guide scope relative to the RA axis. |
 | **Area on Simulator** | Width × height (in mm) of the area on the simulator screen visible through the guide scope, calculated from the sensor size and the effective focal length. |
-| **Dec target** | The declination value to enter into PHD2's Calibration Assistant when slewing to the screen. Northern hemisphere: `−(90° − latitude)`. Southern hemisphere: `+(90° − |latitude|)`. |
+| **Dec target** | The declination value to enter into PHD2's Calibration Assistant when slewing to the screen. Northern hemisphere: `−(90° − latitude)`. Southern hemisphere: `+(90° − \|latitude\|)`. |
 
 ---
 
@@ -112,7 +112,7 @@ For the step-by-step alignment procedure, see [Aligning Mount and Screen](manual
 The alignment simulator display shows:
 
 | Element | Description |
-|---|---|
+| --- | --- |
 | **Red zero-line** | The horizontal centre of the screen. The text *zero* is shown on both sides. Align the guide scope so that the PHD2 bullseye crosses this line. |
 | **Parallel grey lines** | Horizontal reference lines spaced 50 pixels apart above and below the zero-line, providing a scale reference for vertical offset. |
 | **Pixel scale labels** | Numbers on the left and right edges of the screen showing the pixel offset from the centre line, allowing you to quantify how far off-centre the guide scope is. |
@@ -150,7 +150,7 @@ manual.
 The calibrate simulator display shows:
 
 | Element | Description |
-|---|---|
+| --- | --- |
 | **Crosshair** | A cross that follows the mouse cursor position in the Calibration Preview. It appears on the physical simulator screen so you can see in PHD2 where BWMT thinks the guide scope is pointing. |
 | **Numbered calibration points** | Each placed point is shown with its sequence number. Northern hemisphere: #1 is on the left and numbers increase rightward. Southern hemisphere: #1 is on the right and numbers increase leftward. |
 | **Path line** | A line connecting successive calibration points, showing the arc the mount traces. |
@@ -167,7 +167,7 @@ The calibrate simulator display shows:
 A scaled-down live image of the simulator screen is displayed as a canvas. Interacting with it:
 
 | Action | Effect |
-|---|---|
+| --- | --- |
 | **Hover** | Moves the crosshair on both the canvas preview and the physical simulator screen. |
 | **Left-click** | Places a new calibration point at the current crosshair position. |
 | **Arrow keys** (↑ ↓ ← →) | Fine-adjusts the currently selected point by one pixel. Only active when the cursor is over the canvas. |
@@ -178,7 +178,7 @@ A scaled-down live image of the simulator screen is displayed as a canvas. Inter
 #### Controls
 
 | Control | Description |
-|---|---|
+| --- | --- |
 | **Point count** | Displays the total number of calibration points recorded so far. |
 | **Reset** | Deletes all calibration points and clears the ellipse fit. |
 | **Delete Selected** | Removes the currently selected calibration point. |
@@ -189,7 +189,7 @@ Shown automatically when five or more calibration points have been placed. These
 ellipse fit to the recorded points.
 
 | Parameter | Unit | Description |
-|---|---|---|
+| --- | --- | --- |
 | **Center X** | m | Horizontal position of the ellipse centre on the simulator screen. |
 | **Center Y** | m | Vertical position of the ellipse centre on the simulator screen. |
 | **Semi-major axis** | m | Length of the longer half-axis of the fitted ellipse. |
@@ -216,7 +216,7 @@ Velocity](manual.md#measuring-on-screen-velocity) in the manual.
 The velocity simulator display shows three vertical stripes on a black background:
 
 | Element | Description |
-|---|---|
+| --- | --- |
 | **Left stripe** | Vertical stripe on the left third of the screen, labelled "LEFT". Start timing when the PHD2 bullseye enters the stripe; stop when it exits. |
 | **Middle stripe** | Vertical stripe in the centre of the screen, labelled "MIDDLE". |
 | **Right stripe** | Vertical stripe on the right third of the screen, labelled "RIGHT". |
@@ -240,7 +240,7 @@ The currently active stripe is highlighted.
 #### Stopwatch
 
 | Control | Description |
-|---|---|
+| --- | --- |
 | **Time display** | Shows the elapsed time in MM:SS.mmm format (minutes, seconds, milliseconds). |
 | **Start** | Begins timing. Press when the PHD2 bullseye centre enters the selected stripe. |
 | **Stop** | Stops timing and records the time to the selected stripe. Press when the bullseye centre exits the stripe. |
@@ -251,7 +251,7 @@ The currently active stripe is highlighted.
 A three-column grid shows one card per stripe. Each card displays:
 
 | Element | Description |
-|---|---|
+| --- | --- |
 | **Recorded time** | The last time measured for that stripe (MM:SS.mmm). |
 | **Velocity** | Derived velocity in pixels per second: `stripe_width_px / crossing_time_s`. |
 | **Clear** | Deletes the recorded time for that stripe, allowing a re-measurement. |
@@ -259,7 +259,7 @@ A three-column grid shows one card per stripe. Each card displays:
 #### Velocity Statistics
 
 | Value | Description |
-|---|---|
+| --- | --- |
 | **Stripe width** | Width of each stripe in pixels. |
 | **Expected crossing time** | The theoretical time (seconds) for the mount to cross a stripe at the sidereal velocity computed from your configuration. |
 | **Min / Avg / Max velocity** | Minimum, average, and maximum of the velocities recorded across all three stripes (px/s). |
@@ -288,7 +288,7 @@ obtain a good guiding profile, intentionally defocus the guide scope before star
 Additional simulator display elements during simulation:
 
 | Element | Description |
-|---|---|
+| --- | --- |
 | **Countdown overlay** | One minute and 30 seconds before the end, a countdown appears on screen. Ten seconds before the end, BWMT beeps 10 times. |
 | **Warning overlay** | If no velocity stripes were measured (estimated velocity only), a warning is displayed on the simulator screen. |
 
@@ -302,7 +302,7 @@ Additional simulator display elements during simulation:
 #### Simulation Status
 
 | Element | Description |
-|---|---|
+| --- | --- |
 | **Status indicator** | Shows the current simulation state: *Ready*, *Running*, or *Complete*. |
 | **Remaining time** | Countdown of time left in the simulation run. |
 | **Progress bar** | Visual percentage bar. Click anywhere on the bar to seek to that position in the simulation. |
@@ -311,7 +311,7 @@ Additional simulator display elements during simulation:
 #### Simulation Parameters
 
 | Element | Description |
-|---|---|
+| --- | --- |
 | **Current velocity** | The star's current speed in px/s. The source label indicates how this velocity was determined — see [How Simulation Velocity is Determined](manual.md#how-simulation-velocity-is-determined). |
 | **Velocity source label** | One of: *estimated* (no stripe measurements; theoretical value), *partial average* (1–2 stripes measured; constant average), or *interpolated* (all 3 stripes measured; quadratic curve across the screen). |
 | **Velocity Override** | An optional input field (px/s) that overrides the computed velocity. Useful if the simulation runs systematically too fast or too slow. |
@@ -321,7 +321,7 @@ Additional simulator display elements during simulation:
 #### Media Controls
 
 | Button | Action |
-|---|---|
+| --- | --- |
 | ⏮ | Reset the simulation to the beginning (0 %). |
 | ⏪ | Skip back 10 seconds. |
 | ▶ / ⏸ | Start or pause the simulation. |
@@ -331,7 +331,48 @@ Additional simulator display elements during simulation:
 #### Navigation
 
 | Control | Description |
-|---|---|
+| --- | --- |
 | **Back** | Returns to the Calibrate tab so you can use the calibration points to re-locate the guide scope on the simulator screen. |
 | **Current Config** | Opens the current configuration as a downloadable YAML file in a new browser tab. |
 | **Next** | *(Disabled on the last tab)* |
+
+---
+
+## Starting BWMT
+
+BWMT is started from the command line:
+
+```text
+bwmt [OPTIONS]
+```
+
+| Option | Description |
+| --- | --- |
+| `--version` | Show version number and exit. |
+| `--config PATH` | Path to a configuration file (JSON). If omitted, the default configuration is used. |
+| `--setup PATH` | Path to a setup file (YAML). Defaults to `setup.yml` in the current directory. |
+| `--port INT` | Web server port number. Overrides the value in `setup.yml`. |
+| `--windowed` | Run the simulator display in a window instead of fullscreen. |
+| `--fullscreen` | Run the simulator display in fullscreen mode. Overrides the value in `setup.yml`. |
+| `--log-config PATH` | Path to a logging configuration file (INI format). Overrides the bundled default. |
+| `--screen-size PRESET` | Screen size. One of: 640x480/vga, hd/720p, fhd/1080p (default), 4k/2160p, custom. |
+| `--locale LANG` | Force the display language, e.g. `de` or `fr`. Defaults to the system locale. |
+| `-g` / `--geometry` | Run the geometry visualisation tool instead of the main application. |
+
+---
+
+## Log Files
+
+BWMT writes a timestamped log file each time it starts. Up to 20 log files are kept;
+older files are removed automatically when this limit is reached.
+
+The log file name follows the pattern `bwmt_YYYY-MM-DD_HH-MM-SS.log`.
+
+| Platform | Log directory |
+| --- | --- |
+| **Windows** | `%APPDATA%\BWMT\logs\` |
+| **macOS** | `~/Library/Logs/BWMT/` |
+| **Linux / Raspberry Pi** | `~/.local/share/bwmt/logs/` or `$XDG_DATA_HOME/bwmt/logs/` |
+| **Fallback** | Current working directory (`.`) — used if the platform directory cannot be created. |
+
+To use a custom logging configuration, pass `--log-config PATH` on startup (see [Starting BWMT](#starting-bwmt)).
