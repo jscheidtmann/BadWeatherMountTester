@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Documentation
+- Added a reference manual in both German and English and created links between reference and manual.
+
+
 ## [0.9.0]
 
 ### Added
