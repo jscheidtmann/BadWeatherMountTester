@@ -6,7 +6,7 @@ the Astro Computer to configure and control the simulator.
 
 import socket
 from pathlib import Path
-from threading import Thread
+from threading import Event, Thread
 from typing import Optional, Callable, List, Dict
 
 import numpy as np
@@ -169,6 +169,8 @@ class WebServer:
 
         self._setup_routes()
         self._server_thread: Optional[Thread] = None
+        self._startup_error: Optional[OSError] = None
+        self._startup_event = Event()
         self._on_connect_callback: Optional[Callable[[], None]] = None
         self._on_config_update_callback: Optional[Callable[[AppConfig], None]] = None
         self._on_mode_change_callback: Optional[Callable[[int], None]] = None
@@ -1173,19 +1175,33 @@ class WebServer:
 
     def start(self) -> None:
         """Start the web server in a background thread."""
+        self._startup_error = None
+        self._startup_event.clear()
         self._server_thread = Thread(
             target=self._run_server,
             daemon=True,
         )
         self._server_thread.start()
+        self._startup_event.wait(timeout=1.0)
+        if self._startup_error is not None:
+            port = self.config.server.port
+            raise OSError(
+                f"Cannot start web server: port {port} is already in use. "
+                f"Another instance of BWMT may be running. "
+                f"Stop it or change the port in the configuration."
+            ) from self._startup_error
 
     def _run_server(self) -> None:
         """Run the Flask server using waitress."""
-        serve(
-            self.app,
-            host=self.config.server.host,
-            port=self.config.server.port,
-        )
+        try:
+            serve(
+                self.app,
+                host=self.config.server.host,
+                port=self.config.server.port,
+            )
+        except OSError as e:
+            self._startup_error = e
+            self._startup_event.set()
 
     def stop(self) -> None:
         """Stop the web server."""
