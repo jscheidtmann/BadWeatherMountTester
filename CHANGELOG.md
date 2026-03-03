@@ -8,14 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Documentation
-- Added a reference manual in both German and English and created links between reference and manual.
 
+- Added a reference manual in both German and English and created links between reference and manual.
+- Moved information on [CONTRIBUTING.md](ttps://github.com/jscheidtmann/BadWeatherMountTester/blob/main/CHANGELOG.md)
+  to said file on GitHub.
 
 ## [0.9.0]
 
 ### Added
 
 #### Features
+
 - Southern Hemisphere support: star moves right-to-left, UI and instructions
   adapt accordingly.
 - Velocity override entry (px/s) in simulation control: enter the simulation
@@ -32,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   geometry and provide a summary of expected velocities. 
 
 #### Developer Experience
+
 - Logging facilities: application now writes log files in the current working
   directory.
 - `--locale` CLI parameter to override the system / browser language
@@ -41,17 +45,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Manual workflow to publish documentation to GitHub Pages. 
 
 ### Changed
+
 - Simulation velocity source label shows "manual override" (green) when a
   velocity override is active, "interpolated" when all three stripes are
   measured, "partial average" when some are missing, and "estimated" as
   fallback.
 
 ### Fixed
+
 - Pre-commit hook failed on Windows.
 - PyPI readme logo not displayed because relative image URLs were used;
   switched to full URLs. 
 
 ### Internationalization
+
 - German and French translations added for all UI strings. 
 - Simulator screen strings (status messages, stripe labels) translated for
   DE and FR.
@@ -59,15 +66,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   tip call-outs.
 
 ### Tried, but ...
+
 - Entry field for "Drift rate" as calculated by PHD2 Log Viewer. Turned out to 
   be hard to convert to screen units. A direct entry field for the px/s 
   simulator velocity is much easier to tune and understand by users.
 
 ### Documentation
+
 - Velocity sources described in the manual (measured, interpolated, average,
   estimated, manual override).
 
 ### Dependencies
+
 - ruff 0.15.1 → 0.15.2
 - pyinstaller 6.18.0 → 6.19.0
 
@@ -77,6 +87,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 _Initial public release._
 
-[Unreleased]: https://github.com/jscheidtmann/BadWeatherMountTester/compare/release-0.8.0...HEAD
+[Unreleased]: https://github.com/jscheidtmann/BadWeatherMountTester/compare/release-0.9.0...HEAD
 [0.9.0]: https://github.com/jscheidtmann/BadWeatherMountTester/releases/tag/release-0.9.0
 [0.8.0]: https://github.com/jscheidtmann/BadWeatherMountTester/releases/tag/release-0.8.0
