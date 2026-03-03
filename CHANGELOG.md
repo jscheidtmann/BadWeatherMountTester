@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Documentation
 
-- Added a reference manual in both German and English and created links between reference and manual.
+- Added a reference manual in both German and English and created links between reference and manual for both bwmt and the geometry tool.
 - Moved information on [CONTRIBUTING.md](ttps://github.com/jscheidtmann/BadWeatherMountTester/blob/main/CHANGELOG.md)
   to said file on GitHub.
 
