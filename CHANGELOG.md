@@ -13,6 +13,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Moved information on [CONTRIBUTING.md](ttps://github.com/jscheidtmann/BadWeatherMountTester/blob/main/CHANGELOG.md)
   to said file on GitHub.
 
+### Fixed
+
+- Print meaningful error message, if port is already in use and blocked
+- Use 5050 as default port, as 5000 is in use on Macs.
+
+### Developer Experience
+
+- Add a `just build` recipe for invoking pyinstaller.
+
 ## [0.9.0]
 
 ### Added
