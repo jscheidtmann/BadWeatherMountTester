@@ -31,17 +31,32 @@ def parse_args(config: dict, config_file: str | None = None) -> argparse.Namespa
         description="Visualize telescope mount geometry and rotation",
     )
     parser.add_argument(
-        "-c",
-        "--config",
-        type=str,
-        default=config_file,
-        help="Path to configuration file (default: setup.yml)",
-    )
-    parser.add_argument(
         "--lat",
         type=float,
         default=mount.get("latitude", 51.0),
         help=f"Latitude in degrees (default from setup.yml: {mount.get('latitude', 51.0)})",
+    )
+    parser.add_argument(
+        "-d",
+        "--distance",
+        type=float,
+        default=-mount.get("distance_to_screen_m", 3.41),
+        help=(
+            "Distance from origin along the line"
+            f" (default from setup.yml: {mount.get('distance_to_screen_m', 3.41)}m)"
+        ),
+    )
+    parser.add_argument(
+        "--start",
+        type=float,
+        default=mount.get("angle_start_deg", 0.0),
+        help=f"Start angle in degrees (default from setup.yml: {mount.get('angle_start_deg', 0.0)})",
+    )
+    parser.add_argument(
+        "--stop",
+        type=float,
+        default=mount.get("angle_stop_deg", -10.0),
+        help=f"Stop angle in degrees (default from setup.yml: {mount.get('angle_stop_deg', -10.0)})",
     )
     parser.add_argument(
         "-or",
@@ -61,38 +76,10 @@ def parse_args(config: dict, config_file: str | None = None) -> argparse.Namespa
         help=f"Telescope offset from Dec axis (default from setup.yml: {mount.get('telescope_offset_dec_m', -0.015)})",
     )
     parser.add_argument(
-        "--start",
-        type=float,
-        default=mount.get("angle_start_deg", 0.0),
-        help=f"Start angle in degrees (default from setup.yml: {mount.get('angle_start_deg', 0.0)})",
-    )
-    parser.add_argument(
-        "--stop",
-        type=float,
-        default=mount.get("angle_stop_deg", -10.0),
-        help=f"Stop angle in degrees (default from setup.yml: {mount.get('angle_stop_deg', -10.0)})",
-    )
-    parser.add_argument(
-        "-d",
-        "--distance",
-        type=float,
-        default=-mount.get("distance_to_screen_m", 3.41),
-        help=(
-            "Distance from origin along the line"
-            f" (default from setup.yml: {mount.get('distance_to_screen_m', 3.41)}m)"
-        ),
-    )
-    parser.add_argument(
         "--dec",
         type=float,
         default=mount.get("declination_deg"),
         help="Declination in degrees for line of sight calculation",
-    )
-    parser.add_argument(
-        "--screen-width",
-        type=float,
-        default=display.get("screen_width_mm", 520.0) / 1000.0,
-        help=f"Screen width (default from setup.yml: {display.get('screen_width_mm', 520.0)}m)",
     )
     parser.add_argument(
         "--screen-height",
@@ -101,16 +88,29 @@ def parse_args(config: dict, config_file: str | None = None) -> argparse.Namespa
         help=f"Screen height (default from setup.yml: {display.get('screen_height_mm', 325.0)}m)",
     )
     parser.add_argument(
-        "--screen-width-px",
-        type=int,
-        default=display.get("screen_width", 1920),
-        help=f"Screen width in pixels (default from setup.yml: {display.get('screen_width', 1920)})",
+        "--screen-width",
+        type=float,
+        default=display.get("screen_width_mm", 520.0) / 1000.0,
+        help=f"Screen width (default from setup.yml: {display.get('screen_width_mm', 520.0)}m)",
     )
     parser.add_argument(
         "--screen-width-mm",
         type=float,
         default=display.get("screen_width_mm", 520.0),
         help=f"Screen width in mm (default from setup.yml: {display.get('screen_width_mm', 520.0)})",
+    )
+    parser.add_argument(
+        "--screen-width-px",
+        type=int,
+        default=display.get("screen_width", 1920),
+        help=f"Screen width in pixels (default from setup.yml: {display.get('screen_width', 1920)})",
+    )
+    parser.add_argument(
+        "-c",
+        "--config",
+        type=str,
+        default=config_file,
+        help="Path to configuration file (default: setup.yml)",
     )
     return parser.parse_args()
 

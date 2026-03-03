@@ -6,6 +6,57 @@ Schritt-für-Schritt-Anleitungen zur Verwendung dieser Bildschirme in der richti
 
 ---
 
+## BWMT starten
+
+BWMT wird über die Kommandozeile gestartet:
+
+```text
+bwmt [OPTIONEN]
+```
+
+| Option | Beschreibung |
+| --- | --- |
+| `--version` | Versionsnummer anzeigen und beenden. |
+| `--config PFAD` | Pfad zu einer Konfigurationsdatei (JSON). Wenn nicht angegeben, wird die Standardkonfiguration verwendet. |
+| `--setup PFAD` | Pfad zu einer Setup-Datei (YAML). Standardmäßig `setup.yml` im aktuellen Verzeichnis. |
+| `--port INT` | Portnummer des Webservers. Überschreibt den Wert in `setup.yml`. |
+| `--windowed` | Die Simulatoranzeige in einem Fenster statt im Vollbildmodus ausführen. |
+| `--fullscreen` | Die Simulatoranzeige im Vollbildmodus ausführen. Überschreibt den Wert in `setup.yml`. |
+| `--log-config PFAD` | Pfad zu einer Protokollierungskonfigurationsdatei (INI-Format). Überschreibt den mitgelieferten Standard. |
+| `--screen-size VOREINSTELLUNG` | Bildschirmgröße. Eines von: 640x480/vga, hd/720p, fhd/1080p (Standard), 4k/2160p, custom. |
+| `--locale SPRACHE` | Anzeigesprache erzwingen, z. B. `de` oder `fr`. Standardmäßig die Systemsprache. |
+| `-g` / `--geometry` | Das Geometrie-Visualisierungswerkzeug statt der Hauptanwendung ausführen. |
+
+---
+
+## Geometrie-Visualisierungswerkzeug
+
+Das Geometrie-Visualisierungswerkzeug zeigt ein 3D-Diagramm der Montierungsbewegung und des Wegs, den das Leitfernrohr
+über den Simulatorbildschirm beschreibt. Es wird gestartet, indem `-g` an den Hauptbefehl übergeben wird:
+
+```text
+bwmt -g [OPTIONEN]
+```
+
+Alle Parameter verwenden standardmäßig die Werte aus `setup.yml`. Explizite Angabe überschreibt diese.
+
+| Option | Typ | Beschreibung |
+| --- | --- | --- |
+| `--lat FLOAT` | ° | Geografische Breite, auf die die Montierung eingestellt ist. |
+| `-d` / `--distance FLOAT` | m | Abstand von der Dec-Achse zum Simulatorbildschirm (positiver Wert). |
+| `--start FLOAT` | ° | Startwinkel des RA-Schwenks. |
+| `--stop FLOAT` | ° | Endwinkel des RA-Schwenks. |
+| `-or` / `--offsetRA FLOAT` | m | Versatz des Leitfernrohrs von der RA-Rotationsachse. |
+| `-od` / `--offsetDec FLOAT` | m | Versatz des Leitfernrohrs von der Dec-Achse. Negative Werte zeigen in Richtung Boden. |
+| `--dec FLOAT` | ° | Sichtlinien-Deklination für das Geometriemodell. Weglassen für horizontale Ausrichtung. |
+| `--screen-height FLOAT` | m | Physikalische Höhe des Simulatorbildschirms. |
+| `--screen-width FLOAT` | m | Physikalische Breite des Simulatorbildschirms. |
+| `--screen-width-mm FLOAT` | mm | Breite des Simulatorbildschirms in Millimetern (Alternative zu `--screen-width`). |
+| `--screen-width-px INT` | px | Breite des Simulatorbildschirms in Pixeln. |
+| `-c` / `--config PFAD` | Pfad | Pfad zu einer Konfigurationsdatei. Standard ist `setup.yml` im aktuellen Verzeichnis. |
+
+---
+
 ## Configure-Tab
 
 Der Configure-Tab ist der erste Schritt. Hier gibst du alle Informationen über deine Montierung, Leitkamera und den
@@ -337,29 +388,6 @@ Weitere Simulatoranzeigeelemente während der Simulation:
 | **Zurück** | Kehrt zum Calibrate-Tab zurück, damit du die Kalibrierungspunkte verwenden kannst, um das Leitfernrohr auf dem Simulatorbildschirm neu zu positionieren. |
 | **Aktuelle Konfiguration** | Öffnet die aktuelle Konfiguration als herunterladbare YAML-Datei in einem neuen Browser-Tab. |
 | **Weiter** | *(Im letzten Tab deaktiviert)* |
-
----
-
-## BWMT starten
-
-BWMT wird über die Kommandozeile gestartet:
-
-```text
-bwmt [OPTIONEN]
-```
-
-| Option | Beschreibung |
-| --- | --- |
-| `--version` | Versionsnummer anzeigen und beenden. |
-| `--config PFAD` | Pfad zu einer Konfigurationsdatei (JSON). Wenn nicht angegeben, wird die Standardkonfiguration verwendet. |
-| `--setup PFAD` | Pfad zu einer Setup-Datei (YAML). Standardmäßig `setup.yml` im aktuellen Verzeichnis. |
-| `--port INT` | Portnummer des Webservers. Überschreibt den Wert in `setup.yml`. |
-| `--windowed` | Die Simulatoranzeige in einem Fenster statt im Vollbildmodus ausführen. |
-| `--fullscreen` | Die Simulatoranzeige im Vollbildmodus ausführen. Überschreibt den Wert in `setup.yml`. |
-| `--log-config PFAD` | Pfad zu einer Protokollierungskonfigurationsdatei (INI-Format). Überschreibt den mitgelieferten Standard. |
-| `--screen-size VOREINSTELLUNG` | Bildschirmgröße. Eines von: 640x480/vga, hd/720p, fhd/1080p (Standard), 4k/2160p, custom. |
-| `--locale SPRACHE` | Anzeigesprache erzwingen, z. B. `de` oder `fr`. Standardmäßig die Systemsprache. |
-| `-g` / `--geometry` | Das Geometrie-Visualisierungswerkzeug statt der Hauptanwendung ausführen. |
 
 ---
 

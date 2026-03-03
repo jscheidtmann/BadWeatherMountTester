@@ -7,6 +7,57 @@ For step-by-step instructions on how to use these screens in sequence, see the [
 
 ---
 
+## Starting BWMT
+
+BWMT is started from the command line:
+
+```text
+bwmt [OPTIONS]
+```
+
+| Option | Description |
+| --- | --- |
+| `--version` | Show version number and exit. |
+| `--config PATH` | Path to a configuration file (JSON). If omitted, the default configuration is used. |
+| `--setup PATH` | Path to a setup file (YAML). Defaults to `setup.yml` in the current directory. |
+| `--port INT` | Web server port number. Overrides the value in `setup.yml`. |
+| `--windowed` | Run the simulator display in a window instead of fullscreen. |
+| `--fullscreen` | Run the simulator display in fullscreen mode. Overrides the value in `setup.yml`. |
+| `--log-config PATH` | Path to a logging configuration file (INI format). Overrides the bundled default. |
+| `--screen-size PRESET` | Screen size. One of: 640x480/vga, hd/720p, fhd/1080p (default), 4k/2160p, custom. |
+| `--locale LANG` | Force the display language, e.g. `de` or `fr`. Defaults to the system locale. |
+| `-g` / `--geometry` | Run the geometry visualisation tool instead of the main application. |
+
+---
+
+## Geometry Visualisation Tool
+
+The geometry visualisation tool renders a 3D diagram of the mount's motion and the path the guide scope traces across the
+simulator screen. It is launched by passing `-g` to the main command:
+
+```text
+bwmt -g [OPTIONS]
+```
+
+All parameters default to the values stored in `setup.yml`. Pass them explicitly to override.
+
+| Option | Type | Description |
+| --- | --- | --- |
+| `--lat FLOAT` | ° | Latitude the mount is set up for. |
+| `-d` / `--distance FLOAT` | m | Distance from the Dec axis to the simulator screen (positive value). |
+| `--start FLOAT` | ° | Start angle of the RA sweep. |
+| `--stop FLOAT` | ° | Stop angle of the RA sweep. |
+| `-or` / `--offsetRA FLOAT` | m | Telescope offset from the RA rotation axis. |
+| `-od` / `--offsetDec FLOAT` | m | Telescope offset from the Dec axis. Negative values point toward the floor. |
+| `--dec FLOAT` | ° | Line-of-sight declination for the geometry model. Omit for horizontal pointing. |
+| `--screen-height FLOAT` | m | Physical height of the simulator screen. |
+| `--screen-width FLOAT` | m | Physical width of the simulator screen. |
+| `--screen-width-mm FLOAT` | mm | Simulator screen width in millimetres (alternative to `--screen-width`). |
+| `--screen-width-px INT` | px | Simulator screen width in pixels. |
+| `-c` / `--config PATH` | path | Path to a configuration file. Defaults to `setup.yml` in the current directory. |
+
+---
+
 ## Configure Tab
 
 The Configure tab is the first step. It is used to enter all information about your mount, guide camera, and simulator
@@ -335,29 +386,6 @@ Additional simulator display elements during simulation:
 | **Back** | Returns to the Calibrate tab so you can use the calibration points to re-locate the guide scope on the simulator screen. |
 | **Current Config** | Opens the current configuration as a downloadable YAML file in a new browser tab. |
 | **Next** | *(Disabled on the last tab)* |
-
----
-
-## Starting BWMT
-
-BWMT is started from the command line:
-
-```text
-bwmt [OPTIONS]
-```
-
-| Option | Description |
-| --- | --- |
-| `--version` | Show version number and exit. |
-| `--config PATH` | Path to a configuration file (JSON). If omitted, the default configuration is used. |
-| `--setup PATH` | Path to a setup file (YAML). Defaults to `setup.yml` in the current directory. |
-| `--port INT` | Web server port number. Overrides the value in `setup.yml`. |
-| `--windowed` | Run the simulator display in a window instead of fullscreen. |
-| `--fullscreen` | Run the simulator display in fullscreen mode. Overrides the value in `setup.yml`. |
-| `--log-config PATH` | Path to a logging configuration file (INI format). Overrides the bundled default. |
-| `--screen-size PRESET` | Screen size. One of: 640x480/vga, hd/720p, fhd/1080p (default), 4k/2160p, custom. |
-| `--locale LANG` | Force the display language, e.g. `de` or `fr`. Defaults to the system locale. |
-| `-g` / `--geometry` | Run the geometry visualisation tool instead of the main application. |
 
 ---
 
