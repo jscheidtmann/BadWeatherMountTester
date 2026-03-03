@@ -56,3 +56,6 @@ docs: docs-root docs-en docs-de
 # Run the application
 run:
     uv run bwmt
+
+build:
+    uv run pyinstaller --name bwmt --onedir --collect-all badweathermounttester src/badweathermounttester/app.py
